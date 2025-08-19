@@ -1,0 +1,36 @@
+# Xcode (from gitignore.io)
+UserInterfaceState.xcuserstate
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+
+# CocoaPod
+Pods/*
+
+# others
+*.swp
+!.gitkeep
+.DS_Store
+
+# bandler
+vendor/*
+
+# fastlane
+build/
+fastlane/test_output/*
+fastlane/README.md
+fasten/report.xml
+screenshots/*
