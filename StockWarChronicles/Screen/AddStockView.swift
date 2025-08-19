@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AddStockView: View {
+    @Environment(\.modelContext) private var context
+    @Binding var showAddStockView: Bool
+    
     @State private var code = ""
     @State private var name = ""
     @State private var purchaseDate = Date()
@@ -26,7 +30,7 @@ struct AddStockView: View {
         Double(purchaseAmountText) ?? 0
     }
     var shares: Int {
-        Int(purchaseAmountText) ?? 0
+        Int(sharesText) ?? 0
     }
 
     var body: some View {
@@ -94,9 +98,18 @@ struct AddStockView: View {
 
                 Button(action: {
                     // TODO: 必須項目が欠けている場合に警告を出す
-                    // TODO: SwiftDataに保存
                     let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                    StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: tags)
+                    let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: tags)
+                    context.insert(stockRecord)
+                    
+                    do {
+                        try context.save()
+                        showAddStockView.toggle()
+                        
+                    } catch {
+                        // TODO: 失敗したらアラート
+                        print("保存に失敗しました: \(error)")
+                    }
                 }) {
                     Text("追加")
                         .frame(maxWidth: .infinity)
@@ -108,12 +121,19 @@ struct AddStockView: View {
                 .padding()
             }
             .navigationTitle("追加")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("close", systemImage: "xmark") {
+                        showAddStockView.toggle()
+                    }
+                }
+            }
         }
     }
 }
 
 
 #Preview {
-    AddStockView()
+    AddStockView(showAddStockView: .constant(true))
 }
 
