@@ -23,9 +23,15 @@ final class StockRecord {
         self.tags = tags
     }
 
-    // 購入から売却まで完了しているか
+    /// 購入から売却まで完了しているか
     var isTradeFinish: Bool {
         let totalSold = sales.map(\.shares).reduce(0, +)
         return purchase.shares == totalSold
+    }
+    
+    ///. 現在保有している残りの株数
+    var remainingShares: Int {
+        let totalSold = sales.map(\.shares).reduce(0, +)
+        return purchase.shares - totalSold
     }
 }

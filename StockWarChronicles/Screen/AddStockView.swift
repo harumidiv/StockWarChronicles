@@ -87,7 +87,7 @@ struct AddStockView: View {
 
                     Section(header: Text("購入理由")) {
                         TextEditor(text: $reason)
-                            .frame(height: 100)
+                            .frame(height: 200)
                             .padding(4)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
