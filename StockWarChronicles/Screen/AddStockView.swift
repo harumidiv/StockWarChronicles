@@ -1,48 +1,11 @@
 //
-//  ContentView.swift
+//  AddStockView.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/19.
 //
 
 import SwiftUI
-import SwiftData
-
-struct Tag: Identifiable, Hashable {
-    let id = UUID()
-    var name: String
-    var color: Color
-}
-
-struct StockTradeInfo {
-    let amount: Double
-    let shares: Int
-    let date: Date
-    let reason: String
-}
-
-struct StockRecord {
-    let code: String
-    let name: String
-    let purchase: StockTradeInfo
-    let sales: [StockTradeInfo]
-    let tags: [Tag]
-    
-    var isTradeFinish: Bool {
-        let totalSold = sales.map(\.shares).reduce(0, +)
-        return purchase.shares == totalSold
-    }
-}
-
-struct ContentView: View {
-    var body: some View {
-        AddStockView()
-    }
-}
-
-#Preview {
-    ContentView()
-}
 
 struct AddStockView: View {
     @State private var code = ""
@@ -148,3 +111,9 @@ struct AddStockView: View {
         }
     }
 }
+
+
+#Preview {
+    AddStockView()
+}
+
