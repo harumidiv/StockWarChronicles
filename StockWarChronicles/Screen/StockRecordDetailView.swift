@@ -90,45 +90,60 @@ struct StockRecordDetailView: View {
     
     private func stableView() -> some View {
         Form {
-            Section(header: Text("サマリー")) {
-                VStack(alignment: .leading, spacing: 8) {
+            Section(header: Text("サマリー").font(.headline)) {
+                VStack(alignment: .leading, spacing: 12) {
                     
                     HStack {
                         Text("損益")
+                            .font(.subheadline)
                         Spacer()
                         Text(record.profitAndLoss.withComma() + "円")
-                            .fontWeight(.semibold)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(record.profitAndLoss >= 0 ? .red : .blue)
                     }
                     
                     HStack {
                         Text("保有日数")
+                            .font(.subheadline)
                         Spacer()
                         Text(record.holdingPeriod.description + "日")
+                            .font(.body)
+                            .fontWeight(.semibold)
                     }
                     
                     HStack {
                         Text("株数")
+                            .font(.subheadline)
                         Spacer()
                         Text(record.purchase.shares.description + "株")
-                            .foregroundColor(.green)
+                            .font(.body)
+                            .fontWeight(.semibold)
                     }
+                    
                     chartView()
                 }
+                .padding(.vertical, 4)
             }
             
-            Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")) {
-                VStack(alignment: .leading, spacing: 4) {
+            Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
+                .font(.headline)) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(record.sales) { sale in
                         HStack {
                             HStack(spacing: 0) {
                                 Text(record.purchase.date.formatted(as: .md))
-                                    .font(.subheadline)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                                 Text("~")
                                 Text(sale.date.formatted(as: .md))
-                                    .font(.subheadline)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
                             
                             Text(sale.shares.description + "株")
+                                .font(.body)
+                                .fontWeight(.semibold)
                             
                             Spacer()
                             
@@ -141,28 +156,40 @@ struct StockRecordDetailView: View {
                                 .font(.subheadline)
                                 .foregroundColor(profitAndLossPercentage >= 0 ? .red : .blue)
                         }
+                        .padding(.vertical, 2)
                     }
                 }
             }
             
-            Section(header: Text("購入根拠")) {
-                Text("上昇トレンド")
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            Section(header: Text("購入根拠").font(.headline)) {
+                Text(record.purchase.reason)
+                    .font(.body)
                     .padding(.vertical, 4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            Section(header: Text("売却根拠")) {
-                Text("決算でコケた")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 4)
+            Section(header: Text("売却根拠").font(.headline)) {
+                VStack(spacing: 0) {
+                    ForEach(record.sales) { sale in
+                        Text(sale.reason)
+                            .font(.body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
             }
+            .listRowSeparator(.hidden)
         }
+        .listStyle(.insetGrouped) // Formの見た目を少し整える
     }
+
 }
 
 #Preview {
     let purchase = StockTradeInfo(amount: 5000, shares: 100, date: Date(), reason: "成長期待")
-    let sale = StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成")
-    let record = StockRecord(code: "140A", name: "ハッチ・ワーク", purchase: purchase, sales: [sale])
+    let sales = [
+        StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成1"),
+        StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
+        ]
+    let record = StockRecord(code: "140A", name: "ハッチ・ワーク", purchase: purchase, sales: sales)
     StockRecordDetailView(record: record)
 }
