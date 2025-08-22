@@ -18,10 +18,7 @@ struct StockRecordDetailView: View {
                 ProgressView()
                     .scaleEffect(2)
             } else {
-                VStack {
-                    stableView()
-                    chartView()
-                }
+                stableView()
             }
                 
         }
@@ -65,10 +62,20 @@ struct StockRecordDetailView: View {
                         PointMark(x: .value("time", date),
                                   y: .value("price", price))
                         .foregroundStyle(.green)
+                        .annotation(position: .bottom) {
+                            Text("購入")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
                     } else if date.isSameYearMonthDayContained(in: record.sales.map { $0.date }) {
                         PointMark(x: .value("time", date),
                                   y: .value("price", price))
                         .foregroundStyle(.red)
+                        .annotation(position: .bottom) {
+                            Text("売却")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
                     }
                 }
             }
@@ -76,12 +83,7 @@ struct StockRecordDetailView: View {
         .chartYAxis {
             AxisMarks(position: .leading)  // たて軸を左側に表示
         }
-        .chartXAxisLabel(position: .bottom, alignment: .center) {
-            Text("Time [s]")
-        }  // 軸ラベルをグラフの下側の左右中心に表示
-        .chartYAxisLabel(position: .leading, alignment: .center, spacing: 0) {
-            Text("Voltage [mV]")
-        }  // 軸ラベルをグラフの左側の上下中央に表示し、周りの要素とのスペースをなくす
+        .chartYScale(domain: [chartData.compactMap{ $0.adjclose }.min()! * 0.95, chartData.compactMap{ $0.adjclose }.max()! * 1.05])
     }
     
     private func stableView() -> some View {
@@ -143,6 +145,8 @@ struct StockRecordDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 4)
             }
+            
+            chartView()
         }
     }
 }
