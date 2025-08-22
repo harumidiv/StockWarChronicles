@@ -1,0 +1,24 @@
+{
+  "originHash" : "14786cace78ae0800c86cc450d97ac0862b010cd7cb830ae34b53b29b126d915",
+  "pins" : [
+    {
+      "identity" : "swiftyfinance",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alexdremov/SwiftYFinance",
+      "state" : {
+        "revision" : "08de10916d40302d03c5220a03e8c083a221e613",
+        "version" : "2.1.0"
+      }
+    },
+    {
+      "identity" : "swiftyjson",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftyJSON/SwiftyJSON.git",
+      "state" : {
+        "revision" : "2b6054efa051565954e1d2b9da831680026cd768",
+        "version" : "4.3.0"
+      }
+    }
+  ],
+  "version" : 3
+}

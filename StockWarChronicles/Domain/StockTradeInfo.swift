@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class StockTradeInfo {
+final class StockTradeInfo: Identifiable {
     var amount: Double
     var shares: Int
     var date: Date
