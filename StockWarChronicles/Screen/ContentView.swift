@@ -14,7 +14,14 @@ struct ContentView: View {
     }
 }
 
+import Charts
+
+struct ChartData: Identifiable {
+    let id = UUID()
+    let time: Int
+    let voltage: Int
+}
+
 #Preview {
     ContentView()
 }
-

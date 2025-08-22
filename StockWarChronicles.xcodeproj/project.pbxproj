@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		49FE01542E588A9200B0CE5B /* SwiftYFinance in Frameworks */ = {isa = PBXBuildFile; productRef = 49FE01532E588A9200B0CE5B /* SwiftYFinance */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		49FE00C22E54915300B0CE5B /* StockWarChronicles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StockWarChronicles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49FE01542E588A9200B0CE5B /* SwiftYFinance in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = StockWarChronicles;
 			packageProductDependencies = (
+				49FE01532E588A9200B0CE5B /* SwiftYFinance */,
 			);
 			productName = StockWarChronicles;
 			productReference = 49FE00C22E54915300B0CE5B /* StockWarChronicles.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 49FE00B92E54915300B0CE5B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				49FE01522E588A9200B0CE5B /* XCRemoteSwiftPackageReference "SwiftYFinance" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 49FE00C32E54915300B0CE5B /* Products */;
 			projectDirPath = "";
@@ -351,6 +360,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		49FE01522E588A9200B0CE5B /* XCRemoteSwiftPackageReference "SwiftYFinance" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alexdremov/SwiftYFinance";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		49FE01532E588A9200B0CE5B /* SwiftYFinance */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49FE01522E588A9200B0CE5B /* XCRemoteSwiftPackageReference "SwiftYFinance" */;
+			productName = SwiftYFinance;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 49FE00BA2E54915300B0CE5B /* Project object */;
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftData
+import Foundation
 
 @Model
 final class StockRecord {
@@ -33,5 +34,60 @@ final class StockRecord {
     var remainingShares: Int {
         let totalSold = sales.map(\.shares).reduce(0, +)
         return purchase.shares - totalSold
+    }
+    
+    var holdingPeriod: Int {
+        guard let saleDate = sales.last?.date else {
+            return -1
+        }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: purchase.date)
+        let end = calendar.startOfDay(for: saleDate)
+        
+        let components = calendar.dateComponents([.day], from: start, to: end)
+
+        return components.day ?? 0
+    }
+    
+    /// 損益の金額
+    var profitAndLoss: Int {
+        // 購入金額を計算
+        let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
+        
+        // 売却金額の合計を計算
+        let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
+        
+        // 損益を計算
+        let totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        
+        // 金額を文字列にフォーマットして返す
+        return Int(totalProfitAndLoss)
+    }
+    
+    /// 損益の%
+    var profitAndLossParcent: Double? {
+        // 保有中の場合はnilを返す
+        if !isTradeFinish {
+            return nil
+        }
+        
+        // 購入金額を計算
+        let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
+        
+        // 売却金額の合計を計算
+        let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
+        
+        // 損益を金額で計算
+        let totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        
+        // 損益をパーセントで計算
+        guard totalPurchaseAmount != 0 else {
+            return nil // 購入金額が0の場合はnilを返す
+        }
+        
+        let profitAndLossPercentage = (totalProfitAndLoss / totalPurchaseAmount) * 100
+        
+        // 計算結果のDoubleをそのまま返す
+        return profitAndLossPercentage
     }
 }

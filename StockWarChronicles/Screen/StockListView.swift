@@ -14,29 +14,32 @@ struct StockListView: View {
     @Query private var records: [StockRecord]
     
     @State private var showAddStockView: Bool = false
+    @State private var showStockRecordView: Bool = false
     
     var body: some View {
         NavigationView {
             VStack {
                 List {
                     ForEach(records) { record in
-                        NavigationLink {
-                            SellStockView(record: record)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(record.name)
-                                        .font(.headline)
-                                    Spacer()
-                                    Text("\(Int(record.purchase.amount))円")
-                                }
-                                
-                                HStack {
-                                    Text(record.code)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                    Text("\(record.remainingShares)株")
-                                        .foregroundColor(.secondary)
+                        if !record.isTradeFinish {
+                            NavigationLink {
+                                SellStockView(record: record)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack {
+                                        Text(record.name)
+                                            .font(.headline)
+                                        Spacer()
+                                        Text("\(Int(record.purchase.amount))円")
+                                    }
+                                    
+                                    HStack {
+                                        Text(record.code)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                        Text("\(record.remainingShares)株")
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
                             }
                         }
@@ -52,6 +55,11 @@ struct StockListView: View {
             }
             .navigationTitle("保有リスト")
             .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("record", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90") {
+                        showStockRecordView.toggle()
+                    }
+                }
                 
                 ToolbarSpacer(.flexible, placement: .bottomBar)
                 ToolbarItem(placement: .bottomBar) {
@@ -64,6 +72,9 @@ struct StockListView: View {
             .sheet(isPresented: $showAddStockView) {
                 AddStockView(showAddStockView: $showAddStockView)
                     .navigationTransition(.zoom(sourceID: "add", in: animation))
+            }
+            .fullScreenCover(isPresented: $showStockRecordView) {
+                StockRecordListView(showStockRecordView: $showStockRecordView)
             }
         }
     }
