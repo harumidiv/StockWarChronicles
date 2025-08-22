@@ -51,6 +51,8 @@ struct StockRecordDetailView: View {
     
     @ViewBuilder
     private func chartView() -> some View {
+        let min = chartData.compactMap{ $0.adjclose }.min()
+        let max = chartData.compactMap{ $0.adjclose }.max()
         Chart {
             ForEach(chartData) { data in
                 if let date = data.date, let price = data.adjclose {
@@ -81,9 +83,9 @@ struct StockRecordDetailView: View {
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading)  // たて軸を左側に表示
+            AxisMarks(position: .leading)
         }
-        .chartYScale(domain: [chartData.compactMap{ $0.adjclose }.min()! * 0.95, chartData.compactMap{ $0.adjclose }.max()! * 1.05])
+        .chartYScale(domain: [min ?? 0 * 0.95, max ?? 0 * 1.05])
     }
     
     private func stableView() -> some View {
@@ -94,14 +96,14 @@ struct StockRecordDetailView: View {
                     HStack {
                         Text("損益")
                         Spacer()
-                        Text(record.profitAndLoss.description + "円")
+                        Text(record.profitAndLoss.withComma() + "円")
                             .fontWeight(.semibold)
                     }
                     
                     HStack {
                         Text("保有日数")
                         Spacer()
-                        Text("8日")
+                        Text(record.holdingPeriod.description + "日")
                     }
                     
                     HStack {
@@ -110,26 +112,35 @@ struct StockRecordDetailView: View {
                         Text(record.purchase.shares.description + "株")
                             .foregroundColor(.green)
                     }
+                    chartView()
                 }
-                .padding(.vertical, 4)
             }
             
             Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("8/16 ~ 8/21")
-                        Spacer()
-                        Text("300株 5%")
-                    }
-                    HStack {
-                        Text("8/16 ~ 8/25")
-                        Spacer()
-                        Text("700株 15%")
-                    }
-                    HStack {
-                        Text("8/16 ~ 10/5")
-                        Spacer()
-                        Text("100株 50%")
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(record.sales) { sale in
+                        HStack {
+                            HStack(spacing: 0) {
+                                Text(record.purchase.date.formatted(as: .md))
+                                    .font(.subheadline)
+                                Text("~")
+                                Text(sale.date.formatted(as: .md))
+                                    .font(.subheadline)
+                            }
+                            
+                            Text(sale.shares.description + "株")
+                            
+                            Spacer()
+                            
+                            let purchaseAmount = record.purchase.amount * Double(sale.shares)
+                            let salesAmount = sale.amount * Double(sale.shares)
+                            let totalProfitAndLoss = salesAmount - purchaseAmount
+                            let profitAndLossPercentage = (totalProfitAndLoss / purchaseAmount) * 100
+                            
+                            Text(String(format: "%.1f", profitAndLossPercentage) + "％")
+                                .font(.subheadline)
+                                .foregroundColor(profitAndLossPercentage >= 0 ? .red : .blue)
+                        }
                     }
                 }
             }
@@ -145,8 +156,6 @@ struct StockRecordDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 4)
             }
-            
-            chartView()
         }
     }
 }

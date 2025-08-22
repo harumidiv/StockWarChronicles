@@ -36,6 +36,18 @@ final class StockRecord {
         return purchase.shares - totalSold
     }
     
+    var holdingPeriod: Int {
+        guard let saleDate = sales.last?.date else {
+            return -1
+        }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: purchase.date)
+        let end = calendar.startOfDay(for: saleDate)
+        
+        let components = calendar.dateComponents([.day], from: start, to: end)
+
+        return components.day ?? 0
+    }
     
     /// 損益の金額
     var profitAndLoss: Int {
