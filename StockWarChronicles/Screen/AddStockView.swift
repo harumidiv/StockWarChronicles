@@ -88,6 +88,7 @@ struct AddStockView: View {
                         .cornerRadius(10)
                 }
                 .padding()
+                .disabled(code.isEmpty || purchaseAmount == 0 || shares == 0)
                 
             }
             .navigationTitle("追加")
