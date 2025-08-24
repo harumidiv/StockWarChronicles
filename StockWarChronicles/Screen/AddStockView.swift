@@ -63,33 +63,33 @@ struct AddStockView: View {
                                     .stroke(Color.gray.opacity(0.5))
                             )
                     }
-                }
-                
-                Button(action: {
-                    // TODO: 必須項目が欠けている場合に警告を出す
-                    let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                    let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
-                    context.insert(stockRecord)
                     
-                    do {
-                        try context.save()
-                        showAddStockView.toggle()
+                    let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0
+                    
+                    Button(action: {
+                        let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
+                        let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
+                        context.insert(stockRecord)
                         
-                    } catch {
-                        // TODO: 失敗したらアラート
-                        print("保存に失敗しました: \(error)")
+                        do {
+                            try context.save()
+                            showAddStockView.toggle()
+                            
+                        } catch {
+                            // TODO: 失敗したらアラート
+                            print("保存に失敗しました: \(error)")
+                        }
+                    }) {
+                        Text("追加")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .foregroundColor(.white)
+                            .background(isDisable ? Color.gray : Color.blue)
+                            .cornerRadius(10)
                     }
-                }) {
-                    Text("追加")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                    .padding()
+                    .disabled(isDisable)
                 }
-                .padding()
-                .disabled(code.isEmpty || purchaseAmount == 0 || shares == 0)
-                
             }
             .navigationTitle("追加")
             .toolbar {
@@ -201,7 +201,7 @@ struct TagSelectionView: View {
             context.insert(newCategoryTag)
             try? context.save()
             selectedTags.append(newCategoryTag)
-                
+            
         }
         newTagInput = ""
     }
