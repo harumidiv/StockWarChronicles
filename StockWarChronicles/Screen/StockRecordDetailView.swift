@@ -19,6 +19,9 @@ struct StockRecordDetailView: View {
     @Bindable var record: StockRecord
     @State private var chartData: [MyStockChartData] = []
     
+    
+    @State private var name: String = ""
+    @State private var code: String = ""
     @State private var purchaseReason: String = ""
     @State private var saleReasons: [String] = []
     var body: some View {
@@ -30,6 +33,7 @@ struct StockRecordDetailView: View {
             case .stable:
                 stableView()
                     .navigationTitle(record.code + " " + record.name)
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("record", systemImage: "square.and.pencil") {
@@ -40,13 +44,15 @@ struct StockRecordDetailView: View {
             case .edit:
                 editView()
                     .navigationTitle("編集中")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("record", systemImage: "square.and.arrow.down.on.square") {
                                 screenState = .stable
                                 
+                                record.name = name
+                                record.code = code
                                 record.purchase.reason = purchaseReason
-
                                 for (index, saleReason) in saleReasons.enumerated() {
                                     if index < record.sales.count {
                                         record.sales[index].reason = saleReason
@@ -58,6 +64,8 @@ struct StockRecordDetailView: View {
             }
         }
         .onAppear {
+            name = record.name
+            code = record.code
             purchaseReason = record.purchase.reason
             saleReasons = record.sales.compactMap{ $0.reason }
         }
@@ -127,41 +135,13 @@ struct StockRecordDetailView: View {
     
     private func editView() -> some View {
         Form {
-            Section(header: Text("サマリー").font(.headline)) {
-                VStack(alignment: .leading, spacing: 12) {
-                    
-                    HStack {
-                        Text("損益")
-                            .font(.subheadline)
-                        Spacer()
-                        Text(record.profitAndLoss.withComma() + "円")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(record.profitAndLoss >= 0 ? .red : .blue)
-                    }
-                    
-                    HStack {
-                        Text("保有日数")
-                            .font(.subheadline)
-                        Spacer()
-                        Text(record.holdingPeriod.description + "日")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                    }
-                    
-                    HStack {
-                        Text("株数")
-                            .font(.subheadline)
-                        Spacer()
-                        Text(record.purchase.shares.description + "株")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                    }
-                    
-                    chartView()
-                }
-                .padding(.vertical, 4)
+            
+            Section {
+                TextField("コード", text: $code)
+                TextField("名前", text: $name)
             }
+            
+            summarySection()
             
             Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
                 .font(.headline)) {
@@ -226,41 +206,7 @@ struct StockRecordDetailView: View {
     
     private func stableView() -> some View {
         Form {
-            Section(header: Text("サマリー").font(.headline)) {
-                VStack(alignment: .leading, spacing: 12) {
-                    
-                    HStack {
-                        Text("損益")
-                            .font(.subheadline)
-                        Spacer()
-                        Text(record.profitAndLoss.withComma() + "円")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(record.profitAndLoss >= 0 ? .red : .blue)
-                    }
-                    
-                    HStack {
-                        Text("保有日数")
-                            .font(.subheadline)
-                        Spacer()
-                        Text(record.holdingPeriod.description + "日")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                    }
-                    
-                    HStack {
-                        Text("株数")
-                            .font(.subheadline)
-                        Spacer()
-                        Text(record.purchase.shares.description + "株")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                    }
-                    
-                    chartView()
-                }
-                .padding(.vertical, 4)
-            }
+            summarySection()
             
             Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
                 .font(.headline)) {
@@ -296,16 +242,6 @@ struct StockRecordDetailView: View {
                     }
                 }
             }
-//            Section(header: Text("購入根拠(編集可)")) {
-//                TextEditor(text: $purchaseReason)
-//                    .frame(height: 100)
-//                    .padding(4)
-//                    .overlay(
-//                        RoundedRectangle(cornerRadius: 8)
-//                            .stroke(Color.gray.opacity(0.5))
-//                    )
-//            }
-            
             Section(header: Text("購入根拠").font(.headline)) {
                 Text(record.purchase.reason)
                     .font(.body)
@@ -324,7 +260,47 @@ struct StockRecordDetailView: View {
             }
             .listRowSeparator(.hidden)
         }
-        .listStyle(.insetGrouped) // Formの見た目を少し整える
+        .listStyle(.insetGrouped)
+    }
+    
+    private func summarySection() -> some View {
+        Section(header: Text("サマリー").font(.headline)) {
+            VStack(alignment: .leading, spacing: 12) {
+                
+                HStack {
+                    Text("損益")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(record.profitAndLoss.withComma() + "円")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(record.profitAndLoss >= 0 ? .red : .blue)
+                }
+                
+                HStack {
+                    Text("保有日数")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(record.holdingPeriod.description + "日")
+                        .font(.body)
+                        .fontWeight(.semibold)
+                }
+                
+                HStack {
+                    Text("株数")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(record.purchase.shares.description + "株")
+                        .font(.body)
+                        .fontWeight(.semibold)
+                }
+                
+                if !chartData.isEmpty {
+                    chartView()
+                }
+            }
+            .padding(.vertical, 4)
+        }
     }
 
 }
