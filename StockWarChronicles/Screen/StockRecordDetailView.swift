@@ -9,20 +9,39 @@ import SwiftUI
 import Charts
 
 struct StockRecordDetailView: View {
-    let record: StockRecord
+    @Bindable var record: StockRecord
     @State private var isLoading: Bool = true
+    @State private var isEditing: Bool = false
     @State private var chartData: [MyStockChartData] = []
+    
+    @State private var purchaseReason: String = ""
     var body: some View {
         Group {
             if isLoading {
                 ProgressView()
                     .scaleEffect(2)
             } else {
-                stableView()
+                if isEditing {
+                    stableEditView()
+                } else {
+                    stableView()
+                }
             }
-                
         }
         .navigationTitle(record.code + " " + record.name)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("record", systemImage: "square.and.pencil") {
+                    isEditing.toggle()
+                }
+            }
+        }
+        .onAppear {
+            purchaseReason = record.purchase.reason
+        }
+        .onDisappear {
+            record.purchase.reason = purchaseReason
+        }
         .task {
             isLoading = true
             
@@ -86,6 +105,10 @@ struct StockRecordDetailView: View {
             AxisMarks(position: .leading)
         }
         .chartYScale(domain: [min ?? 0 * 0.95, max ?? 0 * 1.05])
+    }
+    
+    private func stableEditView() -> some View {
+        Text("TODO")
     }
     
     private func stableView() -> some View {
@@ -160,6 +183,15 @@ struct StockRecordDetailView: View {
                     }
                 }
             }
+//            Section(header: Text("購入根拠(編集可)")) {
+//                TextEditor(text: $purchaseReason)
+//                    .frame(height: 100)
+//                    .padding(4)
+//                    .overlay(
+//                        RoundedRectangle(cornerRadius: 8)
+//                            .stroke(Color.gray.opacity(0.5))
+//                    )
+//            }
             
             Section(header: Text("購入根拠").font(.headline)) {
                 Text(record.purchase.reason)
@@ -191,5 +223,7 @@ struct StockRecordDetailView: View {
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
         ]
     let record = StockRecord(code: "140A", name: "ハッチ・ワーク", purchase: purchase, sales: sales)
-    StockRecordDetailView(record: record)
+    NavigationStack {
+        StockRecordDetailView(record: record)
+    }
 }
