@@ -196,23 +196,11 @@ struct TagSelectionView: View {
                 selectedTags.append(tag)
             }
         } else {
-            // 新しいタグを作成
             let newCategoryTag = CategoryTag(name: tagName, color: selectedNewTagColor)
-            
-            // do-try-catchを使って保存のエラーを捕捉
-            do {
-                context.insert(newCategoryTag)
-                try context.save()
+            context.insert(newCategoryTag)
+            try? context.save()
+            selectedTags.append(newCategoryTag)
                 
-                // 成功した場合のみリストに追加
-                selectedTags.append(newCategoryTag)
-                
-                print("新しいタグが正常に保存されました。")
-                
-            } catch {
-                print("タグの保存中にエラーが発生しました: \(error.localizedDescription)")
-                // エラーの内容をデバッグ出力で確認
-            }
         }
         newTagInput = ""
     }
@@ -227,6 +215,7 @@ struct TagSelectionView: View {
             Button(action: onTap) {
                 Text(name)
                     .font(.footnote)
+                    .fontWeight(.bold)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(isSelected ? color : Color.gray.opacity(0.2))

@@ -77,7 +77,7 @@ struct SellStockView: View {
     private func saveSell() {
         guard let amount = Double(amount) else { return }
         
-        let sellInfo = StockTradeInfo(amount: amount, shares: shares, date: sellDate, reason: "売却")
+        let sellInfo = StockTradeInfo(amount: amount, shares: shares, date: sellDate, reason: reason)
         record.sales.append(sellInfo)
         
         try? context.save()
