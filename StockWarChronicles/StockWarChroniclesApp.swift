@@ -13,7 +13,7 @@ struct StockWarChroniclesApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .modelContainer(for: StockRecord.self)
+                .modelContainer(for: [StockRecord.self, CategoryTag.self])
         }
     }
 }
