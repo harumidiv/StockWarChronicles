@@ -9,47 +9,65 @@ import SwiftUI
 import Charts
 
 struct StockRecordDetailView: View {
+    enum ScreenState {
+        case loading
+        case stable
+        case edit
+    }
+    @State private var screenState: ScreenState = .loading
+    
     @Bindable var record: StockRecord
-    @State private var isLoading: Bool = true
-    @State private var isEditing: Bool = false
     @State private var chartData: [MyStockChartData] = []
     
     @State private var purchaseReason: String = ""
+    @State private var saleReasons: [String] = []
     var body: some View {
         Group {
-            if isLoading {
+            switch screenState {
+            case .loading:
                 ProgressView()
                     .scaleEffect(2)
-            } else {
-                if isEditing {
-                    stableEditView()
-                } else {
-                    stableView()
-                }
-            }
-        }
-        .navigationTitle(record.code + " " + record.name)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("record", systemImage: "square.and.pencil") {
-                    isEditing.toggle()
-                }
+            case .stable:
+                stableView()
+                    .navigationTitle(record.code + " " + record.name)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("record", systemImage: "square.and.pencil") {
+                                screenState = .edit
+                            }
+                        }
+                    }
+            case .edit:
+                editView()
+                    .navigationTitle("編集中")
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("record", systemImage: "square.and.arrow.down.on.square") {
+                                screenState = .stable
+                                
+                                record.purchase.reason = purchaseReason
+
+                                for (index, saleReason) in saleReasons.enumerated() {
+                                    if index < record.sales.count {
+                                        record.sales[index].reason = saleReason
+                                    }
+                                }
+                            }
+                        }
+                    }
             }
         }
         .onAppear {
             purchaseReason = record.purchase.reason
-        }
-        .onDisappear {
-            record.purchase.reason = purchaseReason
+            saleReasons = record.sales.compactMap{ $0.reason }
         }
         .task {
-            isLoading = true
             
             let calendar = Calendar.current
             guard let endDate = record.sales.last?.date,
                   let oneWeekAfterSale = calendar.date(byAdding: .day, value: 7, to: endDate),
                   let oneWeekBeforePurchase = calendar.date(byAdding: .day, value: -7, to: record.purchase.date) else {
-                isLoading = false
+                screenState = .stable
                 return
             }
 
@@ -64,7 +82,7 @@ struct StockRecordDetailView: View {
                 print(error)
             }
             
-            isLoading = false
+            screenState = .stable
         }
     }
     
@@ -107,8 +125,103 @@ struct StockRecordDetailView: View {
         .chartYScale(domain: [min ?? 0 * 0.95, max ?? 0 * 1.05])
     }
     
-    private func stableEditView() -> some View {
-        Text("TODO")
+    private func editView() -> some View {
+        Form {
+            Section(header: Text("サマリー").font(.headline)) {
+                VStack(alignment: .leading, spacing: 12) {
+                    
+                    HStack {
+                        Text("損益")
+                            .font(.subheadline)
+                        Spacer()
+                        Text(record.profitAndLoss.withComma() + "円")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(record.profitAndLoss >= 0 ? .red : .blue)
+                    }
+                    
+                    HStack {
+                        Text("保有日数")
+                            .font(.subheadline)
+                        Spacer()
+                        Text(record.holdingPeriod.description + "日")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    HStack {
+                        Text("株数")
+                            .font(.subheadline)
+                        Spacer()
+                        Text(record.purchase.shares.description + "株")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    chartView()
+                }
+                .padding(.vertical, 4)
+            }
+            
+            Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
+                .font(.headline)) {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(record.sales) { sale in
+                        HStack {
+                            HStack(spacing: 0) {
+                                Text(record.purchase.date.formatted(as: .md))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text("~")
+                                Text(sale.date.formatted(as: .md))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Text(sale.shares.description + "株")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                            
+                            Spacer()
+                            
+                            let purchaseAmount = record.purchase.amount * Double(sale.shares)
+                            let salesAmount = sale.amount * Double(sale.shares)
+                            let totalProfitAndLoss = salesAmount - purchaseAmount
+                            let profitAndLossPercentage = (totalProfitAndLoss / purchaseAmount) * 100
+                            
+                            Text(String(format: "%.1f", profitAndLossPercentage) + "％")
+                                .font(.subheadline)
+                                .foregroundColor(profitAndLossPercentage >= 0 ? .red : .blue)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+            }
+            Section(header: Text("購入根拠(編集中)")) {
+                TextEditor(text: $purchaseReason)
+                    .frame(height: 100)
+                    .padding(4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.5))
+                    )
+            }
+
+            Section(header: Text("売却根拠(編集中)").font(.headline)) {
+                VStack(spacing: 0) {
+                    ForEach(saleReasons.indices, id: \.self) { index in
+                        TextEditor(text: $saleReasons[index])
+                            .frame(height: 100)
+                            .padding(4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.5))
+                            )
+                    }
+                }
+            }
+            .listRowSeparator(.hidden)
+        }
     }
     
     private func stableView() -> some View {
