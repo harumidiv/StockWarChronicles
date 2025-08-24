@@ -68,7 +68,7 @@ struct AddStockView: View {
                 Button(action: {
                     // TODO: 必須項目が欠けている場合に警告を出す
                     let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                    let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: [/*FIXME */])
+                    let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
                     context.insert(stockRecord)
                     
                     do {

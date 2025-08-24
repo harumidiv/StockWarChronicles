@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @Model
-final class Tag {
+final class Tag: Hashable {
     var name: String
     private var colorData: Data
 
