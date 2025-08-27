@@ -55,9 +55,9 @@ struct StockRecordDetailView: View {
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("record", systemImage: "square.and.arrow.down.on.square") {
-                                screenState = .stable
                                 
                                 record.name = name
+                                record.market = market
                                 record.code = code
                                 record.purchase.reason = purchaseReason
                                 for (index, saleReason) in saleReasons.enumerated() {
@@ -65,6 +65,11 @@ struct StockRecordDetailView: View {
                                         record.sales[index].reason = saleReason
                                     }
                                 }
+                                
+                                
+                                // 市場が変更されたケースを考慮してもう一度読み込み
+                                chartData = []
+                                screenState = .loading
                             }
                         }
                         
@@ -88,7 +93,7 @@ struct StockRecordDetailView: View {
             purchaseReason = record.purchase.reason
             saleReasons = record.sales.compactMap{ $0.reason }
         }
-        .task {
+        .task(id: screenState == .loading) {
             await fetchChartData()
         }
         .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
