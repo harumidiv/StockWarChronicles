@@ -5,8 +5,9 @@
 //  Created by 佐川 晴海 on 2025/08/21.
 //
 
-import SwiftUI
 import Charts
+import SwiftUI
+import SwiftData
 
 struct StockRecordDetailView: View {
     enum ScreenState {
@@ -16,14 +17,18 @@ struct StockRecordDetailView: View {
     }
     @State private var screenState: ScreenState = .loading
     
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+
     @Bindable var record: StockRecord
     @State private var chartData: [MyStockChartData] = []
-    
     
     @State private var name: String = ""
     @State private var code: String = ""
     @State private var purchaseReason: String = ""
     @State private var saleReasons: [String] = []
+    
+    @State private var showDeleteAlert: Bool = false
     var body: some View {
         Group {
             switch screenState {
@@ -60,6 +65,17 @@ struct StockRecordDetailView: View {
                                 }
                             }
                         }
+                        
+                        ToolbarSpacer(.flexible, placement: .bottomBar)
+                        ToolbarItem(placement: .bottomBar) {
+                            Button(action: {
+                                showDeleteAlert.toggle()
+                            }) {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
+
+                        }
                     }
             }
         }
@@ -70,27 +86,15 @@ struct StockRecordDetailView: View {
             saleReasons = record.sales.compactMap{ $0.reason }
         }
         .task {
-            
-            let calendar = Calendar.current
-            guard let endDate = record.sales.last?.date,
-                  let oneWeekAfterSale = calendar.date(byAdding: .day, value: 7, to: endDate),
-                  let oneWeekBeforePurchase = calendar.date(byAdding: .day, value: -7, to: record.purchase.date) else {
-                screenState = .stable
-                return
+            await fetchChartData()
+        }
+        .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
+            Button("削除", role: .destructive) {
+                deleteHistory()
             }
-
-            
-            let result = await YahooYFinanceAPIService().fetchStockChartData(code: record.code, symbol: record.market.symbol, startDate: oneWeekBeforePurchase, endDate: oneWeekAfterSale)
-            
-            switch result {
-            case .success(let chartData):
-                self.chartData = chartData
-                
-            case .failure(let error):
-                print(error)
-            }
-            
-            screenState = .stable
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("この株取引データは完全に削除されます。")
         }
     }
     
@@ -313,6 +317,43 @@ struct StockRecordDetailView: View {
         }
     }
 
+}
+
+// MARK: Process
+extension StockRecordDetailView {
+    private func fetchChartData() async {
+        let calendar = Calendar.current
+        guard let endDate = record.sales.last?.date,
+              let oneWeekAfterSale = calendar.date(byAdding: .day, value: 7, to: endDate),
+              let oneWeekBeforePurchase = calendar.date(byAdding: .day, value: -7, to: record.purchase.date) else {
+            screenState = .stable
+            return
+        }
+
+        
+        let result = await YahooYFinanceAPIService().fetchStockChartData(code: record.code, symbol: record.market.symbol, startDate: oneWeekBeforePurchase, endDate: oneWeekAfterSale)
+        
+        switch result {
+        case .success(let chartData):
+            self.chartData = chartData
+            
+        case .failure(let error):
+            print(error)
+        }
+        
+        screenState = .stable
+    }
+    
+    private func deleteHistory() {
+        context.delete(record)  // モデルを削除
+        do {
+            try context.save() // 永続化
+        } catch {
+            print("削除エラー: \(error)")
+        }
+        
+        dismiss()
+    }
 }
 
 #Preview {
