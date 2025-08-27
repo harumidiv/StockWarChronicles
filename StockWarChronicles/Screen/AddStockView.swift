@@ -13,6 +13,7 @@ struct AddStockView: View {
     @Binding var showAddStockView: Bool
     
     @State private var code = ""
+    @State private var selectedMarket: Market = .tokyo
     @State private var name = ""
     @State private var purchaseDate = Date()
     @State private var purchaseAmountText = ""
@@ -35,8 +36,17 @@ struct AddStockView: View {
             VStack {
                 Form {
                     Section {
-                        TextField("コード", text: $code)
-                        TextField("名前", text: $name)
+                        HStack {
+                            TextField("銘柄コード", text: $code)
+                            Picker("", selection: $selectedMarket) {
+                                ForEach(Market.allCases) { market in
+                                    Text(market.rawValue)
+                                        .tag(market)
+                                }
+                            }
+                            .pickerStyle(.menu) // .segmented や .wheel もOK
+                        }
+                        TextField("銘柄名", text: $name)
                         
                         DatePicker("購入日", selection: $purchaseDate, displayedComponents: .date)
                         
@@ -44,10 +54,11 @@ struct AddStockView: View {
                             TextField("購入額", text: $purchaseAmountText)
                                 .keyboardType(.numberPad)
                             Text("円")
+                            
+                            TextField("株数", text: $sharesText)
+                                .keyboardType(.numberPad)
+                            Text("株")
                         }
-                        
-                        TextField("株数", text: $sharesText)
-                            .keyboardType(.numberPad)
                     }
                     
                     Section(header: Text("タグ")) {
