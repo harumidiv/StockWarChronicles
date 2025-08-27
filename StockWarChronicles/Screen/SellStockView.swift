@@ -86,5 +86,5 @@ struct SellStockView: View {
 }
 
 #Preview {
-    SellStockView(record: StockRecord(code: "350A", name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), reason: "ストック売り上げ")))
+    SellStockView(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), reason: "ストック売り上げ")))
 }

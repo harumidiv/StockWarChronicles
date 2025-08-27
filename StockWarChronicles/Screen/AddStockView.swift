@@ -13,6 +13,7 @@ struct AddStockView: View {
     @Binding var showAddStockView: Bool
     
     @State private var code = ""
+    @State private var market: Market = .tokyo
     @State private var name = ""
     @State private var purchaseDate = Date()
     @State private var purchaseAmountText = ""
@@ -35,8 +36,17 @@ struct AddStockView: View {
             VStack {
                 Form {
                     Section {
-                        TextField("コード", text: $code)
-                        TextField("名前", text: $name)
+                        HStack {
+                            TextField("銘柄コード", text: $code)
+                            Picker("", selection: $market) {
+                                ForEach(Market.allCases) { market in
+                                    Text(market.rawValue)
+                                        .tag(market)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        }
+                        TextField("銘柄名", text: $name)
                         
                         DatePicker("購入日", selection: $purchaseDate, displayedComponents: .date)
                         
@@ -44,10 +54,11 @@ struct AddStockView: View {
                             TextField("購入額", text: $purchaseAmountText)
                                 .keyboardType(.numberPad)
                             Text("円")
+                            
+                            TextField("株数", text: $sharesText)
+                                .keyboardType(.numberPad)
+                            Text("株")
                         }
-                        
-                        TextField("株数", text: $sharesText)
-                            .keyboardType(.numberPad)
                     }
                     
                     Section(header: Text("タグ")) {
@@ -63,32 +74,33 @@ struct AddStockView: View {
                                     .stroke(Color.gray.opacity(0.5))
                             )
                     }
-                }
-                
-                Button(action: {
-                    // TODO: 必須項目が欠けている場合に警告を出す
-                    let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                    let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
-                    context.insert(stockRecord)
                     
-                    do {
-                        try context.save()
-                        showAddStockView.toggle()
+                    let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0
+                    
+                    Button(action: {
+                        let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
+                        let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
+                        context.insert(stockRecord)
                         
-                    } catch {
-                        // TODO: 失敗したらアラート
-                        print("保存に失敗しました: \(error)")
+                        do {
+                            try context.save()
+                            showAddStockView.toggle()
+                            
+                        } catch {
+                            // TODO: 失敗したらアラート
+                            print("保存に失敗しました: \(error)")
+                        }
+                    }) {
+                        Text("追加")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .foregroundColor(.white)
+                            .background(isDisable ? Color.gray : Color.blue)
+                            .cornerRadius(10)
                     }
-                }) {
-                    Text("追加")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                    .padding()
+                    .disabled(isDisable)
                 }
-                .padding()
-                
             }
             .navigationTitle("追加")
             .toolbar {
@@ -200,7 +212,7 @@ struct TagSelectionView: View {
             context.insert(newCategoryTag)
             try? context.save()
             selectedTags.append(newCategoryTag)
-                
+            
         }
         newTagInput = ""
     }

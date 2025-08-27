@@ -11,13 +11,21 @@ import Foundation
 @Model
 final class StockRecord {
     var code: String
+    private var marketRawValue: String
     var name: String
     var purchase: StockTradeInfo
     var sales: [StockTradeInfo]
     var tags: [Tag]
 
-    init(code: String, name: String, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
+    // 計算プロパティで Market に変換
+    var market: Market {
+        get { Market(rawValue: marketRawValue) ?? .none }
+        set { marketRawValue = newValue.rawValue }
+    }
+
+    init(code: String, market: Market, name: String, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
         self.code = code
+        self.marketRawValue = market.rawValue
         self.name = name
         self.purchase = purchase
         self.sales = sales

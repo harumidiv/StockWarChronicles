@@ -5,8 +5,9 @@
 //  Created by 佐川 晴海 on 2025/08/21.
 //
 
-import SwiftUI
 import Charts
+import SwiftUI
+import SwiftData
 
 struct StockRecordDetailView: View {
     enum ScreenState {
@@ -16,14 +17,20 @@ struct StockRecordDetailView: View {
     }
     @State private var screenState: ScreenState = .loading
     
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+
     @Bindable var record: StockRecord
     @State private var chartData: [MyStockChartData] = []
     
-    
     @State private var name: String = ""
+    @State private var market: Market = .tokyo
     @State private var code: String = ""
     @State private var purchaseReason: String = ""
     @State private var saleReasons: [String] = []
+    
+    @State private var showDeleteAlert: Bool = false
+    
     var body: some View {
         Group {
             switch screenState {
@@ -48,9 +55,9 @@ struct StockRecordDetailView: View {
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("record", systemImage: "square.and.arrow.down.on.square") {
-                                screenState = .stable
                                 
                                 record.name = name
+                                record.market = market
                                 record.code = code
                                 record.purchase.reason = purchaseReason
                                 for (index, saleReason) in saleReasons.enumerated() {
@@ -58,39 +65,44 @@ struct StockRecordDetailView: View {
                                         record.sales[index].reason = saleReason
                                     }
                                 }
+                                
+                                
+                                // 市場が変更されたケースを考慮してもう一度読み込み
+                                chartData = []
+                                screenState = .loading
                             }
+                        }
+                        
+                        ToolbarSpacer(.flexible, placement: .bottomBar)
+                        ToolbarItem(placement: .bottomBar) {
+                            Button(action: {
+                                showDeleteAlert.toggle()
+                            }) {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
+
                         }
                     }
             }
         }
         .onAppear {
             name = record.name
+            market = record.market
             code = record.code
             purchaseReason = record.purchase.reason
             saleReasons = record.sales.compactMap{ $0.reason }
         }
-        .task {
-            
-            let calendar = Calendar.current
-            guard let endDate = record.sales.last?.date,
-                  let oneWeekAfterSale = calendar.date(byAdding: .day, value: 7, to: endDate),
-                  let oneWeekBeforePurchase = calendar.date(byAdding: .day, value: -7, to: record.purchase.date) else {
-                screenState = .stable
-                return
+        .task(id: screenState == .loading) {
+            await fetchChartData()
+        }
+        .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
+            Button("削除", role: .destructive) {
+                deleteHistory()
             }
-
-            
-            let result = await YahooYFinanceAPIService().fetchStockChartData(code: record.code, startDate: oneWeekBeforePurchase, endDate: oneWeekAfterSale)
-            
-            switch result {
-            case .success(let chartData):
-                self.chartData = chartData
-                
-            case .failure(let error):
-                print(error)
-            }
-            
-            screenState = .stable
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("この株取引データは完全に削除されます。")
         }
     }
     
@@ -137,7 +149,16 @@ struct StockRecordDetailView: View {
         Form {
             
             Section {
-                TextField("コード", text: $code)
+                HStack {
+                    TextField("コード", text: $code)
+                    Picker("", selection: $market) {
+                        ForEach(Market.allCases) { market in
+                            Text(market.rawValue)
+                                .tag(market)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
                 TextField("名前", text: $name)
             }
             
@@ -315,13 +336,50 @@ struct StockRecordDetailView: View {
 
 }
 
+// MARK: Process
+extension StockRecordDetailView {
+    private func fetchChartData() async {
+        let calendar = Calendar.current
+        guard let endDate = record.sales.last?.date,
+              let oneWeekAfterSale = calendar.date(byAdding: .day, value: 7, to: endDate),
+              let oneWeekBeforePurchase = calendar.date(byAdding: .day, value: -7, to: record.purchase.date) else {
+            screenState = .stable
+            return
+        }
+
+        
+        let result = await YahooYFinanceAPIService().fetchStockChartData(code: record.code, symbol: record.market.symbol, startDate: oneWeekBeforePurchase, endDate: oneWeekAfterSale)
+        
+        switch result {
+        case .success(let chartData):
+            self.chartData = chartData
+            
+        case .failure(let error):
+            print(error)
+        }
+        
+        screenState = .stable
+    }
+    
+    private func deleteHistory() {
+        context.delete(record)  // モデルを削除
+        do {
+            try context.save() // 永続化
+        } catch {
+            print("削除エラー: \(error)")
+        }
+        
+        dismiss()
+    }
+}
+
 #Preview {
     let purchase = StockTradeInfo(amount: 5000, shares: 100, date: Date(), reason: "成長期待")
     let sales = [
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成1"),
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
         ]
-    let record = StockRecord(code: "140A", name: "ハッチ・ワーク", purchase: purchase, sales: sales)
+    let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", purchase: purchase, sales: sales)
     NavigationStack {
         StockRecordDetailView(record: record)
     }

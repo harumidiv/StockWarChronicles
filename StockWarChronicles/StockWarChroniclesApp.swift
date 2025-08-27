@@ -14,6 +14,7 @@ struct StockWarChroniclesApp: App {
         WindowGroup {
             ContentView()
                 .modelContainer(for: [StockRecord.self, CategoryTag.self])
+                .environment(\.locale, Locale(identifier: "ja_JP"))
         }
     }
 }
