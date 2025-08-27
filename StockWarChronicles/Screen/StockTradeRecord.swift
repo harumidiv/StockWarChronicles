@@ -17,26 +17,27 @@ struct StockRecordListView: View {
     // TODO: 年ごとに絞りたい
     @Query private var records: [StockRecord]
     
+    @State private var selectedRecord: StockRecord? = nil
+    @State private var showDetail = false
+    
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(records) { record in
                     if record.isTradeFinish {
-                        // ここでNavigationLinkを使用
-                        NavigationLink(destination: StockRecordDetailView(record: record)) {
+                        Button {
+                            selectedRecord = record
+                            showDetail = true
+                        } label: {
                             stockRecordInfoCell(record: record)
                         }
-                        .padding(.vertical, 8)
                     }
                 }
             }
-            .background(Color(.systemBackground))
             .navigationTitle("取引記録")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("close", systemImage: "xmark") {
-                        showStockRecordView.toggle()
-                    }
+            .navigationDestination(isPresented: $showDetail) {
+                if let record = selectedRecord {
+                    StockRecordDetailView(record: record)
                 }
             }
         }
@@ -77,7 +78,12 @@ struct StockRecordListView: View {
                     .fontWeight(.bold)
                     .foregroundColor(percentage >= 0 ? .red : .blue)
             }
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+                    
         }
+        .contentShape(Rectangle())
     }
 }
 
