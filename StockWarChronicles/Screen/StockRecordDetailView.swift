@@ -24,11 +24,13 @@ struct StockRecordDetailView: View {
     @State private var chartData: [MyStockChartData] = []
     
     @State private var name: String = ""
+    @State private var market: Market = .tokyo
     @State private var code: String = ""
     @State private var purchaseReason: String = ""
     @State private var saleReasons: [String] = []
     
     @State private var showDeleteAlert: Bool = false
+    
     var body: some View {
         Group {
             switch screenState {
@@ -81,6 +83,7 @@ struct StockRecordDetailView: View {
         }
         .onAppear {
             name = record.name
+            market = record.market
             code = record.code
             purchaseReason = record.purchase.reason
             saleReasons = record.sales.compactMap{ $0.reason }
@@ -141,7 +144,16 @@ struct StockRecordDetailView: View {
         Form {
             
             Section {
-                TextField("コード", text: $code)
+                HStack {
+                    TextField("コード", text: $code)
+                    Picker("", selection: $market) {
+                        ForEach(Market.allCases) { market in
+                            Text(market.rawValue)
+                                .tag(market)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
                 TextField("名前", text: $name)
             }
             

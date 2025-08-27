@@ -44,7 +44,7 @@ struct AddStockView: View {
                                         .tag(market)
                                 }
                             }
-                            .pickerStyle(.menu) // .segmented や .wheel もOK
+                            .pickerStyle(.menu)
                         }
                         TextField("銘柄名", text: $name)
                         
