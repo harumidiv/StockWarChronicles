@@ -80,7 +80,7 @@ struct StockRecordDetailView: View {
             }
 
             
-            let result = await YahooYFinanceAPIService().fetchStockChartData(code: record.code, startDate: oneWeekBeforePurchase, endDate: oneWeekAfterSale)
+            let result = await YahooYFinanceAPIService().fetchStockChartData(code: record.code, symbol: record.market.symbol, startDate: oneWeekBeforePurchase, endDate: oneWeekAfterSale)
             
             switch result {
             case .success(let chartData):
@@ -321,7 +321,7 @@ struct StockRecordDetailView: View {
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成1"),
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
         ]
-    let record = StockRecord(code: "140A", name: "ハッチ・ワーク", purchase: purchase, sales: sales)
+    let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", purchase: purchase, sales: sales)
     NavigationStack {
         StockRecordDetailView(record: record)
     }

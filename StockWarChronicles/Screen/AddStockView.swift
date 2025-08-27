@@ -13,7 +13,7 @@ struct AddStockView: View {
     @Binding var showAddStockView: Bool
     
     @State private var code = ""
-    @State private var selectedMarket: Market = .tokyo
+    @State private var market: Market = .tokyo
     @State private var name = ""
     @State private var purchaseDate = Date()
     @State private var purchaseAmountText = ""
@@ -38,7 +38,7 @@ struct AddStockView: View {
                     Section {
                         HStack {
                             TextField("銘柄コード", text: $code)
-                            Picker("", selection: $selectedMarket) {
+                            Picker("", selection: $market) {
                                 ForEach(Market.allCases) { market in
                                     Text(market.rawValue)
                                         .tag(market)
@@ -79,7 +79,7 @@ struct AddStockView: View {
                     
                     Button(action: {
                         let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                        let stockRecord = StockRecord(code: code, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
+                        let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
                         context.insert(stockRecord)
                         
                         do {
