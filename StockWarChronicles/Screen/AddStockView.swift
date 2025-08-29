@@ -24,6 +24,9 @@ struct AddStockView: View {
     
     @State private var selectedTags: [CategoryTag] = []
     
+    @State private var isDeleteConfirmAlertPresented: Bool = false
+    @State private var selectedDeleteTag: CategoryTag?
+    
     var purchaseAmount: Double {
         Double(purchaseAmountText) ?? 0
     }
@@ -62,7 +65,10 @@ struct AddStockView: View {
                     }
                     
                     Section(header: Text("タグ")) {
-                        TagSelectionView(selectedTags: $selectedTags)
+                        TagSelectionView(selectedTags: $selectedTags) { tag in
+                            isDeleteConfirmAlertPresented.toggle()
+                            selectedDeleteTag = tag
+                        }
                     }
                     
                     Section(header: Text("購入理由")) {
@@ -82,15 +88,9 @@ struct AddStockView: View {
                         let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
                         context.insert(stockRecord)
                         
-                        do {
-                            try context.save()
+                            try? context.save()
                             showAddStockView.toggle()
-                            
-                        } catch {
-                            // TODO: 失敗したらアラート
-                            print("保存に失敗しました: \(error)")
-                        }
-                    }) {
+                            }) {
                         Text("追加")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -110,6 +110,17 @@ struct AddStockView: View {
                     }
                 }
             }
+            .alert("本当に削除しますか？", isPresented: $isDeleteConfirmAlertPresented) {
+                Button("削除", role: .destructive) {
+                    if let selectedDeleteTag {
+                        context.delete(selectedDeleteTag)
+                        try? context.save()
+                    }
+                }
+                Button("キャンセル", role: .cancel) { selectedDeleteTag = nil }
+            } message: {
+                Text("このタグが既存タグに候補として表示されなくなります")
+            }
         }
     }
 }
@@ -128,6 +139,8 @@ struct TagSelectionView: View {
     
     @Binding var selectedTags: [CategoryTag]
     
+    var onDelete: ((CategoryTag) -> Void)?
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             
@@ -140,7 +153,7 @@ struct TagSelectionView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(selectedTags, id: \.name) { tag in
-                            TagChipView(name: tag.name, isSelected: true, color: tag.color, isDeletable: false) {
+                            TagChipView(tag: tag, isSelected: true, isDeletable: false) {
                                 selectedTags.removeAll(where: { $0.name == tag.name })
                             }
                         }
@@ -173,20 +186,20 @@ struct TagSelectionView: View {
                     HStack(spacing: 8) {
                         ForEach(allExistingTags, id: \.name) { tag in
                             TagChipView(
-                                name: tag.name,
+                                tag: tag,
                                 isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-                                color: tag.color,
                                 isDeletable: true,
-                            ) {
-                                if selectedTags.contains(where: { $0.name == tag.name }) {
-                                    selectedTags.removeAll(where: { $0.name == tag.name })
-                                } else {
-                                    // 既存のタグを選択
-                                    selectedTags.append(tag)
+                                onTap: {
+                                    if selectedTags.contains(where: { $0.name == tag.name }) {
+                                        selectedTags.removeAll(where: { $0.name == tag.name })
+                                    } else {
+                                        selectedTags.append(tag)
+                                    }
+                                },
+                                onDelete: { deleteTag in
+                                    onDelete?(deleteTag)
                                 }
-                            } onDelete: {
-                                print("delete call😺")
-                            }
+                            )
                         }
                     }
                 }
@@ -218,28 +231,27 @@ struct TagSelectionView: View {
     }
     
     struct TagChipView: View {
-        let name: String
+        let tag: CategoryTag
         let isSelected: Bool
-        let color: Color
         let isDeletable: Bool
         let onTap: () -> Void
-        var onDelete: (() -> Void)?
+        var onDelete: ((CategoryTag) -> Void)?
 
         var body: some View {
             HStack(spacing: 4) {
                 Button(action: onTap) {
-                    Text(name)
+                    Text(tag.name)
                         .font(.footnote)
                         .fontWeight(.bold)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(isSelected ? color : Color.gray.opacity(0.2))
+                        .background(isSelected ? tag.color : Color.gray.opacity(0.2))
                         .foregroundColor(isSelected ? .white : .primary)
                         .clipShape(Capsule())
                 }
 
                 if isDeletable {
-                    Button(action: { onDelete?() }) {
+                    Button(action: { onDelete?(tag) }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.caption)
                             .foregroundColor(.gray)
@@ -253,7 +265,7 @@ struct TagSelectionView: View {
                 Group {
                     if isDeletable {
                         Capsule()
-                            .stroke(color, lineWidth: 1)
+                            .stroke(tag.color, lineWidth: 1)
                     }
                 }
             )
