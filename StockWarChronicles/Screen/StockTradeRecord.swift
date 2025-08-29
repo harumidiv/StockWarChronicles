@@ -40,6 +40,14 @@ struct StockRecordListView: View {
                     StockRecordDetailView(record: record)
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("dismiss", systemImage: "xmark") {
+                        showStockRecordView.toggle()
+                    }
+                }
+                
+            }
         }
     }
     

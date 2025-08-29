@@ -24,6 +24,9 @@ struct AddStockView: View {
     
     @State private var selectedTags: [CategoryTag] = []
     
+    @State private var isDeleteConfirmAlertPresented: Bool = false
+    @State private var selectedDeleteTag: CategoryTag?
+    
     var purchaseAmount: Double {
         Double(purchaseAmountText) ?? 0
     }
@@ -62,7 +65,10 @@ struct AddStockView: View {
                     }
                     
                     Section(header: Text("タグ")) {
-                        TagSelectionView(selectedTags: $selectedTags)
+                        TagSelectionView(selectedTags: $selectedTags) { tag in
+                            isDeleteConfirmAlertPresented.toggle()
+                            selectedDeleteTag = tag
+                        }
                     }
                     
                     Section(header: Text("購入理由")) {
@@ -82,15 +88,9 @@ struct AddStockView: View {
                         let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
                         context.insert(stockRecord)
                         
-                        do {
-                            try context.save()
+                            try? context.save()
                             showAddStockView.toggle()
-                            
-                        } catch {
-                            // TODO: 失敗したらアラート
-                            print("保存に失敗しました: \(error)")
-                        }
-                    }) {
+                            }) {
                         Text("追加")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -110,6 +110,17 @@ struct AddStockView: View {
                     }
                 }
             }
+            .alert("本当に削除しますか？", isPresented: $isDeleteConfirmAlertPresented) {
+                Button("削除", role: .destructive) {
+                    if let selectedDeleteTag {
+                        context.delete(selectedDeleteTag)
+                        try? context.save()
+                    }
+                }
+                Button("キャンセル", role: .cancel) { selectedDeleteTag = nil }
+            } message: {
+                Text("このタグが既存タグに候補として表示されなくなります")
+            }
         }
     }
 }
@@ -128,6 +139,8 @@ struct TagSelectionView: View {
     
     @Binding var selectedTags: [CategoryTag]
     
+    var onDelete: ((CategoryTag) -> Void)?
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             
@@ -140,7 +153,7 @@ struct TagSelectionView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(selectedTags, id: \.name) { tag in
-                            TagChipView(name: tag.name, isSelected: true, color: tag.color) {
+                            TagChipView(tag: tag, isSelected: true, isDeletable: false) {
                                 selectedTags.removeAll(where: { $0.name == tag.name })
                             }
                         }
@@ -148,15 +161,13 @@ struct TagSelectionView: View {
                 }
             }
             
-            // 新規タグ入力とColorPickerのエリア
             HStack {
                 TextField("新しいタグを追加", text: $newTagInput)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
                 
-                // ここにColorPickerを追加
                 ColorPicker("", selection: $selectedNewTagColor)
-                    .labelsHidden() // ラベルを非表示にする
+                    .labelsHidden()
                 
                 Button(action: addTag) {
                     Image(systemName: "plus.circle.fill")
@@ -166,7 +177,6 @@ struct TagSelectionView: View {
                 .disabled(newTagInput.isEmpty)
             }
             
-            // 既存タグリストの表示エリア
             VStack(alignment: .leading) {
                 Text("既存タグ")
                     .font(.subheadline)
@@ -176,17 +186,20 @@ struct TagSelectionView: View {
                     HStack(spacing: 8) {
                         ForEach(allExistingTags, id: \.name) { tag in
                             TagChipView(
-                                name: tag.name,
+                                tag: tag,
                                 isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-                                color: tag.color
-                            ) {
-                                if selectedTags.contains(where: { $0.name == tag.name }) {
-                                    selectedTags.removeAll(where: { $0.name == tag.name })
-                                } else {
-                                    // 既存のタグを選択
-                                    selectedTags.append(tag)
+                                isDeletable: true,
+                                onTap: {
+                                    if selectedTags.contains(where: { $0.name == tag.name }) {
+                                        selectedTags.removeAll(where: { $0.name == tag.name })
+                                    } else {
+                                        selectedTags.append(tag)
+                                    }
+                                },
+                                onDelete: { deleteTag in
+                                    onDelete?(deleteTag)
                                 }
-                            }
+                            )
                         }
                     }
                 }
@@ -218,22 +231,44 @@ struct TagSelectionView: View {
     }
     
     struct TagChipView: View {
-        let name: String
+        let tag: CategoryTag
         let isSelected: Bool
-        let color: Color
+        let isDeletable: Bool
         let onTap: () -> Void
-        
+        var onDelete: ((CategoryTag) -> Void)?
+
         var body: some View {
-            Button(action: onTap) {
-                Text(name)
-                    .font(.footnote)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isSelected ? color : Color.gray.opacity(0.2))
-                    .foregroundColor(isSelected ? .white : .primary)
-                    .clipShape(Capsule())
+            HStack(spacing: 4) {
+                Button(action: onTap) {
+                    Text(tag.name)
+                        .font(.footnote)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isSelected ? tag.color : Color.gray.opacity(0.2))
+                        .foregroundColor(isSelected ? .white : .primary)
+                        .clipShape(Capsule())
+                }
+
+                if isDeletable {
+                    Button(action: { onDelete?(tag) }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(.plain) // 背景なし
+                }
             }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .background(
+                Group {
+                    if isDeletable {
+                        Capsule()
+                            .stroke(tag.color, lineWidth: 1)
+                    }
+                }
+            )
         }
     }
 }
