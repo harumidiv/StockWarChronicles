@@ -140,7 +140,7 @@ struct TagSelectionView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(selectedTags, id: \.name) { tag in
-                            TagChipView(name: tag.name, isSelected: true, color: tag.color) {
+                            TagChipView(name: tag.name, isSelected: true, color: tag.color, isDeletable: false) {
                                 selectedTags.removeAll(where: { $0.name == tag.name })
                             }
                         }
@@ -148,15 +148,13 @@ struct TagSelectionView: View {
                 }
             }
             
-            // 新規タグ入力とColorPickerのエリア
             HStack {
                 TextField("新しいタグを追加", text: $newTagInput)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
                 
-                // ここにColorPickerを追加
                 ColorPicker("", selection: $selectedNewTagColor)
-                    .labelsHidden() // ラベルを非表示にする
+                    .labelsHidden()
                 
                 Button(action: addTag) {
                     Image(systemName: "plus.circle.fill")
@@ -166,7 +164,6 @@ struct TagSelectionView: View {
                 .disabled(newTagInput.isEmpty)
             }
             
-            // 既存タグリストの表示エリア
             VStack(alignment: .leading) {
                 Text("既存タグ")
                     .font(.subheadline)
@@ -178,7 +175,8 @@ struct TagSelectionView: View {
                             TagChipView(
                                 name: tag.name,
                                 isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-                                color: tag.color
+                                color: tag.color,
+                                isDeletable: true,
                             ) {
                                 if selectedTags.contains(where: { $0.name == tag.name }) {
                                     selectedTags.removeAll(where: { $0.name == tag.name })
@@ -186,6 +184,8 @@ struct TagSelectionView: View {
                                     // 既存のタグを選択
                                     selectedTags.append(tag)
                                 }
+                            } onDelete: {
+                                print("delete call😺")
                             }
                         }
                     }
@@ -221,19 +221,42 @@ struct TagSelectionView: View {
         let name: String
         let isSelected: Bool
         let color: Color
+        let isDeletable: Bool
         let onTap: () -> Void
-        
+        var onDelete: (() -> Void)?
+
         var body: some View {
-            Button(action: onTap) {
-                Text(name)
-                    .font(.footnote)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(isSelected ? color : Color.gray.opacity(0.2))
-                    .foregroundColor(isSelected ? .white : .primary)
-                    .clipShape(Capsule())
+            HStack(spacing: 4) {
+                Button(action: onTap) {
+                    Text(name)
+                        .font(.footnote)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(isSelected ? color : Color.gray.opacity(0.2))
+                        .foregroundColor(isSelected ? .white : .primary)
+                        .clipShape(Capsule())
+                }
+
+                if isDeletable {
+                    Button(action: { onDelete?() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(.plain) // 背景なし
+                }
             }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .background(
+                Group {
+                    if isDeletable {
+                        Capsule()
+                            .stroke(color, lineWidth: 1)
+                    }
+                }
+            )
         }
     }
 }
