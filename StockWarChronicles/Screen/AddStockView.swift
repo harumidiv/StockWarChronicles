@@ -80,27 +80,27 @@ struct AddStockView: View {
                                     .stroke(Color.gray.opacity(0.5))
                             )
                     }
-                    
-                    let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0
-                    
-                    Button(action: {
-                        let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                        let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
-                        context.insert(stockRecord)
-                        
-                            try? context.save()
-                            showAddStockView.toggle()
-                            }) {
-                        Text("追加")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundColor(.white)
-                            .background(isDisable ? Color.gray : Color.blue)
-                            .cornerRadius(10)
-                    }
-                    .padding()
-                    .disabled(isDisable)
                 }
+                
+                let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0 || reason.isEmpty
+                
+                Button(action: {
+                    let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
+                    let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
+                    context.insert(stockRecord)
+                    
+                        try? context.save()
+                        showAddStockView.toggle()
+                        }) {
+                    Text("追加")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(isDisable ? Color.gray : Color.blue)
+                        .cornerRadius(10)
+                }
+                .padding()
+                .disabled(isDisable)
             }
             .navigationTitle("追加")
             .toolbar {
