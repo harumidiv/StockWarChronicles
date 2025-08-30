@@ -142,10 +142,10 @@ struct TagSelectionView: View {
     var onDelete: ((CategoryTag) -> Void)?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading) {
             
             // 選択済みのタグを表示
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("選択済みのタグ")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -161,7 +161,7 @@ struct TagSelectionView: View {
                 }
             }
             
-            HStack {
+            HStack(spacing: 8) {
                 TextField("新しいタグを追加", text: $newTagInput)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
@@ -177,7 +177,7 @@ struct TagSelectionView: View {
                 .disabled(newTagInput.isEmpty)
             }
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("既存タグ")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -259,8 +259,8 @@ struct TagSelectionView: View {
                     .buttonStyle(.plain) // 背景なし
                 }
             }
-            .padding(.horizontal, 6)
-            .padding(.vertical, 4)
+            .padding(.horizontal, isDeletable ? 6 : 0)
+            .padding(.vertical, isDeletable ? 4 : 0)
             .background(
                 Group {
                     if isDeletable {
