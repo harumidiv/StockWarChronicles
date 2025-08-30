@@ -31,6 +31,7 @@ struct StockRecordListView: View {
                         } label: {
                             stockRecordInfoCell(record: record)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }

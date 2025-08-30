@@ -64,16 +64,9 @@ struct AddStockView: View {
                         }
                     }
                     
-                    Section(header: Text("タグ")) {
-                        TagSelectionView(selectedTags: $selectedTags) { tag in
-                            isDeleteConfirmAlertPresented.toggle()
-                            selectedDeleteTag = tag
-                        }
-                    }
-                    
                     Section(header: Text("購入理由")) {
                         TextEditor(text: $reason)
-                            .frame(height: 200)
+                            .frame(height: 80)
                             .padding(4)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -81,26 +74,33 @@ struct AddStockView: View {
                             )
                     }
                     
-                    let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0
-                    
-                    Button(action: {
-                        let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
-                        let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
-                        context.insert(stockRecord)
-                        
-                            try? context.save()
-                            showAddStockView.toggle()
-                            }) {
-                        Text("追加")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundColor(.white)
-                            .background(isDisable ? Color.gray : Color.blue)
-                            .cornerRadius(10)
+                    Section(header: Text("タグ")) {
+                        TagSelectionView(selectedTags: $selectedTags) { tag in
+                            isDeleteConfirmAlertPresented.toggle()
+                            selectedDeleteTag = tag
+                        }
                     }
-                    .padding()
-                    .disabled(isDisable)
                 }
+                
+                let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0 || reason.isEmpty
+                
+                Button(action: {
+                    let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
+                    let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
+                    context.insert(stockRecord)
+                    
+                        try? context.save()
+                        showAddStockView.toggle()
+                        }) {
+                    Text("追加")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(isDisable ? Color.gray : Color.blue)
+                        .cornerRadius(10)
+                }
+                .padding()
+                .disabled(isDisable)
             }
             .navigationTitle("追加")
             .toolbar {
@@ -142,10 +142,10 @@ struct TagSelectionView: View {
     var onDelete: ((CategoryTag) -> Void)?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading) {
             
             // 選択済みのタグを表示
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("選択済みのタグ")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -161,7 +161,7 @@ struct TagSelectionView: View {
                 }
             }
             
-            HStack {
+            HStack(spacing: 8) {
                 TextField("新しいタグを追加", text: $newTagInput)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
@@ -177,7 +177,7 @@ struct TagSelectionView: View {
                 .disabled(newTagInput.isEmpty)
             }
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("既存タグ")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -259,8 +259,8 @@ struct TagSelectionView: View {
                     .buttonStyle(.plain) // 背景なし
                 }
             }
-            .padding(.horizontal, 6)
-            .padding(.vertical, 4)
+            .padding(.horizontal, isDeletable ? 6 : 0)
+            .padding(.vertical, isDeletable ? 4 : 0)
             .background(
                 Group {
                     if isDeletable {

@@ -16,10 +16,11 @@ struct YahooYFinanceAPIService {
     ///   - startDate: 計測開始日
     ///   - endDate: 計測終了日
     /// - Returns: 通信結果
-    func fetchStockChartData(code: String, symbol: String = "T", startDate: Date, endDate: Date) async -> Result<[MyStockChartData], Error> {
+    func fetchStockChartData(code: String, symbol: String, startDate: Date, endDate: Date) async -> Result<[MyStockChartData], Error> {
         do {
+            let identifier = symbol.isEmpty ? code : "\(code).\(symbol)"
             let data = try await SwiftYFinanceHelper.fetchChartData(
-                identifier: "\(code).\(symbol)",
+                identifier: identifier,
                 start: startDate,
                 end: endDate
             )
