@@ -64,21 +64,21 @@ struct AddStockView: View {
                         }
                     }
                     
-                    Section(header: Text("タグ")) {
-                        TagSelectionView(selectedTags: $selectedTags) { tag in
-                            isDeleteConfirmAlertPresented.toggle()
-                            selectedDeleteTag = tag
-                        }
-                    }
-                    
                     Section(header: Text("購入理由")) {
                         TextEditor(text: $reason)
-                            .frame(height: 200)
+                            .frame(height: 80)
                             .padding(4)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(Color.gray.opacity(0.5))
                             )
+                    }
+                    
+                    Section(header: Text("タグ")) {
+                        TagSelectionView(selectedTags: $selectedTags) { tag in
+                            isDeleteConfirmAlertPresented.toggle()
+                            selectedDeleteTag = tag
+                        }
                     }
                 }
                 
