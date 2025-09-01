@@ -86,13 +86,7 @@ struct PossessionScreen: View {
             if !record.tags.isEmpty {
                 DashedLine(direction: .horizontal)
                 ChipsView(tags: record.tags) { tag in
-                    let _ = print(tag.name)
-                    Text(tag.name)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .foregroundColor(.white)
-                        .background(tag.color)
-                        .cornerRadius(8)
+                    TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
                 }
             }
         }

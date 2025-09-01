@@ -145,17 +145,17 @@ extension StockRecord {
             
             // 保有中の取引 (タグ大量)
             StockRecord(
-                code: "9501", // 東京電力ホールディングス
+                code: "148A", // 東京電力ホールディングス
                 market: .tokyo,
-                name: "東京電力HD",
-                purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), reason: "高配当を期待して購入"),
+                name: "ハッチ・ワーク",
+                purchase: StockTradeInfo(amount: 2100.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), reason: "高配当を期待して購入"),
                 tags:  [.init(name: "長期保有", color: .green),
                         .init(name: "高配当", color: .yellow),
                         .init(name: "信用買い", color: .red),
-                        .init(name: "長い名前のタグ長い名前のタグ", color: .purple),
-                        .init(name: "A", color: .black),
-                        .init(name: "B", color: .orange),
-                        .init(name: "C", color: .indigo),
+                        .init(name: "長い名前のタグ長い名前のタグ名前のタグ", color: .purple),
+                        .init(name: "AAA", color: .black),
+                        .init(name: "BBB", color: .orange),
+                        .init(name: "CCC", color: .indigo),
                 ]
             ),
             

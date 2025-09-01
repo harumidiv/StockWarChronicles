@@ -76,10 +76,7 @@ fileprivate struct CustomClipLayout: Layout {
     ChipsView(tags: [.init(name: "タグ", color: .red), .init(name: "タグ2", color: .blue), .init(name: "名前の長いタグ名前の長いタグ名前の長いタグ名前の長いタグ名前の長いタグ", color: .green)], content: {
         tag in
         
-        Text(tag.name)
-                    .padding(8)
-                    .background(tag.color.opacity(0.3))
-                    .cornerRadius(10)
+        TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
     })
     .padding()
 }

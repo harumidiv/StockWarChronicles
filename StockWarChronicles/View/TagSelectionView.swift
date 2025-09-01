@@ -119,14 +119,9 @@ struct TagSelectionView: View {
         var body: some View {
             HStack(spacing: 4) {
                 Button(action: onTap) {
-                    Text(tag.name)
-                        .font(.footnote)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(isSelected ? tag.color : Color.gray.opacity(0.2))
-                        .foregroundColor(isSelected ? .white : .primary)
-                        .clipShape(Capsule())
+                    TagView(name: tag.name,
+                            foregroundColor: isSelected ? .white : .primary,
+                            backgroundColror: isSelected ? tag.color : Color.gray.opacity(0.2))
                 }
 
                 if isDeletable {
