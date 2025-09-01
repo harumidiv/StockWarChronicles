@@ -1,5 +1,5 @@
 //
-//  SellStockView.swift
+//  SellScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/19.
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 
-struct SellStockView: View {
+struct SellScreen: View {
     @Environment(\.modelContext) private var context
     
     @Bindable var record: StockRecord
@@ -86,5 +86,5 @@ struct SellStockView: View {
 }
 
 #Preview {
-    SellStockView(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), reason: "ストック売り上げ")))
+    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), reason: "ストック売り上げ")))
 }

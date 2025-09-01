@@ -1,5 +1,5 @@
 //
-//  StockListView.swift
+//  PossessionScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/19.
@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct StockListView: View {
+struct PossessionScreen: View {
     @Namespace private var animation
     @Environment(\.modelContext) private var context
     @Query private var records: [StockRecord]
@@ -23,24 +23,9 @@ struct StockListView: View {
                     ForEach(records) { record in
                         if !record.isTradeFinish {
                             NavigationLink {
-                                SellStockView(record: record)
+                                SellScreen(record: record)
                             } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text(record.name)
-                                            .font(.headline)
-                                        Spacer()
-                                        Text("\(Int(record.purchase.amount))円")
-                                    }
-                                    
-                                    HStack {
-                                        Text(record.code)
-                                            .foregroundColor(.secondary)
-                                        Spacer()
-                                        Text("\(record.remainingShares)株")
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
+                                stockCell(record: record)
                             }
                         }
                     }
@@ -70,16 +55,52 @@ struct StockListView: View {
                 .matchedTransitionSource(id: "add", in: animation)
             }
             .sheet(isPresented: $showAddStockView) {
-                AddStockView(showAddStockView: $showAddStockView)
+                AddScreen(showAddStockView: $showAddStockView)
                     .navigationTransition(.zoom(sourceID: "add", in: animation))
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
-                StockRecordListView(showStockRecordView: $showStockRecordView)
+                TradeHistoryScreen(showStockRecordView: $showStockRecordView)
+            }
+        }
+    }
+    
+    func stockCell(record: StockRecord) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(record.code)
+                    .foregroundColor(.secondary)
+                Text(record.name)
+                    .font(.headline)
+                Spacer()
+                Text("\(Int(record.purchase.amount))円")
+            }
+            
+            HStack {
+                Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(record.remainingShares)株")
+                    .foregroundColor(.secondary)
+            }
+            
+            if !record.tags.isEmpty {
+                DashedLine(direction: .horizontal)
+                ChipsView(tags: record.tags) { tag in
+                    TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
+                }
             }
         }
     }
 }
 
 #Preview {
-    StockListView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
+    
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
+    }
+    
+    return PossessionScreen()
+        .modelContainer(container)
 }

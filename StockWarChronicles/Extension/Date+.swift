@@ -9,6 +9,7 @@ import Foundation
 
 enum DateFormatType: String {
     case md = "M/d"
+    case yyyyMMdd = "YYYY/MM/dd"
 }
 
 extension Date {
@@ -34,6 +35,15 @@ extension Date {
         return dates.contains {
             calendar.dateComponents(components, from: $0) == selfComp
         }
+    }
+    
+    static func from(year: Int, month: Int, day: Int) -> Date {
+        let calendar = Calendar.current
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        return calendar.date(from: components)!
     }
         
 }
