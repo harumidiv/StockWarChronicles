@@ -81,5 +81,14 @@ struct StockListView: View {
 }
 
 #Preview {
-    StockListView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
+    
+    // extensionで定義したモックデータをループで挿入
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
+    }
+    
+    return StockListView()
+        .modelContainer(container)
 }

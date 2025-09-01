@@ -99,3 +99,60 @@ final class StockRecord {
         return profitAndLossPercentage
     }
 }
+
+
+#if DEBUG
+extension StockRecord {
+    /// プレビュー用のモックデータを生成する静的プロパティ
+    static var mockRecords: [StockRecord] {
+        [
+            // 損益確定済みの取引 (購入1回 + 売却1回)
+            StockRecord(
+                code: "7203", // トヨタ自動車
+                market: .tokyo,
+                name: "トヨタ自動車",
+                purchase: StockTradeInfo(amount: 2500.0, shares: 100, date: Date.from(year: 2024, month: 1, day: 10), reason: "長期保有目的で購入"),
+                sales: [StockTradeInfo(amount: 2800.0, shares: 100, date: Date.from(year: 2024, month: 3, day: 15), reason: "目標価格に到達したため売却")]
+            ),
+            
+            // 部分的に売却した取引 (現在も保有中)
+            StockRecord(
+                code: "9984", // ソフトバンクグループ
+                market: .tokyo,
+                name: "ソフトバンクグループ",
+                purchase: StockTradeInfo(amount: 6500.0, shares: 50, date: Date.from(year: 2024, month: 2, day: 5), reason: "今後の成長を期待して購入"),
+                sales: [StockTradeInfo(amount: 7000.0, shares: 25, date: Date.from(year: 2024, month: 4, day: 20), reason: "一部を利益確定")]
+            ),
+            
+            // 損切りした取引
+            StockRecord(
+                code: "6758", // ソニーグループ
+                market: .tokyo,
+                name: "ソニーグループ",
+                purchase: StockTradeInfo(amount: 15000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), reason: "技術トレンドの動向を見て購入"),
+                sales: [StockTradeInfo(amount: 14500.0, shares: 10, date: Date.from(year: 2024, month: 6, day: 5), reason: "想定外の業績下方修正のため損切り")]
+            ),
+            
+            // 保有中の取引 (売却履歴なし)
+            StockRecord(
+                code: "9501", // 東京電力ホールディングス
+                market: .tokyo,
+                name: "東京電力HD",
+                purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), reason: "高配当を期待して購入")
+            ),
+            
+            // 複数の売却履歴がある取引
+            StockRecord(
+                code: "8306", // 三菱UFJフィナンシャル・グループ
+                market: .tokyo,
+                name: "三菱UFJFG",
+                purchase: StockTradeInfo(amount: 1200.0, shares: 300, date: Date.from(year: 2024, month: 1, day: 20), reason: "金利上昇を見込んで購入"),
+                sales: [
+                    StockTradeInfo(amount: 1300.0, shares: 150, date: Date.from(year: 2024, month: 2, day: 15), reason: "一部利益確定"),
+                    StockTradeInfo(amount: 1350.0, shares: 150, date: Date.from(year: 2024, month: 3, day: 1), reason: "残りも全て利益確定")
+                ]
+            )
+        ]
+    }
+}
+#endif
