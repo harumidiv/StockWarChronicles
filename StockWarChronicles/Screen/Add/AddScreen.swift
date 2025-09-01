@@ -1,5 +1,5 @@
 //
-//  AddStockView.swift
+//  AddScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/19.
@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct AddStockView: View {
+struct AddScreen: View {
     @Environment(\.modelContext) private var context
     @Binding var showAddStockView: Bool
     
@@ -126,7 +126,7 @@ struct AddStockView: View {
 }
 
 #Preview {
-    AddStockView(showAddStockView: .constant(true))
+    AddScreen(showAddStockView: .constant(true))
 }
 
 struct TagSelectionView: View {

@@ -1,5 +1,5 @@
 //
-//  StockRecordDetailView.swift
+//  HistoryDetailScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/21.
@@ -9,7 +9,7 @@ import Charts
 import SwiftUI
 import SwiftData
 
-struct StockRecordDetailView: View {
+struct HistoryDetailScreen: View {
     enum ScreenState {
         case loading
         case stable
@@ -337,7 +337,7 @@ struct StockRecordDetailView: View {
 }
 
 // MARK: Process
-extension StockRecordDetailView {
+extension HistoryDetailScreen {
     private func fetchChartData() async {
         let calendar = Calendar.current
         guard let endDate = record.sales.last?.date,
@@ -381,7 +381,7 @@ extension StockRecordDetailView {
         ]
     let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", purchase: purchase, sales: sales)
     NavigationStack {
-        StockRecordDetailView(record: record)
+        HistoryDetailScreen(record: record)
     }
 }
 

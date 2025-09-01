@@ -1,5 +1,5 @@
 //
-//  StockTradeRecord.swift
+//  TradeHistoryScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/21.
@@ -11,7 +11,7 @@ import SwiftData
 
 import SwiftUI
 
-struct StockRecordListView: View {
+struct TradeHistoryScreen: View {
     @Binding var showStockRecordView: Bool
     
     // TODO: 年ごとに絞りたい
@@ -38,7 +38,7 @@ struct StockRecordListView: View {
             .navigationTitle("取引記録")
             .navigationDestination(isPresented: $showDetail) {
                 if let record = selectedRecord {
-                    StockRecordDetailView(record: record)
+                    HistoryDetailScreen(record: record)
                 }
             }
             .toolbar {
@@ -97,5 +97,5 @@ struct StockRecordListView: View {
 }
 
 #Preview {
-    StockRecordListView(showStockRecordView: .constant(true))
+    TradeHistoryScreen(showStockRecordView: .constant(true))
 }

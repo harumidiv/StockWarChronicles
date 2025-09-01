@@ -12,7 +12,7 @@ import SwiftData
 struct StockWarChroniclesApp: App {
     var body: some Scene {
         WindowGroup {
-            StockListView()
+            PossessionScreen()
                 .modelContainer(for: [StockRecord.self, CategoryTag.self])
                 .environment(\.locale, Locale(identifier: "ja_JP"))
         }

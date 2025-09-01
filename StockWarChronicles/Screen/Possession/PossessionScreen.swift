@@ -1,5 +1,5 @@
 //
-//  StockListView.swift
+//  PossessionScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/19.
@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct StockListView: View {
+struct PossessionScreen: View {
     @Namespace private var animation
     @Environment(\.modelContext) private var context
     @Query private var records: [StockRecord]
@@ -23,7 +23,7 @@ struct StockListView: View {
                     ForEach(records) { record in
                         if !record.isTradeFinish {
                             NavigationLink {
-                                SellStockView(record: record)
+                                SellScreen(record: record)
                             } label: {
                                 stockCell(record: record)
                             }
@@ -55,11 +55,11 @@ struct StockListView: View {
                 .matchedTransitionSource(id: "add", in: animation)
             }
             .sheet(isPresented: $showAddStockView) {
-                AddStockView(showAddStockView: $showAddStockView)
+                AddScreen(showAddStockView: $showAddStockView)
                     .navigationTransition(.zoom(sourceID: "add", in: animation))
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
-                StockRecordListView(showStockRecordView: $showStockRecordView)
+                TradeHistoryScreen(showStockRecordView: $showStockRecordView)
             }
         }
     }
@@ -107,6 +107,6 @@ struct StockListView: View {
         container.mainContext.insert(record)
     }
     
-    return StockListView()
+    return PossessionScreen()
         .modelContainer(container)
 }
