@@ -64,6 +64,14 @@ struct AddScreen: View {
                 }
             }
             .navigationTitle("追加")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("dismiss", systemImage: "xmark") {
+                        showAddStockView.toggle()
+                    }
+                }
+                
+            }
         }
     }
 }
