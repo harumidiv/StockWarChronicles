@@ -15,11 +15,9 @@ struct AddScreen: View {
     @State private var code = ""
     @State private var market: Market = .tokyo
     @State private var name = ""
-    @State private var purchaseDate = Date()
-    @State private var purchaseAmountText = ""
+    @State private var date = Date()
+    @State private var amountText = ""
     @State private var sharesText = ""
-    @State private var newTagName = ""
-    @State private var newTagColor: Color = .gray
     @State private var reason = ""
     
     @State private var selectedTags: [CategoryTag] = []
@@ -27,8 +25,8 @@ struct AddScreen: View {
     @State private var isDeleteConfirmAlertPresented: Bool = false
     @State private var selectedDeleteTag: CategoryTag?
     
-    var purchaseAmount: Double {
-        Double(purchaseAmountText) ?? 0
+    var amount: Double {
+        Double(amountText) ?? 0
     }
     var shares: Int {
         Int(sharesText) ?? 0
@@ -51,10 +49,10 @@ struct AddScreen: View {
                         }
                         TextField("銘柄名", text: $name)
                         
-                        DatePicker("購入日", selection: $purchaseDate, displayedComponents: .date)
+                        DatePicker("購入日", selection: $date, displayedComponents: .date)
                         
                         HStack {
-                            TextField("購入額", text: $purchaseAmountText)
+                            TextField("購入額", text: $amountText)
                                 .keyboardType(.numberPad)
                             Text("円")
                             
@@ -82,10 +80,10 @@ struct AddScreen: View {
                     }
                 }
                 
-                let isDisable = name.isEmpty || code.isEmpty || purchaseAmount == 0 || shares == 0 || reason.isEmpty
+                let isDisable = name.isEmpty || code.isEmpty || amount == 0 || shares == 0 || reason.isEmpty
                 
                 Button(action: {
-                    let tradeInfo = StockTradeInfo(amount: purchaseAmount, shares: shares, date: purchaseDate, reason: reason)
+                    let tradeInfo = StockTradeInfo(amount: amount, shares: shares, date: date, reason: reason)
                     let stockRecord = StockRecord(code: code, market: market, name: name, purchase: tradeInfo, sales: [], tags: selectedTags.map { Tag(categoryTag: $0) })
                     context.insert(stockRecord)
                     
@@ -127,148 +125,4 @@ struct AddScreen: View {
 
 #Preview {
     AddScreen(showAddStockView: .constant(true))
-}
-
-struct TagSelectionView: View {
-    @Environment(\.modelContext) private var context
-    
-    @Query private var allExistingTags: [CategoryTag]
-    
-    @State private var newTagInput: String = ""
-    @State private var selectedNewTagColor: Color = .purple
-    
-    @Binding var selectedTags: [CategoryTag]
-    
-    var onDelete: ((CategoryTag) -> Void)?
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            
-            // 選択済みのタグを表示
-            VStack(alignment: .leading, spacing: 8) {
-                Text("選択済みのタグ")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(selectedTags, id: \.name) { tag in
-                            TagChipView(tag: tag, isSelected: true, isDeletable: false) {
-                                selectedTags.removeAll(where: { $0.name == tag.name })
-                            }
-                        }
-                    }
-                }
-            }
-            
-            HStack(spacing: 8) {
-                TextField("新しいタグを追加", text: $newTagInput)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.never)
-                
-                ColorPicker("", selection: $selectedNewTagColor)
-                    .labelsHidden()
-                
-                Button(action: addTag) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(newTagInput.isEmpty ? .gray : .accentColor)
-                }
-                .disabled(newTagInput.isEmpty)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("既存タグ")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(allExistingTags, id: \.name) { tag in
-                            TagChipView(
-                                tag: tag,
-                                isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-                                isDeletable: true,
-                                onTap: {
-                                    if selectedTags.contains(where: { $0.name == tag.name }) {
-                                        selectedTags.removeAll(where: { $0.name == tag.name })
-                                    } else {
-                                        selectedTags.append(tag)
-                                    }
-                                },
-                                onDelete: { deleteTag in
-                                    onDelete?(deleteTag)
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        .padding()
-    }
-    
-    private func addTag() {
-        let tagName = newTagInput.trimmingCharacters(in: .whitespaces)
-        guard !tagName.isEmpty else { return }
-        
-        // 既存のタグに同じ名前がないか確認
-        let existingTag = allExistingTags.first(where: { $0.name == tagName })
-        
-        if let tag = existingTag {
-            // 既存のタグが見つかった場合はそれを選択リストに追加
-            if !selectedTags.contains(where: { $0.name == tag.name }) {
-                selectedTags.append(tag)
-            }
-        } else {
-            let newCategoryTag = CategoryTag(name: tagName, color: selectedNewTagColor)
-            context.insert(newCategoryTag)
-            try? context.save()
-            selectedTags.append(newCategoryTag)
-            
-        }
-        newTagInput = ""
-    }
-    
-    struct TagChipView: View {
-        let tag: CategoryTag
-        let isSelected: Bool
-        let isDeletable: Bool
-        let onTap: () -> Void
-        var onDelete: ((CategoryTag) -> Void)?
-
-        var body: some View {
-            HStack(spacing: 4) {
-                Button(action: onTap) {
-                    Text(tag.name)
-                        .font(.footnote)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(isSelected ? tag.color : Color.gray.opacity(0.2))
-                        .foregroundColor(isSelected ? .white : .primary)
-                        .clipShape(Capsule())
-                }
-
-                if isDeletable {
-                    Button(action: { onDelete?(tag) }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .buttonStyle(.plain) // 背景なし
-                }
-            }
-            .padding(.horizontal, isDeletable ? 6 : 0)
-            .padding(.vertical, isDeletable ? 4 : 0)
-            .background(
-                Group {
-                    if isDeletable {
-                        Capsule()
-                            .stroke(tag.color, lineWidth: 1)
-                    }
-                }
-            )
-        }
-    }
 }
