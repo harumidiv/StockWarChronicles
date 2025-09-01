@@ -25,22 +25,7 @@ struct StockListView: View {
                             NavigationLink {
                                 SellStockView(record: record)
                             } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text(record.name)
-                                            .font(.headline)
-                                        Spacer()
-                                        Text("\(Int(record.purchase.amount))円")
-                                    }
-                                    
-                                    HStack {
-                                        Text(record.code)
-                                            .foregroundColor(.secondary)
-                                        Spacer()
-                                        Text("\(record.remainingShares)株")
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
+                                stockCell(record: record)
                             }
                         }
                     }
@@ -78,13 +63,46 @@ struct StockListView: View {
             }
         }
     }
+    
+    func stockCell(record: StockRecord) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(record.code)
+                    .foregroundColor(.secondary)
+                Text(record.name)
+                    .font(.headline)
+                Spacer()
+                Text("\(Int(record.purchase.amount))円")
+            }
+            
+            HStack {
+                Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(record.remainingShares)株")
+                    .foregroundColor(.secondary)
+            }
+            
+            if !record.tags.isEmpty {
+                DashedLine(direction: .horizontal)
+                ChipsView(tags: record.tags) { tag in
+                    let _ = print(tag.name)
+                    Text(tag.name)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .foregroundColor(.white)
+                        .background(tag.color)
+                        .cornerRadius(8)
+                }
+            }
+        }
+    }
 }
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: StockRecord.self, configurations: config)
     
-    // extensionで定義したモックデータをループで挿入
     StockRecord.mockRecords.forEach { record in
         container.mainContext.insert(record)
     }

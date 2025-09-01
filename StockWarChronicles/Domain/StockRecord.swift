@@ -6,7 +6,7 @@
 //
 
 import SwiftData
-import Foundation
+import SwiftUI
 
 @Model
 final class StockRecord {
@@ -112,7 +112,8 @@ extension StockRecord {
                 market: .tokyo,
                 name: "トヨタ自動車",
                 purchase: StockTradeInfo(amount: 2500.0, shares: 100, date: Date.from(year: 2024, month: 1, day: 10), reason: "長期保有目的で購入"),
-                sales: [StockTradeInfo(amount: 2800.0, shares: 100, date: Date.from(year: 2024, month: 3, day: 15), reason: "目標価格に到達したため売却")]
+                sales: [StockTradeInfo(amount: 2800.0, shares: 100, date: Date.from(year: 2024, month: 3, day: 15), reason: "目標価格に到達したため売却")],
+                tags: [.init(name: "長期保有", color: .green)]
             ),
             
             // 部分的に売却した取引 (現在も保有中)
@@ -138,7 +139,24 @@ extension StockRecord {
                 code: "9501", // 東京電力ホールディングス
                 market: .tokyo,
                 name: "東京電力HD",
-                purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), reason: "高配当を期待して購入")
+                purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), reason: "高配当を期待して購入"),
+                tags:  [.init(name: "長期保有", color: .green), .init(name: "高配当", color: .yellow)]
+            ),
+            
+            // 保有中の取引 (タグ大量)
+            StockRecord(
+                code: "9501", // 東京電力ホールディングス
+                market: .tokyo,
+                name: "東京電力HD",
+                purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), reason: "高配当を期待して購入"),
+                tags:  [.init(name: "長期保有", color: .green),
+                        .init(name: "高配当", color: .yellow),
+                        .init(name: "信用買い", color: .red),
+                        .init(name: "長い名前のタグ長い名前のタグ", color: .purple),
+                        .init(name: "A", color: .black),
+                        .init(name: "B", color: .orange),
+                        .init(name: "C", color: .indigo),
+                ]
             ),
             
             // 複数の売却履歴がある取引
