@@ -16,7 +16,7 @@ struct SellScreen: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    @State private var sellDate = Date()
+    @State private var sellDate = Date.fromToday()
     @State private var amount = ""
     @State private var shares = 0
     @State private var reason = ""

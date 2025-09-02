@@ -45,5 +45,21 @@ extension Date {
         components.day = day
         return calendar.date(from: components)!
     }
+    
+    
+    /// 日本時間の今日を返す
+    /// ⚠️デフォルトでDate型を初期化するとUTCなので日付がズレる
+    /// - Returns: 日本時間の日付
+    static func fromToday() -> Date {
+        let calendar = Calendar(identifier: .gregorian)
+        var components = calendar.dateComponents(in: .current, from: Date())
+
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+
+        // 指定したタイムゾーンとコンポーネントから日付を生成
+        return calendar.date(from: components) ?? Date()
+    }
         
 }

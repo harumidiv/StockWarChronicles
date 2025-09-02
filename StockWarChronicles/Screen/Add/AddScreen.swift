@@ -15,7 +15,7 @@ struct AddScreen: View {
     @State private var code = ""
     @State private var market: Market = .tokyo
     @State private var name = ""
-    @State private var date = Date()
+    @State private var date = Date.fromToday()
     @State private var amountText = ""
     @State private var sharesText = ""
     @State private var reason = ""
