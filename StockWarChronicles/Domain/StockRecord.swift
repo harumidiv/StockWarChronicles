@@ -98,6 +98,13 @@ final class StockRecord {
         // 計算結果のDoubleをそのまま返す
         return profitAndLossPercentage
     }
+    
+    
+    /// 売りポジションの方が大きくなっている不整合が起きているかのフラグ
+    var isOversold: Bool {
+        let totalSold = sales.map(\.shares).reduce(0, +)
+        return totalSold > purchase.shares
+    }
 }
 
 

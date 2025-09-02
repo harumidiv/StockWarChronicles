@@ -23,6 +23,7 @@ struct EditScreen: View {
     @State private var selectedTags: [CategoryTag] = []
     
     @State private var keyboardIsPresented: Bool = false
+    @State private var showOversoldAlert = false
     
     var body: some View {
         NavigationView {
@@ -43,7 +44,11 @@ struct EditScreen: View {
                         HStack {
                             Spacer()
                             Button {
-                                saveChanges()
+                                if record.isOversold {
+                                    showOversoldAlert.toggle()
+                                } else {
+                                    saveChanges()
+                                }
                             } label: {
                                 Label("保存", systemImage: "square.and.arrow.down")
                                     .foregroundColor(.blue)
@@ -80,15 +85,22 @@ struct EditScreen: View {
                 ToolbarSpacer(.flexible, placement: .bottomBar)
                 ToolbarItem(placement: .bottomBar) {
                     Button {
-                        // TOOD: ここで売りの株数が買いの株数よりも多い場合はアラート
-                        
-                        saveChanges()
+                        if record.isOversold {
+                            showOversoldAlert.toggle()
+                        } else {
+                            saveChanges()
+                        }
                     } label: {
                         Image(systemName: "square.and.arrow.down")
                             .foregroundColor(.blue)
                     }
                 }
             }
+            .alert("不整合の警告", isPresented: $showOversoldAlert) {
+                    Button("閉じる", role: .cancel) { }
+                } message: {
+                    Text("売却株数が購入株数を超えています。内容を修正してください。")
+                }
         }
         .onAppear {
             code = record.code
