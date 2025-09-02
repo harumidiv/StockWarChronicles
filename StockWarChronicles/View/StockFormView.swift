@@ -18,30 +18,37 @@ struct StockFormView: View {
     @Binding var selectedTags: [CategoryTag]
     
     var body: some View {
-        Form {
-            Section {
-                HStack {
-                    TextField("銘柄コード", text: $code)
-                    Picker("", selection: $market) {
-                        ForEach(Market.allCases) { market in
-                            Text(market.rawValue).tag(market)
-                        }
+        Section(header: Text("サマリー")) {
+            HStack {
+                TextField("銘柄コード", text: $code)
+                Picker("", selection: $market) {
+                    ForEach(Market.allCases) { market in
+                        Text(market.rawValue).tag(market)
                     }
-                    .pickerStyle(.menu)
                 }
-                TextField("銘柄名", text: $name)
-                DatePicker("購入日", selection: $date, displayedComponents: .date)
-                HStack {
-                    TextField("購入額", text: $amountText)
-                        .keyboardType(.numberPad)
-                    Text("円")
-                    TextField("株数", text: $sharesText)
-                        .keyboardType(.numberPad)
-                    Text("株")
-                }
+                .pickerStyle(.menu)
+            }
+            TextField("銘柄名", text: $name)
+        }
+        
+        Section(header: Text("購入")) {
+            DatePicker("購入日", selection: $date, displayedComponents: .date)
+            HStack {
+                TextField("購入額", text: $amountText)
+                    .keyboardType(.numberPad)
+                Text("円")
+                TextField("株数", text: $sharesText)
+                    .keyboardType(.numberPad)
+                Text("株")
             }
             
-            Section(header: Text("購入理由")) {
+            VStack {
+                HStack {
+                    Text("メモ")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    Spacer()
+                }
                 TextEditor(text: $reason)
                     .frame(height: 80)
                     .padding(4)
@@ -51,27 +58,30 @@ struct StockFormView: View {
                     )
             }
             
-            Section(header: Text("タグ")) {
-                TagSelectionView(selectedTags: $selectedTags) { tag in
-                    // タグ削除の処理は親ビューに渡してもいい
-                }
+        }
+        
+        Section(header: Text("タグ")) {
+            TagSelectionView(selectedTags: $selectedTags) { tag in
+                // タグ削除の処理は親ビューに渡してもいい
             }
         }
     }
 }
 
 #Preview {
-    StockFormView(
-        code: .constant("7203"),
-        market: .constant(.tokyo),
-        name: .constant("トヨタ自動車"),
-        date: .constant(Date()),
-        amountText: .constant("200000"),
-        sharesText: .constant("100"),
-        reason: .constant("長期投資のため"),
-        selectedTags: .constant([
-            CategoryTag(name: "自動車", color: .blue),
-            CategoryTag(name: "大型株", color: .green)
-        ])
-    )
+    Form {
+        StockFormView(
+            code: .constant("7203"),
+            market: .constant(.tokyo),
+            name: .constant("トヨタ自動車"),
+            date: .constant(Date()),
+            amountText: .constant("200000"),
+            sharesText: .constant("100"),
+            reason: .constant("長期投資のため"),
+            selectedTags: .constant([
+                CategoryTag(name: "自動車", color: .blue),
+                CategoryTag(name: "大型株", color: .green)
+            ])
+        )
+    }
 }

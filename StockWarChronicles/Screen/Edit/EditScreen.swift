@@ -21,6 +21,7 @@ struct EditScreen: View {
     @State private var sharesText: String = ""
     @State private var reason: String = ""
     @State private var selectedTags: [CategoryTag] = []
+    @State private var sales: [StockTradeInfo] = []
     
     @State private var keyboardIsPresented: Bool = false
     @State private var showOversoldAlert = false
@@ -28,16 +29,22 @@ struct EditScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                StockFormView(
-                    code: $code,
-                    market: $market,
-                    name: $name,
-                    date: $date,
-                    amountText: $amountText,
-                    sharesText: $sharesText,
-                    reason: $reason,
-                    selectedTags: $selectedTags
-                )
+                Form {
+                    StockFormView(
+                        code: $code,
+                        market: $market,
+                        name: $name,
+                        date: $date,
+                        amountText: $amountText,
+                        sharesText: $sharesText,
+                        reason: $reason,
+                        selectedTags: $selectedTags
+                    )
+                    
+                    if !sales.isEmpty {
+                        StockSellEditView(sales: $sales)
+                    }
+                }
                 
                 if keyboardIsPresented {
                     VStack {
@@ -53,7 +60,7 @@ struct EditScreen: View {
                                 Label("保存", systemImage: "square.and.arrow.down")
                                     .foregroundColor(.blue)
                                     .padding()
-
+                                
                             }
                         }
                         .padding(.horizontal)
@@ -96,11 +103,11 @@ struct EditScreen: View {
                     }
                 }
             }
-            .alert("不整合の警告", isPresented: $showOversoldAlert) {
-                    Button("閉じる", role: .cancel) { }
-                } message: {
-                    Text("売却株数が購入株数を超えています。内容を修正してください。")
-                }
+            .alert("株数に不整合があります", isPresented: $showOversoldAlert) {
+                Button("閉じる", role: .cancel) { }
+            } message: {
+                Text("売却株数が購入株数を超えています。内容を修正してください。")
+            }
         }
         .onAppear {
             code = record.code
@@ -111,6 +118,7 @@ struct EditScreen: View {
             sharesText = String(record.purchase.shares)
             reason = record.purchase.reason
             selectedTags = record.tags.map { .init(name: $0.name, color: $0.color) }
+            sales = record.sales
         }
     }
     
@@ -123,12 +131,51 @@ struct EditScreen: View {
         record.purchase.shares = Int(sharesText) ?? 0
         record.purchase.reason = reason
         record.tags = selectedTags.map { .init(name: $0.name, color: $0.color) }
+        record.sales = sales
         
         try? context.save()
         dismiss()
     }
 }
 
+struct StockSellEditView: View {
+    @Binding var sales: [StockTradeInfo]
+    
+    var body: some View {
+        Section(header: Text("売却")) {
+            ForEach($sales) { $sale in
+                DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
+                
+                HStack {
+                    TextField("購入額", value: $sale.amount, format: .number)
+                        .keyboardType(.numberPad)
+                    Text("円")
+                    
+                    TextField("株数", value: $sale.shares, format: .number)
+                        .keyboardType(.numberPad)
+                    Text("株")
+                }
+                
+                
+                VStack {
+                    HStack {
+                        Text("売却メモ")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                        Spacer()
+                    }
+                    TextEditor(text: $sale.reason)
+                        .frame(height: 100)
+                        .padding(4)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5))
+                        )
+                }
+            }
+        }
+    }
+}
 
 
 #Preview {

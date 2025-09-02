@@ -32,12 +32,14 @@ struct AddScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                StockFormView(
-                    code: $code, market: $market, name: $name,
-                    date: $date, amountText: $amountText,
-                    sharesText: $sharesText, reason: $reason,
-                    selectedTags: $selectedTags
-                )
+                Form {
+                    StockFormView(
+                        code: $code, market: $market, name: $name,
+                        date: $date, amountText: $amountText,
+                        sharesText: $sharesText, reason: $reason,
+                        selectedTags: $selectedTags
+                    )
+                }
                 
                 let isDisable = name.isEmpty || code.isEmpty || amount == 0 || shares == 0 || reason.isEmpty
                 

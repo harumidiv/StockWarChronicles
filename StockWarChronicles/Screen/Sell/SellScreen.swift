@@ -44,7 +44,7 @@ struct SellScreen: View {
                         }
                     }
                     
-                    Section(header: Text("売却理由")) {
+                    Section(header: Text("売却メモ")) {
                         TextEditor(text: $reason)
                             .frame(height: 200)
                             .padding(4)
