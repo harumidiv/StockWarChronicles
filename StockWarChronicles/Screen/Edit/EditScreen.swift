@@ -138,7 +138,7 @@ struct StockSellEditView: View {
                 
                 VStack {
                     HStack {
-                        Text("売却メモ")
+                        Text("メモ")
                             .font(.caption2)
                             .foregroundColor(.gray)
                         Spacer()

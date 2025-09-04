@@ -198,7 +198,7 @@ struct HistoryDetailScreen: View {
                     }
                 }
             }
-            Section(header: Text("購入メモ(編集中)")) {
+            Section(header: Text("メモ(編集中)")) {
                 TextEditor(text: $purchaseReason)
                     .frame(height: 100)
                     .padding(4)
@@ -208,7 +208,7 @@ struct HistoryDetailScreen: View {
                     )
             }
 
-            Section(header: Text("売却メモ(編集中)").font(.headline)) {
+            Section(header: Text("メモ(編集中)").font(.headline)) {
                 VStack(spacing: 0) {
                     ForEach(saleReasons.indices, id: \.self) { index in
                         TextEditor(text: $saleReasons[index])
@@ -263,7 +263,7 @@ struct HistoryDetailScreen: View {
                     }
                 }
             }
-            Section(header: Text("購入メモ").font(.headline)) {
+            Section(header: Text("メモ").font(.headline)) {
                 Text(record.purchase.reason)
                     .font(.body)
                     .padding(.vertical, 4)
