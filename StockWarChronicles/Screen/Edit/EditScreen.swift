@@ -91,7 +91,7 @@ struct EditScreen: View {
                         action: {
                             /// 売り枚数の方が方が大きくなっていないか
                             let totalSold = sales.map(\.shares).reduce(0, +)
-                            var isOversold =  totalSold > Int(sharesText) ?? 0
+                            let isOversold =  totalSold > Int(sharesText) ?? 0
                             
                             if isOversold {
                                 showOversoldAlert.toggle()

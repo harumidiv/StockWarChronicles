@@ -40,38 +40,43 @@ struct AddScreen: View {
                         selectedTags: $selectedTags
                     )
                 }
-                
-                let isDisable = name.isEmpty || code.isEmpty || amount == 0 || shares == 0 || reason.isEmpty
-                
-                Button(action: {
-                    let tradeInfo = StockTradeInfo(
-                        amount: Double(amountText) ?? 0,
-                        shares: Int(sharesText) ?? 0,
-                        date: date, reason: reason
-                    )
-                    let stockRecord = StockRecord(
-                        code: code, market: market, name: name,
-                        purchase: tradeInfo, sales: [],
-                        tags: selectedTags.map { Tag(categoryTag: $0) }
-                    )
-                    context.insert(stockRecord)
-                    try? context.save()
-                    showAddStockView.toggle()
-                }) {
-                    Text("追加")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(isDisable ? Color.gray : Color.blue)
-                }
             }
             .navigationTitle("追加")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
                         showAddStockView.toggle()
                     }
                 }
+                
+                let isDisable = name.isEmpty || code.isEmpty || amount == 0 || shares == 0 || reason.isEmpty
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button (
+                        action: {
+                            let tradeInfo = StockTradeInfo(
+                                amount: Double(amountText) ?? 0,
+                                shares: Int(sharesText) ?? 0,
+                                date: date, reason: reason
+                            )
+                            let stockRecord = StockRecord(
+                                code: code, market: market, name: name,
+                                purchase: tradeInfo, sales: [],
+                                tags: selectedTags.map { Tag(categoryTag: $0) }
+                            )
+                            context.insert(stockRecord)
+                            try? context.save()
+                            showAddStockView.toggle()
+                            
+                        },
+                        label: {
+                        HStack {
+                            Image(systemName: "externaldrive")
+                            Text("追加")
+                        }
+                    })
+                    .disabled(isDisable)
+                }
+                
                 
             }
         }
