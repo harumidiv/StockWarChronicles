@@ -53,20 +53,7 @@ struct AddScreen: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button (
                         action: {
-                            let tradeInfo = StockTradeInfo(
-                                amount: Double(amountText) ?? 0,
-                                shares: Int(sharesText) ?? 0,
-                                date: date, reason: reason
-                            )
-                            let stockRecord = StockRecord(
-                                code: code, market: market, name: name,
-                                purchase: tradeInfo, sales: [],
-                                tags: selectedTags.map { Tag(categoryTag: $0) }
-                            )
-                            context.insert(stockRecord)
-                            try? context.save()
-                            showAddStockView.toggle()
-                            
+                            saveAction()
                         },
                         label: {
                         HStack {
@@ -76,10 +63,25 @@ struct AddScreen: View {
                     })
                     .disabled(isDisable)
                 }
-                
-                
             }
         }
+        .withKeyboardToolbar()
+    }
+    
+    private func saveAction() {
+        let tradeInfo = StockTradeInfo(
+            amount: Double(amountText) ?? 0,
+            shares: Int(sharesText) ?? 0,
+            date: date, reason: reason
+        )
+        let stockRecord = StockRecord(
+            code: code, market: market, name: name,
+            purchase: tradeInfo, sales: [],
+            tags: selectedTags.map { Tag(categoryTag: $0) }
+        )
+        context.insert(stockRecord)
+        try? context.save()
+        showAddStockView.toggle()
     }
 }
 

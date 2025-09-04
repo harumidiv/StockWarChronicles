@@ -57,6 +57,7 @@ struct SellScreen: View {
             }
             .navigationTitle("売却")
         }
+        .withKeyboardToolbar()
         .onAppear {
             shares = record.remainingShares
         }
