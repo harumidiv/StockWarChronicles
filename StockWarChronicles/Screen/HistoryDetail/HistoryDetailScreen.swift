@@ -317,7 +317,7 @@ struct HistoryDetailScreen: View {
                 }
                 
                 ChipsView(tags: record.tags) { tag in
-                    TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
+                    TagView(name: tag.name, color: tag.color)
                 }
                 
                 if !chartData.isEmpty {

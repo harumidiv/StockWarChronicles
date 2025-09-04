@@ -105,7 +105,7 @@ struct PossessionScreen: View {
                 
                 if !record.tags.isEmpty {
                     ChipsView(tags: record.tags) { tag in
-                        TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
+                        TagView(name: tag.name, color: tag.color)
                     }
                 }
                 

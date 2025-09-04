@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChipsView<Content: View>: View {
-    var spacing: CGFloat = 10
+    var spacing: CGFloat = 6
     var animation: Animation = .easeInOut(duration: 0.2)
     
     var tags: [Tag]
@@ -76,7 +76,7 @@ fileprivate struct CustomClipLayout: Layout {
     ChipsView(tags: [.init(name: "タグ", color: .red), .init(name: "タグ2", color: .blue), .init(name: "名前の長いタグ名前の長いタグ名前の長いタグ名前の長いタグ名前の長いタグ", color: .green)], content: {
         tag in
         
-        TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
+        TagView(name: tag.name, color: tag.color)
     })
     .padding()
 }
