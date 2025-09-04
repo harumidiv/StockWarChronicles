@@ -42,16 +42,22 @@ struct SellScreen: View {
                             }
                             .pickerStyle(.menu)
                         }
-                    }
-                    
-                    Section(header: Text("売却メモ")) {
-                        TextEditor(text: $reason)
-                            .frame(height: 200)
-                            .padding(4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.5))
-                            )
+                        
+                        VStack {
+                            HStack {
+                                Text("メモ")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Spacer()
+                            }
+                            TextEditor(text: $reason)
+                                .frame(height: 100)
+                                .padding(4)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.5))
+                                )
+                        }
                     }
                 }
             }
