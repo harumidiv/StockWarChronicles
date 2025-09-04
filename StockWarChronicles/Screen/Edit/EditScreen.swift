@@ -45,19 +45,16 @@ struct EditScreen: View {
                         StockSellEditView(sales: $sales)
                     }
                 }
+                .scrollDismissesKeyboard(.interactively)
                 
                 if keyboardIsPresented {
                     VStack {
                         HStack {
                             Spacer()
                             Button {
-                                if record.isOversold {
-                                    showOversoldAlert.toggle()
-                                } else {
-                                    saveChanges()
-                                }
+                                UIApplication.shared.closeKeyboard()
                             } label: {
-                                Label("保存", systemImage: "square.and.arrow.down")
+                                Text("閉じる")
                                     .foregroundColor(.blue)
                                     .padding()
                                 
@@ -81,7 +78,7 @@ struct EditScreen: View {
             .navigationTitle("編集")
             .toolbar {
                 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
@@ -89,18 +86,26 @@ struct EditScreen: View {
                     }
                 }
                 
-                ToolbarSpacer(.flexible, placement: .bottomBar)
-                ToolbarItem(placement: .bottomBar) {
-                    Button {
-                        if record.isOversold {
-                            showOversoldAlert.toggle()
-                        } else {
-                            saveChanges()
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button (
+                        action: {
+                            /// 売り枚数の方が方が大きくなっていないか
+                            let totalSold = sales.map(\.shares).reduce(0, +)
+                            var isOversold =  totalSold > Int(sharesText) ?? 0
+                            
+                            if isOversold {
+                                showOversoldAlert.toggle()
+                            } else {
+                                saveChanges()
+                            }
+                            
+                        },
+                        label: {
+                        HStack {
+                            Image(systemName: "externaldrive")
+                            Text("保存")
                         }
-                    } label: {
-                        Image(systemName: "square.and.arrow.down")
-                            .foregroundColor(.blue)
-                    }
+                    })
                 }
             }
             .alert("株数に不整合があります", isPresented: $showOversoldAlert) {
@@ -118,7 +123,8 @@ struct EditScreen: View {
             sharesText = String(record.purchase.shares)
             reason = record.purchase.reason
             selectedTags = record.tags.map { .init(name: $0.name, color: $0.color) }
-            sales = record.sales
+            // 🌾SwiftDataに保存している関係でclassで作っていて参照型なのでcopyする
+            sales = record.sales.map { $0.copy() as! StockTradeInfo }
         }
     }
     
@@ -155,7 +161,6 @@ struct StockSellEditView: View {
                         .keyboardType(.numberPad)
                     Text("株")
                 }
-                
                 
                 VStack {
                     HStack {

@@ -54,23 +54,25 @@ struct SellScreen: View {
                             )
                     }
                 }
-        
-                Button(action: {
-                    saveSell()
-                }) {
-                    Text("保存")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-                .padding()
             }
             .navigationTitle("売却")
         }
         .onAppear {
             shares = record.remainingShares
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button (action: {
+                    saveSell()
+                    
+                }, label: {
+                    HStack {
+                        Image(systemName: "externaldrive")
+                        Text("保存")
+                    }
+                })
+                .disabled(amount.isEmpty)
+            }
         }
     }
     
