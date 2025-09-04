@@ -35,7 +35,7 @@ struct StockFormView: View {
             DatePicker("購入日", selection: $date, displayedComponents: .date)
             HStack {
                 TextField("購入額", text: $amountText)
-                    .keyboardType(.numberPad)
+                    .keyboardType(.decimalPad)
                 Text("円")
                 TextField("株数", text: $sharesText)
                     .keyboardType(.numberPad)

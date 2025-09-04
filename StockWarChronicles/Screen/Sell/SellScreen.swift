@@ -30,7 +30,7 @@ struct SellScreen: View {
                         
                         HStack {
                             TextField("売却額", text: $amount)
-                                .keyboardType(.numberPad)
+                                .keyboardType(.decimalPad)
                             Text("円")
                         }
                         
