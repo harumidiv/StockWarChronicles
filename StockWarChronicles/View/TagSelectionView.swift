@@ -120,8 +120,7 @@ struct TagSelectionView: View {
             HStack(spacing: 4) {
                 Button(action: onTap) {
                     TagView(name: tag.name,
-                            foregroundColor: isSelected ? .white : .primary,
-                            backgroundColror: isSelected ? tag.color : Color.gray.opacity(0.2))
+                            color: isSelected ? tag.color : Color.gray.opacity(0.2))
                 }
 
                 if isDeletable {
@@ -130,7 +129,7 @@ struct TagSelectionView: View {
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
-                    .buttonStyle(.plain) // 背景なし
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, isDeletable ? 6 : 0)

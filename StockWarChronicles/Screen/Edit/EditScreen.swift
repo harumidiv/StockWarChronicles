@@ -23,7 +23,6 @@ struct EditScreen: View {
     @State private var selectedTags: [CategoryTag] = []
     @State private var sales: [StockTradeInfo] = []
     
-    @State private var keyboardIsPresented: Bool = false
     @State private var showOversoldAlert = false
     
     var body: some View {
@@ -47,32 +46,6 @@ struct EditScreen: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 
-                if keyboardIsPresented {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Button {
-                                UIApplication.shared.closeKeyboard()
-                            } label: {
-                                Text("閉じる")
-                                    .foregroundColor(.blue)
-                                    .padding()
-                                
-                            }
-                        }
-                        .padding(.horizontal)
-                        .background(.ultraThinMaterial)
-                        
-                    }
-                    .background(Color.clear)
-                }
-                
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-                keyboardIsPresented = true
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-                keyboardIsPresented = false
             }
             
             .navigationTitle("編集")
@@ -91,7 +64,7 @@ struct EditScreen: View {
                         action: {
                             /// 売り枚数の方が方が大きくなっていないか
                             let totalSold = sales.map(\.shares).reduce(0, +)
-                            var isOversold =  totalSold > Int(sharesText) ?? 0
+                            let isOversold =  totalSold > Int(sharesText) ?? 0
                             
                             if isOversold {
                                 showOversoldAlert.toggle()
@@ -114,6 +87,7 @@ struct EditScreen: View {
                 Text("売却株数が購入株数を超えています。内容を修正してください。")
             }
         }
+        .withKeyboardToolbar()
         .onAppear {
             code = record.code
             market = record.market
@@ -164,7 +138,7 @@ struct StockSellEditView: View {
                 
                 VStack {
                     HStack {
-                        Text("売却メモ")
+                        Text("メモ")
                             .font(.caption2)
                             .foregroundColor(.gray)
                         Spacer()

@@ -17,38 +17,35 @@ struct PossessionScreen: View {
     @State private var showStockRecordView: Bool = false
     
     @State private var editingRecord: StockRecord?
+    @State private var sellRecord: StockRecord?
     
     var body: some View {
         NavigationView {
-            VStack {
-                List {
-                    ForEach(records) { record in
-                        Group {
-                            if !record.isTradeFinish {
-                                NavigationLink {
-                                    SellScreen(record: record)
+            List {
+                ForEach(records) { record in
+                    if !record.isTradeFinish {
+                        stockCell(record: record)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                sellRecord = record
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    context.delete(record)
+                                    try? context.save()
                                 } label: {
-                                    stockCell(record: record)
+                                    Image(systemName: "trash")
                                 }
+                                .tint(.red)
+                                
+                                Button {
+                                    editingRecord = record
+                                } label: {
+                                    Image(systemName: "square.and.pencil")
+                                }
+                                .tint(.blue)
+                                
                             }
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            Button(role: .destructive) {
-                                context.delete(record)
-                                try? context.save()
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                            .tint(.red)
-                            
-                            Button {
-                                editingRecord = record
-                            } label: {
-                                Image(systemName: "square.and.pencil")
-                            }
-                            .tint(.blue)
-                            
-                        }
                     }
                 }
             }
@@ -75,6 +72,9 @@ struct PossessionScreen: View {
             .sheet(item: $editingRecord) { record in
                 EditScreen(record: record)
             }
+            .sheet(item: $sellRecord) { record in
+                SellScreen(record: record)
+            }
             .fullScreenCover(isPresented: $showStockRecordView) {
                 TradeHistoryScreen(showStockRecordView: $showStockRecordView)
             }
@@ -82,29 +82,71 @@ struct PossessionScreen: View {
     }
     
     func stockCell(record: StockRecord) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(record.code)
-                    .foregroundColor(.secondary)
-                Text(record.name)
-                    .font(.headline)
-                Spacer()
-                Text("\(Int(record.purchase.amount))円")
-            }
-            
-            HStack {
-                Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("\(record.remainingShares)株")
-                    .foregroundColor(.secondary)
-            }
-            
-            if !record.tags.isEmpty {
-                DashedLine(direction: .horizontal)
-                ChipsView(tags: record.tags) { tag in
-                    TagView(name: tag.name, foregroundColor: .white, backgroundColror: tag.color)
+        Section {
+            VStack {
+                HStack {
+                    Text(record.name)
+                        .font(.headline)
+                    Spacer()
+                    Text("\(Int(record.purchase.amount))円")
                 }
+                
+                HStack {
+                    
+                    Text(record.code)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Text("\(record.remainingShares) / \(record.purchase.shares)株")
+                        .font(.subheadline)
+                }
+                
+                if !record.tags.isEmpty {
+                    ChipsView(tags: record.tags) { tag in
+                        TagView(name: tag.name, color: tag.color)
+                    }
+                }
+                
+                DashedLine(direction: .horizontal)
+                
+                HStack {
+                    Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    
+                    Menu {
+                        Button(action: {
+                            sellRecord = record
+                        }) {
+                            Label("売却", systemImage: "cart")
+                        }
+                        Button(action: {
+                            editingRecord = record
+                        }) {
+                            Label("編集", systemImage: "pencil")
+                        }
+                        
+                        Divider()
+                        Button(action: {
+                            context.delete(record)
+                            try? context.save()
+                        }) {
+                            HStack {
+                                Text("削除")
+                                Spacer()
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.title3)
+                    }
+                }
+                .font(.caption)
             }
         }
     }

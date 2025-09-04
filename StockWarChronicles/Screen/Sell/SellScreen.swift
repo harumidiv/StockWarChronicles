@@ -11,10 +11,9 @@ import SwiftData
 
 struct SellScreen: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     
     @Bindable var record: StockRecord
-    
-    @Environment(\.dismiss) private var dismiss
     
     @State private var sellDate = Date.fromToday()
     @State private var amount = ""
@@ -22,7 +21,7 @@ struct SellScreen: View {
     @State private var reason = ""
     
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack {
                 Form {
                     Section(header: Text(record.code + " " + record.name)) {
@@ -42,38 +41,52 @@ struct SellScreen: View {
                             }
                             .pickerStyle(.menu)
                         }
-                    }
-                    
-                    Section(header: Text("売却メモ")) {
-                        TextEditor(text: $reason)
-                            .frame(height: 200)
-                            .padding(4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.5))
-                            )
+                        
+                        VStack {
+                            HStack {
+                                Text("メモ")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Spacer()
+                            }
+                            TextEditor(text: $reason)
+                                .frame(height: 100)
+                                .padding(4)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.5))
+                                )
+                        }
                     }
                 }
             }
             .navigationTitle("売却")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("dismiss", systemImage: "xmark") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button (action: {
+                        saveSell()
+                        
+                    }, label: {
+                        HStack {
+                            Image(systemName: "externaldrive")
+                            Text("保存")
+                        }
+                    })
+                    .disabled(amount.isEmpty)
+                }
+            }
         }
+        .withKeyboardToolbar()
         .onAppear {
             shares = record.remainingShares
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button (action: {
-                    saveSell()
-                    
-                }, label: {
-                    HStack {
-                        Image(systemName: "externaldrive")
-                        Text("保存")
-                    }
-                })
-                .disabled(amount.isEmpty)
-            }
-        }
+        
     }
     
     private func saveSell() {

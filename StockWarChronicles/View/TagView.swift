@@ -9,21 +9,20 @@ import SwiftUI
 
 struct TagView: View {
     let name: String
-    let foregroundColor: Color
-    let backgroundColror: Color
+    let color: Color
     var body: some View {
         Text(name)
-            .font(.footnote)
+            .font(.caption)
             .fontWeight(.bold)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .foregroundColor(foregroundColor)
-            .background(backgroundColror)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .foregroundColor(color.isLight() ? .black : .white)
+            .background(color)
             .lineLimit(1)
             .clipShape(Capsule())
     }
 }
 
 #Preview {
-    TagView(name: "タグ", foregroundColor: .red, backgroundColror: .green)
+    TagView(name: "タグ", color: .red)
 }
