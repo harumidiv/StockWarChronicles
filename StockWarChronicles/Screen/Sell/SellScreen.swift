@@ -16,7 +16,7 @@ struct SellScreen: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    @State private var sellDate = Date()
+    @State private var sellDate = Date.fromToday()
     @State private var amount = ""
     @State private var shares = 0
     @State private var reason = ""
@@ -30,7 +30,7 @@ struct SellScreen: View {
                         
                         HStack {
                             TextField("売却額", text: $amount)
-                                .keyboardType(.numberPad)
+                                .keyboardType(.decimalPad)
                             Text("円")
                         }
                         
@@ -44,7 +44,7 @@ struct SellScreen: View {
                         }
                     }
                     
-                    Section(header: Text("売却理由")) {
+                    Section(header: Text("売却メモ")) {
                         TextEditor(text: $reason)
                             .frame(height: 200)
                             .padding(4)
@@ -54,23 +54,25 @@ struct SellScreen: View {
                             )
                     }
                 }
-        
-                Button(action: {
-                    saveSell()
-                }) {
-                    Text("保存")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-                .padding()
             }
             .navigationTitle("売却")
         }
         .onAppear {
             shares = record.remainingShares
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button (action: {
+                    saveSell()
+                    
+                }, label: {
+                    HStack {
+                        Image(systemName: "externaldrive")
+                        Text("保存")
+                    }
+                })
+                .disabled(amount.isEmpty)
+            }
         }
     }
     

@@ -16,25 +16,39 @@ struct PossessionScreen: View {
     @State private var showAddStockView: Bool = false
     @State private var showStockRecordView: Bool = false
     
+    @State private var editingRecord: StockRecord?
+    
     var body: some View {
         NavigationView {
             VStack {
                 List {
                     ForEach(records) { record in
-                        if !record.isTradeFinish {
-                            NavigationLink {
-                                SellScreen(record: record)
-                            } label: {
-                                stockCell(record: record)
+                        Group {
+                            if !record.isTradeFinish {
+                                NavigationLink {
+                                    SellScreen(record: record)
+                                } label: {
+                                    stockCell(record: record)
+                                }
                             }
                         }
-                    }
-                    .onDelete { indexSet in
-                        for index in indexSet {
-                            let record = records[index]
-                            context.delete(record)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                context.delete(record)
+                                try? context.save()
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .tint(.red)
+                            
+                            Button {
+                                editingRecord = record
+                            } label: {
+                                Image(systemName: "square.and.pencil")
+                            }
+                            .tint(.blue)
+                            
                         }
-                        try? context.save()
                     }
                 }
             }
@@ -57,6 +71,9 @@ struct PossessionScreen: View {
             .sheet(isPresented: $showAddStockView) {
                 AddScreen(showAddStockView: $showAddStockView)
                     .navigationTransition(.zoom(sourceID: "add", in: animation))
+            }
+            .sheet(item: $editingRecord) { record in
+                EditScreen(record: record)
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
                 TradeHistoryScreen(showStockRecordView: $showStockRecordView)
