@@ -51,7 +51,7 @@ struct AddScreen: View {
                     }
                 }
                 
-                let isDisable = name.isEmpty || code.isEmpty || amount == 0 || shares == 0 || reason.isEmpty
+                let isDisable = code.isEmpty || amount == 0 || shares == 0
                 ToolbarItem(placement: .topBarTrailing) {
                     Button (
                         action: {
