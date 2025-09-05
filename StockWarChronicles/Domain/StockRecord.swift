@@ -44,6 +44,8 @@ final class StockRecord {
         return purchase.shares - totalSold
     }
     
+    
+    /// 取引完了している時の保有日数
     var holdingPeriod: Int {
         guard let saleDate = sales.last?.date else {
             return -1
@@ -51,6 +53,17 @@ final class StockRecord {
         let calendar = Calendar.current
         let start = calendar.startOfDay(for: purchase.date)
         let end = calendar.startOfDay(for: saleDate)
+        
+        let components = calendar.dateComponents([.day], from: start, to: end)
+
+        return components.day ?? 0
+    }
+    
+    /// 取引完了している時の保有日数
+    var numberOfDaysHeld: Int {
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: purchase.date)
+        let end = calendar.startOfDay(for: Date())
         
         let components = calendar.dateComponents([.day], from: start, to: end)
 
