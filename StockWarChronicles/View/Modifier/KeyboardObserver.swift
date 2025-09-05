@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct KeyboardObserver: ViewModifier {
-    @State private var keyboardIsPresented = false
+    @Binding var keyboardIsPresented: Bool
 
     func body(content: Content) -> some View {
         VStack {
@@ -39,7 +39,7 @@ struct KeyboardObserver: ViewModifier {
 }
 
 extension View {
-    func withKeyboardToolbar() -> some View {
-        self.modifier(KeyboardObserver())
+    func withKeyboardToolbar(keyboardIsPresented: Binding<Bool>) -> some View {
+        self.modifier(KeyboardObserver(keyboardIsPresented: keyboardIsPresented))
     }
 }

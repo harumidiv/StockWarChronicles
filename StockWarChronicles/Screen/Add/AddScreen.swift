@@ -21,6 +21,8 @@ struct AddScreen: View {
     @State private var reason = ""
     @State private var selectedTags: [CategoryTag] = []
     
+    @State private var keyboardIsPresented: Bool = false
+    
     var amount: Double {
         Double(amountText) ?? 0
     }
@@ -49,7 +51,7 @@ struct AddScreen: View {
                     }
                 }
                 
-                let isDisable = name.isEmpty || code.isEmpty || amount == 0 || shares == 0 || reason.isEmpty
+                let isDisable = code.isEmpty || amount == 0 || shares == 0
                 ToolbarItem(placement: .topBarTrailing) {
                     Button (
                         action: {
@@ -65,7 +67,7 @@ struct AddScreen: View {
                 }
             }
         }
-        .withKeyboardToolbar()
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
     }
     
     private func saveAction() {

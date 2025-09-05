@@ -28,7 +28,6 @@ struct TradeHistoryDetailScreen: View {
     @State private var purchaseReason: String = ""
     @State private var saleReasons: [String] = []
     
-    @State private var showDeleteAlert: Bool = false
     @State private var showEditScreen: Bool = false
     
     var body: some View {
@@ -62,14 +61,6 @@ struct TradeHistoryDetailScreen: View {
         }
         .task(id: screenState == .loading) {
             await fetchChartData()
-        }
-        .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
-            Button("削除", role: .destructive) {
-                deleteHistory()
-            }
-            Button("キャンセル", role: .cancel) { }
-        } message: {
-            Text("この株取引データは完全に削除されます。")
         }
     }
     
@@ -320,17 +311,6 @@ extension TradeHistoryDetailScreen {
         }
         
         screenState = .stable
-    }
-    
-    private func deleteHistory() {
-        context.delete(record)  // モデルを削除
-        do {
-            try context.save() // 永続化
-        } catch {
-            print("削除エラー: \(error)")
-        }
-        
-        dismiss()
     }
 }
 

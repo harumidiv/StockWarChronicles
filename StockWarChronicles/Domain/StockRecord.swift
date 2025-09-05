@@ -44,7 +44,6 @@ final class StockRecord {
         return purchase.shares - totalSold
     }
     
-    
     /// 取引完了している時の保有日数
     var holdingPeriod: Int {
         guard let saleDate = sales.last?.date else {

@@ -24,6 +24,9 @@ struct EditScreen: View {
     @State private var sales: [StockTradeInfo] = []
     
     @State private var showOversoldAlert = false
+    @State private var showDeleteAlert: Bool = false
+    
+    @State private var keyboardIsPresented: Bool = false
     
     var body: some View {
         NavigationView {
@@ -44,9 +47,7 @@ struct EditScreen: View {
                         StockSellEditView(sales: $sales)
                     }
                 }
-                .scrollDismissesKeyboard(.interactively)
             }
-            
             .navigationTitle("編集")
             .toolbar {
                 
@@ -82,14 +83,32 @@ struct EditScreen: View {
                         }
                     })
                 }
+                
+                if !keyboardIsPresented {
+                    ToolbarSpacer(.flexible, placement: .bottomBar)
+                    ToolbarItem(placement: .bottomBar) {
+                        Button("delete", systemImage: "trash") {
+                            showDeleteAlert = true
+                        }
+                        .tint(.red)
+                    }
+                }
             }
             .alert("株数か日付に不備があります", isPresented: $showOversoldAlert) {
                 Button("閉じる", role: .cancel) { }
             } message: {
                 Text("内容を修正してください。")
             }
+            .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
+                Button("削除", role: .destructive) {
+                    deleteHistory()
+                }
+                Button("キャンセル", role: .cancel) { }
+            } message: {
+                Text("この株取引データは完全に削除されます。")
+            }
         }
-        .withKeyboardToolbar()
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
         .onAppear {
             code = record.code
             market = record.market
@@ -116,6 +135,17 @@ struct EditScreen: View {
         record.sales = sales
         
         try? context.save()
+        dismiss()
+    }
+    
+    private func deleteHistory() {
+        context.delete(record)
+        do {
+            try context.save()
+        } catch {
+            print("削除エラー: \(error)")
+        }
+        
         dismiss()
     }
 }

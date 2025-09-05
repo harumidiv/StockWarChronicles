@@ -76,7 +76,7 @@ struct PossessionScreen: View {
                 SellScreen(record: record)
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
-                TradeHistoryListScreen(showStockRecordView: $showStockRecordView)
+                TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
             }
         }
     }
@@ -116,7 +116,7 @@ struct PossessionScreen: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
-                    Text("保有" + record.numberOfDaysHeld.description + "日")
+                    Text(record.numberOfDaysHeld.description + "日")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     Spacer()
