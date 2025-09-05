@@ -76,7 +76,7 @@ struct PossessionScreen: View {
                 SellScreen(record: record)
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
-                TradeHistoryListScreen(showStockRecordView: $showStockRecordView)
+                TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
             }
         }
     }

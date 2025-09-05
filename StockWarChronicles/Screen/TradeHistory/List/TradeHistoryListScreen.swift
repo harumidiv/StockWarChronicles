@@ -47,29 +47,42 @@ enum SortType: CaseIterable, Identifiable {
 }
 
 struct TradeHistoryListScreen: View {
-    @Binding var showStockRecordView: Bool
+    @Binding var showTradeHistoryListScreen: Bool
     
-    // TODO: 年ごとに絞りたい
     @Query private var records: [StockRecord]
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var showDetail = false
     
     @State private var currentSortType: SortType = .date
+    @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
     
     private var sortedRecords: [StockRecord] {
+        let filteredRecords: [StockRecord] = records.filter {
+            Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        }
+        
         switch currentSortType {
         case .date:
-            return records.sorted { $0.purchase.date > $1.purchase.date }
+            return filteredRecords.sorted { $0.purchase.date > $1.purchase.date }
             
         case .holdingPeriod:
-            return records.sorted{ $0.holdingPeriod > $1.holdingPeriod}
-      
+            return filteredRecords.sorted { $0.holdingPeriod > $1.holdingPeriod }
+            
         case .fluctuationRate:
-            return records.sorted { $0.profitAndLossParcent ?? 0 > $1.profitAndLossParcent ?? 0 }
+            return filteredRecords.sorted { ($0.profitAndLossParcent ?? 0) > ($1.profitAndLossParcent ?? 0) }
+            
         case .profitAndLoss:
-            return records.sorted { $0.profitAndLoss > $1.profitAndLoss }
+            return filteredRecords.sorted { $0.profitAndLoss > $1.profitAndLoss }
         }
+    }
+    
+    private var availableYears: [Int] {
+        let allDates = records.map { $0.purchase.date }
+        let allYears = Set(allDates.map {
+            Calendar.current.component(.year, from: $0)
+        }).sorted(by: >)
+        return allYears
     }
     
     var body: some View {
@@ -96,9 +109,35 @@ struct TradeHistoryListScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
-                        showStockRecordView.toggle()
+                        showTradeHistoryListScreen.toggle()
                     }
                 }
+                
+                if !availableYears.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            ForEach(availableYears, id: \.self) { year in
+                                Button(action: {
+                                    withAnimation {
+                                        self.selectedYear = year
+                                    }
+                                }) {
+                                    Text("\(year)年")
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text("\(String(describing: selectedYear))年")
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                            }
+                            .padding(.vertical, 8)
+                        }
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                }
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         ForEach(SortType.allCases) { type in
@@ -120,6 +159,7 @@ struct TradeHistoryListScreen: View {
                         .padding(.vertical, 8)
                     }
                 }
+                .sharedBackgroundVisibility(.hidden)
             }
         }
     }
@@ -169,6 +209,6 @@ struct TradeHistoryListScreen: View {
 }
 
 #Preview {
-    TradeHistoryListScreen(showStockRecordView: .constant(true))
+    TradeHistoryListScreen(showTradeHistoryListScreen: .constant(true))
 }
 
