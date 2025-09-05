@@ -20,6 +20,8 @@ struct SellScreen: View {
     @State private var shares = 0
     @State private var reason = ""
     
+    @State private var keyboardIsPresented: Bool = false
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -82,7 +84,7 @@ struct SellScreen: View {
                 }
             }
         }
-        .withKeyboardToolbar()
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
         .onAppear {
             shares = record.remainingShares
         }
