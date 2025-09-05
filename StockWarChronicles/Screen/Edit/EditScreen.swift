@@ -45,7 +45,6 @@ struct EditScreen: View {
                     }
                 }
                 .scrollDismissesKeyboard(.interactively)
-                
             }
             
             .navigationTitle("編集")
@@ -66,7 +65,10 @@ struct EditScreen: View {
                             let totalSold = sales.map(\.shares).reduce(0, +)
                             let isOversold =  totalSold > Int(sharesText) ?? 0
                             
-                            if isOversold {
+                            let totalSoldDate = sales.map(\.date)
+                            let isInvalidDate = totalSoldDate.first(where: { $0 < date }) != nil
+                            
+                            if isOversold || isInvalidDate {
                                 showOversoldAlert.toggle()
                             } else {
                                 saveChanges()
@@ -81,10 +83,10 @@ struct EditScreen: View {
                     })
                 }
             }
-            .alert("株数に不整合があります", isPresented: $showOversoldAlert) {
+            .alert("株数か日付に不備があります", isPresented: $showOversoldAlert) {
                 Button("閉じる", role: .cancel) { }
             } message: {
-                Text("売却株数が購入株数を超えています。内容を修正してください。")
+                Text("内容を修正してください。")
             }
         }
         .withKeyboardToolbar()
