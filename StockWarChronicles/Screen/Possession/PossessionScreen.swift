@@ -115,6 +115,10 @@ struct PossessionScreen: View {
                     Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                    
+                    Text("保有" + record.holdingPeriod.description + "日")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                     Spacer()
                     
                     Menu {
