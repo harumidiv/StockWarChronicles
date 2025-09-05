@@ -76,7 +76,7 @@ struct PossessionScreen: View {
                 SellScreen(record: record)
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
-                TradeHistoryScreen(showStockRecordView: $showStockRecordView)
+                TradeHistoryListScreen(showStockRecordView: $showStockRecordView)
             }
         }
     }
@@ -115,6 +115,10 @@ struct PossessionScreen: View {
                     Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                    
+                    Text("保有" + record.numberOfDaysHeld.description + "日")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                     Spacer()
                     
                     Menu {
@@ -130,20 +134,17 @@ struct PossessionScreen: View {
                         }
                         
                         Divider()
-                        Button(action: {
+                        Button(role: .destructive, action: {
                             context.delete(record)
                             try? context.save()
                         }) {
-                            HStack {
-                                Text("削除")
-                                Spacer()
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
-                            }
+                            Label("削除", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
                             .font(.title3)
+                            .frame(width: 24, height: 24)
+                            .contentShape(Rectangle())
                     }
                 }
                 .font(.caption)
