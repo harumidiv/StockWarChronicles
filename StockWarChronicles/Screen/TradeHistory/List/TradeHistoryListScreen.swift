@@ -168,6 +168,7 @@ struct TradeHistoryListScreen: View {
                 ForEach(availableYears, id: \.self) { year in
                     Button(action: {
                         withAnimation {
+                            self.selectedTag = "すべて"
                             self.selectedYear = year
                         }
                     }) {
