@@ -17,15 +17,18 @@ enum SortType: CaseIterable, Identifiable {
     case date
     case holdingPeriod
     case fluctuationRate
+    case profitAndLoss
     
     var title: String {
         switch self {
         case .date:
             return "日付順"
         case .holdingPeriod:
-            return "保有日数が長い順"
+            return "保有日数順"
         case .fluctuationRate:
             return "損益率"
+        case .profitAndLoss:
+            return "損益額"
         }
     }
     
@@ -37,6 +40,8 @@ enum SortType: CaseIterable, Identifiable {
             return "timer"
         case .fluctuationRate:
             return "chart.bar"
+        case .profitAndLoss:
+            return "yensign.circle"
         }
     }
 }
@@ -52,10 +57,25 @@ struct TradeHistoryListScreen: View {
     
     @State private var currentSortType: SortType = .date
     
+    private var sortedRecords: [StockRecord] {
+        switch currentSortType {
+        case .date:
+            return records.sorted { $0.purchase.date > $1.purchase.date }
+            
+        case .holdingPeriod:
+            return records.sorted{ $0.holdingPeriod > $1.holdingPeriod}
+      
+        case .fluctuationRate:
+            return records.sorted { $0.profitAndLossParcent ?? 0 > $1.profitAndLossParcent ?? 0 }
+        case .profitAndLoss:
+            return records.sorted { $0.profitAndLoss > $1.profitAndLoss }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             List {
-                ForEach(records) { record in
+                ForEach(sortedRecords) { record in
                     if record.isTradeFinish {
                         Button {
                             selectedRecord = record
@@ -83,7 +103,9 @@ struct TradeHistoryListScreen: View {
                     Menu {
                         ForEach(SortType.allCases) { type in
                             Button(action: {
-                                currentSortType = type
+                                withAnimation {
+                                    currentSortType = type
+                                }
                             }) {
                                 Label(type.title, systemImage: type.systemName)
                             }
