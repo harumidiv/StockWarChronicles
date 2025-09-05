@@ -161,7 +161,6 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .padding(.vertical, 8)
             }
         
             Menu {
@@ -182,7 +181,6 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .padding(.vertical, 8)
             }
             
             Menu {
@@ -202,9 +200,9 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .padding(.vertical, 8)
             }
         }
+        .padding(.horizontal, 16)
     }
     
     private func stockRecordInfoCell(record: StockRecord) -> some View {
@@ -238,6 +236,13 @@ struct TradeHistoryListScreen: View {
 }
 
 #Preview {
-    TradeHistoryListScreen(showTradeHistoryListScreen: .constant(true))
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
+    
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
+    }
+    return TradeHistoryListScreen(showTradeHistoryListScreen: .constant(true))
+        .modelContainer(container)
 }
 
