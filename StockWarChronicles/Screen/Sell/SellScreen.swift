@@ -27,6 +27,7 @@ struct SellScreen: View {
     @State private var reason = ""
     
     @State private var keyboardIsPresented: Bool = false
+    @State private var showDateAlert: Bool = false
     
     var body: some View {
         NavigationView {
@@ -101,7 +102,12 @@ struct SellScreen: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button (action: {
-                        saveSell()
+                        if Calendar.current.startOfDay(for: record.purchase.date) > Calendar.current.startOfDay(for: sellDate) {
+                            showDateAlert.toggle()
+                        } else {
+                            saveSell()
+                        }
+                        
                         
                     }, label: {
                         HStack {
@@ -116,10 +122,18 @@ struct SellScreen: View {
         .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
         .onAppear {
             shares = record.remainingShares
+            if shares < 100 {
+                sellUnit = .ones
+            }
+        }
+        .alert("売却日が購入日以前に設定されています", isPresented: $showDateAlert) {
+            Button("閉じる", role: .cancel) { }
+        } message: {
+            Text("内容を修正してください。")
         }
         
     }
-    
+ 
     private func saveSell() {
         guard let amount = Double(amount) else { return }
         
