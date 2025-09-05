@@ -107,7 +107,7 @@ struct TradeHistoryListScreen: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(spacing: 8) {
                 sortAndFilterView()
                 
                 List {
@@ -217,7 +217,7 @@ struct TradeHistoryListScreen: View {
             if let percentage = record.profitAndLossParcent {
                 VStack(alignment: .trailing, spacing: 8) {
                     Text(String(format: "%.1f", percentage) + "%")
-                        .font(.title)
+                        .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(percentage >= 0 ? .red : .blue)
                     
