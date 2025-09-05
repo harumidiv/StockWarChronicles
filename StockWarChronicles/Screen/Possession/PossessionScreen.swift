@@ -130,16 +130,11 @@ struct PossessionScreen: View {
                         }
                         
                         Divider()
-                        Button(action: {
+                        Button(role: .destructive, action: {
                             context.delete(record)
                             try? context.save()
                         }) {
-                            HStack {
-                                Text("削除")
-                                Spacer()
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
-                            }
+                            Label("削除", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
