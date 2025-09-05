@@ -212,35 +212,21 @@ struct TradeHistoryListScreen: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(record.code + " " + record.name)
                     .font(.headline)
-                HStack {
-                    VStack(alignment: .leading) {
-                        ForEach(record.sales) { sale in
-                            HStack {
-                                Text(record.purchase.date.formatted(as: .md))
-                                    .font(.subheadline)
-                                Text("-")
-                                Text(sale.date.formatted(as: .md))
-                                    .font(.subheadline)
-                                
-                                let purchaseAmount = record.purchase.amount * Double(sale.shares)
-                                let salesAmount = sale.amount * Double(sale.shares)
-                                let totalProfitAndLoss = salesAmount - purchaseAmount
-                                let profitAndLossPercentage = (totalProfitAndLoss / purchaseAmount) * 100
-                                
-                                Text(String(format: "%.1f", profitAndLossPercentage) + "％")
-                                    .font(.subheadline)
-                                    .foregroundColor(profitAndLossPercentage >= 0 ? .red : .blue)
-                            }
-                        }
-                    }
-                }
+                Text("保有日数: \(record.holdingPeriod )日")
+                    .font(.subheadline)
             }
             Spacer()
             if let percentage = record.profitAndLossParcent {
-                Text(String(format: "%.1f", percentage) + "%")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(percentage >= 0 ? .red : .blue)
+                VStack(alignment: .trailing, spacing: 8) {
+                    Text(String(format: "%.1f", percentage) + "%")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(percentage >= 0 ? .red : .blue)
+                    
+                    Text("\(record.profitAndLoss.withComma())円")
+                        .fontWeight(.bold)
+                        .foregroundColor(percentage >= 0 ? .red : .blue)
+                }
             }
             
             Image(systemName: "chevron.right")
