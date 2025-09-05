@@ -54,12 +54,22 @@ struct TradeHistoryListScreen: View {
     @State private var selectedRecord: StockRecord? = nil
     @State private var showDetail = false
     
+    
+    // Sort & Filter
+    @State private var selectedTag: String = "すべて"
     @State private var currentSortType: SortType = .date
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
     
     private var sortedRecords: [StockRecord] {
-        let filteredRecords: [StockRecord] = records.filter {
+        var filteredRecords: [StockRecord] = records.filter {
             Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        }
+        if selectedTag != "すべて" {
+            filteredRecords = filteredRecords.filter { record in
+                record.tags.contains { tag in
+                    tag.name == selectedTag
+                }
+            }
         }
         
         switch currentSortType {
@@ -85,18 +95,32 @@ struct TradeHistoryListScreen: View {
         return allYears
     }
     
+    private var allTags: [String] {
+        let filteredRecords: [StockRecord] = records.filter {
+            Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        }
+        let uniqueTagNamesSet = Set(filteredRecords.flatMap { $0.tags }.map { $0.name })
+        var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }
+        uniqueTagNames.insert("すべて", at: 0)
+        return uniqueTagNames
+    }
+    
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(sortedRecords) { record in
-                    if record.isTradeFinish {
-                        Button {
-                            selectedRecord = record
-                            showDetail = true
-                        } label: {
-                            stockRecordInfoCell(record: record)
+            VStack {
+                sortAndFilterView()
+                
+                List {
+                    ForEach(sortedRecords) { record in
+                        if record.isTradeFinish {
+                            Button {
+                                selectedRecord = record
+                                showDetail = true
+                            } label: {
+                                stockRecordInfoCell(record: record)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -112,54 +136,72 @@ struct TradeHistoryListScreen: View {
                         showTradeHistoryListScreen.toggle()
                     }
                 }
-                
-                if !availableYears.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            ForEach(availableYears, id: \.self) { year in
-                                Button(action: {
-                                    withAnimation {
-                                        self.selectedYear = year
-                                    }
-                                }) {
-                                    Text("\(year)年")
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text("\(String(describing: selectedYear))年")
-                                Image(systemName: "chevron.down")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                            }
-                            .padding(.vertical, 8)
+            }
+            .background(Color(.systemBackground))
+        }
+    }
+    
+    private func sortAndFilterView() -> some View {
+        HStack {
+            Spacer()
+            Menu {
+                ForEach(allTags, id: \.self) { tag in
+                    Button(action: {
+                        withAnimation {
+                            self.selectedTag = tag
                         }
-                    }
-                    .sharedBackgroundVisibility(.hidden)
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        ForEach(SortType.allCases) { type in
-                            Button(action: {
-                                withAnimation {
-                                    currentSortType = type
-                                }
-                            }) {
-                                Label(type.title, systemImage: type.systemName)
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text(currentSortType.title)
-                            Image(systemName: "chevron.down")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                        }
-                        .padding(.vertical, 8)
+                    }) {
+                        Text(tag)
                     }
                 }
-                .sharedBackgroundVisibility(.hidden)
+            } label: {
+                HStack {
+                    Text(selectedTag)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .padding(.vertical, 8)
+            }
+        
+            Menu {
+                ForEach(availableYears, id: \.self) { year in
+                    Button(action: {
+                        withAnimation {
+                            self.selectedYear = year
+                        }
+                    }) {
+                        Text("\(year)年")
+                    }
+                }
+            } label: {
+                HStack {
+                    Text("\(String(describing: selectedYear))年")
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .padding(.vertical, 8)
+            }
+            
+            Menu {
+                ForEach(SortType.allCases) { type in
+                    Button(action: {
+                        withAnimation {
+                            currentSortType = type
+                        }
+                    }) {
+                        Label(type.title, systemImage: type.systemName)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(currentSortType.title)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .padding(.vertical, 8)
             }
         }
     }
