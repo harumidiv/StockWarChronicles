@@ -10,6 +10,11 @@ import SwiftData
 
 
 struct SellScreen: View {
+    enum SellUnit {
+        case hundreds
+        case ones
+    }
+    
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     
@@ -18,6 +23,7 @@ struct SellScreen: View {
     @State private var sellDate = Date.fromToday()
     @State private var amount = ""
     @State private var shares = 0
+    @State private var sellUnit: SellUnit = .hundreds
     @State private var reason = ""
     
     @State private var keyboardIsPresented: Bool = false
@@ -37,11 +43,34 @@ struct SellScreen: View {
                         
                         HStack {
                             Picker("株数", selection: $shares) {
-                                ForEach(Array(stride(from: 100, through: record.remainingShares, by: 100)), id: \.self) { num in
-                                    Text("\(num)").tag(num)
+                                switch sellUnit {
+                                case .hundreds:
+                                    ForEach(Array(stride(from: 100, through: record.remainingShares, by: 100)), id: \.self) { num in
+                                        Text("\(num)").tag(num)
+                                    }
+                                case .ones:
+                                    ForEach(Array(stride(from: 1, through: record.remainingShares, by: 1)), id: \.self) { num in
+                                        Text("\(num)").tag(num)
+                                    }
                                 }
                             }
                             .pickerStyle(.menu)
+                            
+                            Button(action: {
+                                withAnimation {
+                                    switch sellUnit {
+                                    case .hundreds:
+                                        sellUnit = .ones
+                                        shares = 1
+                                    case .ones:
+                                        sellUnit = .hundreds
+                                        shares = 100
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "arrow.2.circlepath")
+                                    .font(.title3)
+                            }
                         }
                         
                         VStack {
