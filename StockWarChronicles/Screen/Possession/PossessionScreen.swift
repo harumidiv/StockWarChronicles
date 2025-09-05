@@ -144,6 +144,8 @@ struct PossessionScreen: View {
                     } label: {
                         Image(systemName: "ellipsis")
                             .font(.title3)
+                            .frame(width: 24, height: 24)
+                            .contentShape(Rectangle())
                     }
                 }
                 .font(.caption)
