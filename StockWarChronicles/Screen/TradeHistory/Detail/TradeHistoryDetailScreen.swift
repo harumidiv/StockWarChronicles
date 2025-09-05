@@ -13,7 +13,6 @@ struct TradeHistoryDetailScreen: View {
     enum ScreenState {
         case loading
         case stable
-        case edit
     }
     @State private var screenState: ScreenState = .loading
     
@@ -30,6 +29,7 @@ struct TradeHistoryDetailScreen: View {
     @State private var saleReasons: [String] = []
     
     @State private var showDeleteAlert: Bool = false
+    @State private var showEditScreen: Bool = false
     
     var body: some View {
         Group {
@@ -44,45 +44,12 @@ struct TradeHistoryDetailScreen: View {
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("record", systemImage: "square.and.pencil") {
-                                screenState = .edit
+                                showEditScreen = true
                             }
                         }
                     }
-            case .edit:
-                editView()
-                    .navigationTitle("編集中")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button("record", systemImage: "square.and.arrow.down.on.square") {
-                                
-                                record.name = name
-                                record.market = market
-                                record.code = code
-                                record.purchase.reason = purchaseReason
-                                for (index, saleReason) in saleReasons.enumerated() {
-                                    if index < record.sales.count {
-                                        record.sales[index].reason = saleReason
-                                    }
-                                }
-                                
-                                
-                                // 市場が変更されたケースを考慮してもう一度読み込み
-                                chartData = []
-                                screenState = .loading
-                            }
-                        }
-                        
-                        ToolbarSpacer(.flexible, placement: .bottomBar)
-                        ToolbarItem(placement: .bottomBar) {
-                            Button(action: {
-                                showDeleteAlert.toggle()
-                            }) {
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
-                            }
-
-                        }
+                    .sheet(isPresented: $showEditScreen) {
+                        EditScreen(record: record)
                     }
             }
         }
