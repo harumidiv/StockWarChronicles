@@ -11,6 +11,36 @@ import SwiftData
 
 import SwiftUI
 
+enum SortType: CaseIterable, Identifiable {
+    var id: Self { self }
+    
+    case date
+    case holdingPeriod
+    case fluctuationRate
+    
+    var title: String {
+        switch self {
+        case .date:
+            return "日付順"
+        case .holdingPeriod:
+            return "保有日数が長い順"
+        case .fluctuationRate:
+            return "損益率"
+        }
+    }
+    
+    var systemName: String {
+        switch self {
+        case .date:
+            return "calendar"
+        case .holdingPeriod:
+            return "timer"
+        case .fluctuationRate:
+            return "chart.bar"
+        }
+    }
+}
+
 struct TradeHistoryListScreen: View {
     @Binding var showStockRecordView: Bool
     
@@ -19,6 +49,8 @@ struct TradeHistoryListScreen: View {
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var showDetail = false
+    
+    @State private var currentSortType: SortType = .date
     
     var body: some View {
         NavigationStack {
@@ -42,12 +74,30 @@ struct TradeHistoryListScreen: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
                         showStockRecordView.toggle()
                     }
                 }
-                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        ForEach(SortType.allCases) { type in
+                            Button(action: {
+                                currentSortType = type
+                            }) {
+                                Label(type.title, systemImage: type.systemName)
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(currentSortType.title)
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                        }
+                        .padding(.vertical, 8)
+                    }
+                }
             }
         }
     }
@@ -90,7 +140,7 @@ struct TradeHistoryListScreen: View {
             
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
-                    
+            
         }
         .contentShape(Rectangle())
     }
@@ -99,3 +149,4 @@ struct TradeHistoryListScreen: View {
 #Preview {
     TradeHistoryListScreen(showStockRecordView: .constant(true))
 }
+
