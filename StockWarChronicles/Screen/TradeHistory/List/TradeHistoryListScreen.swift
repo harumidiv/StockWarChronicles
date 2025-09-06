@@ -124,6 +124,8 @@ struct TradeHistoryListScreen: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .screenBackground()
             .navigationTitle("取引記録")
             .navigationDestination(isPresented: $showDetail) {
                 if let record = selectedRecord {
@@ -208,10 +210,18 @@ struct TradeHistoryListScreen: View {
     private func stockRecordInfoCell(record: StockRecord) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(record.code + " " + record.name)
-                    .font(.headline)
+                HStack(spacing: 8) {
+                    Text(record.code)
+                        .font(.headline)
+                        .foregroundColor(.green)
+                    Text(record.name)
+                        .font(.headline)
+                        .foregroundColor(.green)
+                }
+                
                 Text("保有日数: \(record.holdingPeriod )日")
                     .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
             Spacer()
             if let percentage = record.profitAndLossParcent {
