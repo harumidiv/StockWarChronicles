@@ -6,16 +6,30 @@
 //
 
 import SwiftUI
-import Charts
 
 struct OverallPerformanceView: View {
     let records: [StockRecord]
     @Binding var selectedYear: Int
     @State private var monthlyPerformance: [MonthlyPerformance] = []
     
-    // PerformanceCalculatorのインスタンスを作成
     private var calculator: PerformanceCalculator {
         return PerformanceCalculator(records: records)
+    }
+    
+    var filteredWinRecordsMemo: [String] {
+        records
+            .filter { $0.profitAndLossParcent ?? 0.0 > 0.0}
+            .flatMap { $0.sales }
+            .map { $0.reason }
+            .filter { !$0.isEmpty }
+    }
+    
+    var filteredLoseRecordsMemo: [String] {
+        records
+            .filter { $0.profitAndLossParcent ?? 0.0 < 0.0}
+            .flatMap { $0.sales }
+            .map { $0.reason }
+            .filter { !$0.isEmpty }
     }
     
     var body: some View {
@@ -25,78 +39,37 @@ struct OverallPerformanceView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                 
-                // 主要なパフォーマンス指標のグリッド
-                Grid(horizontalSpacing: 20, verticalSpacing: 20) {
-                    GridRow {
-                        MetricView(label: "平均%", value: String(format: "%.2f%%", calculator.calculateAverageProfitAndLossPercent() ?? 0.0), iconName: "percent")
+                VStack {
+                    HStack {
                         MetricView(label: "勝率", value: String(format: "%.2f%%", calculator.calculateWinRate() ?? 0.0), iconName: "chart.pie.fill")
+                        Spacer()
+                        MetricView(label: "平均損益額", value: String(format: "%.0f円", calculator.calculateAverageProfitAndLossAmount() ?? 0.0), iconName: "dollarsign.circle")
                     }
-                    GridRow {
-                        MetricView(label: "プロフィットファクター", value: String(format: "%.2f", calculator.calculateProfitFactor() ?? 0.0), iconName: "gauge.simple.fill")
-                        MetricView(label: "最大ドローダウン", value: String(format: "%.2f%%", calculator.calculateMaximumDrawdown() ?? 0.0), iconName: "waveform.path.badge.minus")
+                    HStack {
+                        MetricView(label: "平均保有日数", value: String(format: "%.1f日", calculator.calculateAverageHoldingPeriod() ?? 0.0), iconName: "calendar")
+                        Spacer()
+                        MetricView(label: "平均%", value: String(format: "%.2f%%", calculator.calculateAverageProfitAndLossPercent() ?? 0.0), iconName: "percent")
+                        
                     }
                 }
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
                 
-                // 月別損益グラフ
-                VStack(alignment: .leading) {
-                    Text("月別損益推移")
-                        .font(.headline)
-                    
-                    Chart(monthlyPerformance, id: \.month) { data in
-                        BarMark(
-                            x: .value("月", data.month),
-                            y: .value("損益", data.profitAmount)
-                        )
-                        .foregroundStyle(data.profitAmount >= 0 ? Color.green : Color.red)
-                    }
-                    .frame(height: 200)
-                    .chartXAxis {
-                        AxisMarks(values: .automatic) { _ in
-                            AxisTick()
-                            AxisValueLabel(format: .dateTime.month(.twoDigits))
-                        }
-                    }
-                    .chartYAxis {
-                        AxisMarks(values: .automatic) { value in
-                            AxisGridLine()
-                            AxisTick()
-                            AxisValueLabel(String(format: "%.0f円", value.as(Double.self)!))
-                        }
+                VStack(alignment: .leading, spacing: 0){
+                    Text("勝ちトレードメモ一覧")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                    ForEach(filteredWinRecordsMemo, id: \.self) { memo in
+                        Text(memo)
                     }
                 }
-                
-                // その他の詳細データ
-                Grid(horizontalSpacing: 20, verticalSpacing: 10) {
-                    GridRow {
-                        Text("平均損益額")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(String(format: "%.0f円", calculator.calculateAverageProfitAndLossAmount() ?? 0.0))
-                            .fontWeight(.semibold)
-                    }
-                    GridRow {
-                        Text("平均保有日数")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(String(format: "%.1f日", calculator.calculateAverageHoldingPeriod() ?? 0.0))
-                            .fontWeight(.semibold)
-                    }
-                    GridRow {
-                        Text("平均リスクリワードレシオ")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(String(format: "%.2f", calculator.calculateAverageRiskRewardRatio() ?? 0.0))
-                            .fontWeight(.semibold)
-                    }
-                    GridRow {
-                        Text("総取引回数")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(String(records.count)+"回")
-                            .fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 0){
+                    Text("負けトレードメモ一覧")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                    ForEach(filteredLoseRecordsMemo, id: \.self) { memo in
+                        Text(memo)
                     }
                 }
             }
