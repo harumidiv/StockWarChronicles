@@ -12,6 +12,9 @@ struct OverallPerformanceView: View {
     @Binding var selectedYear: Int
     @State private var monthlyPerformance: [MonthlyPerformance] = []
     
+    @State private var winTradeExpanded: Bool = false
+    @State private var loseTradeExpand: Bool = false
+    
     private var calculator: PerformanceCalculator {
         return PerformanceCalculator(records: records)
     }
@@ -56,21 +59,24 @@ struct OverallPerformanceView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
                 
-                VStack(alignment: .leading, spacing: 0){
-                    Text("勝ちトレードメモ一覧")
-                        .font(.title3)
-                        .fontWeight(.bold)
+                
+                AccordionView(isExpanded: $winTradeExpanded, title: "勝ちトレードメモ一覧") {
                     ForEach(filteredWinRecordsMemo, id: \.self) { memo in
-                        Text(memo)
+                        HStack() {
+                            Text("・\(memo)")
+                            Spacer()
+                        }
                     }
+                    .padding(.horizontal, 8)
                 }
-                VStack(alignment: .leading, spacing: 0){
-                    Text("負けトレードメモ一覧")
-                        .font(.title3)
-                        .fontWeight(.bold)
+                AccordionView(isExpanded: $loseTradeExpand, title: "負けトレードメモ一覧") {
                     ForEach(filteredLoseRecordsMemo, id: \.self) { memo in
-                        Text(memo)
+                        HStack() {
+                            Text("・\(memo)")
+                            Spacer()
+                        }
                     }
+                    .padding(.horizontal, 8)
                 }
             }
             .padding()
