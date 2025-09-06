@@ -8,7 +8,6 @@
 import SwiftUI
 import SwiftData
 
-// 画面全体のビュー
 struct AnnualPerformanceScreen: View {
     @Query private var records: [StockRecord]
     @Binding var selectedYear: Int

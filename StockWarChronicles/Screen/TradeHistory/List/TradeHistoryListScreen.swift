@@ -53,6 +53,7 @@ struct TradeHistoryListScreen: View {
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var showDetail = false
+    @State private var showAnnualPerformance = false
     
     
     // Sort & Filter
@@ -132,10 +133,26 @@ struct TradeHistoryListScreen: View {
                     TradeHistoryDetailScreen(record: record)
                 }
             }
+            .navigationDestination(isPresented: $showAnnualPerformance) {
+                AnnualPerformanceScreen(selectedYear: $selectedYear)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
                         showTradeHistoryListScreen.toggle()
+                    }
+                }
+                
+                if !sortedRecords.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: {
+                            showAnnualPerformance.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: "chart.pie")
+                                Text("年間実績")
+                            }
+                        }
                     }
                 }
             }
