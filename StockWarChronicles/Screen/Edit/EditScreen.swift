@@ -152,14 +152,16 @@ struct EditScreen: View {
 
 struct StockSellEditView: View {
     @Binding var sales: [StockTradeInfo]
-    @State private var deleteSellHistory: StockTradeInfo? = nil
     var body: some View {
         Section(header: Text("売却")) {
             ForEach($sales) { $sale in
                 VStack {
                     HStack(alignment: .top) {
                         Button(action: {
-                            deleteSellHistory = sale
+                            if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
+                                $sales.wrappedValue.remove(at: index)
+                            }
+                            deleteSellHistory = nil
                         }, label: {
                             Image(systemName: "xmark.app")
                                 .resizable()
@@ -197,19 +199,6 @@ struct StockSellEditView: View {
                     }
                 }
             }
-        }
-        .alert(item: $deleteSellHistory) { history in
-            Alert(
-                title: Text("対象の売却履歴を削除しますか？"),
-                message: Text("この売却データは完全に削除されます。"),
-                primaryButton: .destructive(Text("削除")) {
-                    if let index = $sales.wrappedValue.firstIndex(where: { $0.id == history.id }) {
-                        $sales.wrappedValue.remove(at: index)
-                    }
-                    deleteSellHistory = nil
-                },
-                secondaryButton: .cancel(Text("キャンセル"))
-            )
         }
     }
 }
