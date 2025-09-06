@@ -161,7 +161,6 @@ struct StockSellEditView: View {
                             if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
                                 $sales.wrappedValue.remove(at: index)
                             }
-                            deleteSellHistory = nil
                         }, label: {
                             Image(systemName: "xmark.app")
                                 .resizable()
