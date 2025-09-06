@@ -57,7 +57,7 @@ struct TradeHistoryListScreen: View {
     
     
     // Sort & Filter
-    @State private var selectedTag: String = "すべて"
+    @State private var selectedTag: String = "すべてのタグ"
     @State private var currentSortType: SortType = .date
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
     
@@ -65,7 +65,7 @@ struct TradeHistoryListScreen: View {
         var filteredRecords: [StockRecord] = records.filter {
             Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
         }
-        if selectedTag != "すべて" {
+        if selectedTag != "すべてのタグ" {
             filteredRecords = filteredRecords.filter { record in
                 record.tags.contains { tag in
                     tag.name == selectedTag
@@ -102,7 +102,7 @@ struct TradeHistoryListScreen: View {
         }
         let uniqueTagNamesSet = Set(filteredRecords.flatMap { $0.tags }.map { $0.name })
         var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }
-        uniqueTagNames.insert("すべて", at: 0)
+        uniqueTagNames.insert("すべてのタグ", at: 0)
         return uniqueTagNames
     }
     
@@ -186,7 +186,7 @@ struct TradeHistoryListScreen: View {
                 ForEach(availableYears, id: \.self) { year in
                     Button(action: {
                         withAnimation {
-                            self.selectedTag = "すべて"
+                            self.selectedTag = "すべてのタグ"
                             self.selectedYear = year
                         }
                     }) {
@@ -225,38 +225,44 @@ struct TradeHistoryListScreen: View {
     }
     
     private func stockRecordInfoCell(record: StockRecord) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Text(record.code)
-                        .font(.headline)
-                        .foregroundColor(.green)
-                    Text(record.name)
-                        .font(.headline)
-                        .foregroundColor(.green)
+        VStack {
+            HStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Text(record.code)
+                            .font(.headline)
+                            .foregroundColor(.green)
+                        Text(record.name)
+                            .font(.headline)
+                            .foregroundColor(.green)
+                    }
+                    
+                    Text("保有日数: \(record.holdingPeriod )日")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                if let percentage = record.profitAndLossParcent {
+                    VStack(alignment: .trailing, spacing: 8) {
+                        Text(String(format: "%.1f", percentage) + "%")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(percentage >= 0 ? .red : .blue)
+                        
+                        Text("\(record.profitAndLoss.withComma())円")
+                            .fontWeight(.bold)
+                            .foregroundColor(percentage >= 0 ? .red : .blue)
+                    }
                 }
                 
-                Text("保有日数: \(record.holdingPeriod )日")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.gray)
             }
-            Spacer()
-            if let percentage = record.profitAndLossParcent {
-                VStack(alignment: .trailing, spacing: 8) {
-                    Text(String(format: "%.1f", percentage) + "%")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(percentage >= 0 ? .red : .blue)
-                    
-                    Text("\(record.profitAndLoss.withComma())円")
-                        .fontWeight(.bold)
-                        .foregroundColor(percentage >= 0 ? .red : .blue)
+            if !record.tags.isEmpty {
+                ChipsView(tags: record.tags) { tag in
+                    TagView(name: tag.name, color: tag.color)
                 }
             }
-            
-            Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
-            
         }
         .contentShape(Rectangle())
     }
