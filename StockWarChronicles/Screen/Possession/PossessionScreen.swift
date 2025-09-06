@@ -21,61 +21,57 @@ struct PossessionScreen: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                Color.yellow.opacity(0.1)
-                    .ignoresSafeArea()
-                
-                List {
-                    ForEach(records) { record in
-                        if !record.isTradeFinish {
-                            stockCell(record: record)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        context.delete(record)
-                                        try? context.save()
-                                    } label: {
-                                        Image(systemName: "trash")
-                                    }
-                                    .tint(.red)
-                                    
-                                    Button {
-                                        editingRecord = record
-                                    } label: {
-                                        Image(systemName: "square.and.pencil")
-                                    }
-                                    .tint(.blue)
-                                    
+            List {
+                ForEach(records) { record in
+                    if !record.isTradeFinish {
+                        stockCell(record: record)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    context.delete(record)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "trash")
                                 }
-                        }
+                                .tint(.red)
+                                
+                                Button {
+                                    editingRecord = record
+                                } label: {
+                                    Image(systemName: "square.and.pencil")
+                                }
+                                .tint(.blue)
+                                
+                            }
                     }
                 }
-                .scrollContentBackground(.hidden)
-                .navigationTitle("保有リスト")
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showStockRecordView.toggle()
-                        } label: {
-                            Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                .foregroundColor(.blue)
-                        }
+            }
+            .scrollContentBackground(.hidden)
+            .screenBackground()
+            .navigationTitle("保有リスト")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showStockRecordView.toggle()
+                    } label: {
+                        Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                            .foregroundColor(.blue)
                     }
-                    
-                    ToolbarItem(placement: .bottomBar) {
-                        Button {
-                            showAddStockView.toggle()
-                        } label: {
-                            Label("追加", systemImage: "plus")
-                                .padding()
-                                .background(Color.green)
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 3)
-                        }
-                        .matchedTransitionSource(id: "add", in: animation)
+                }
+                
+                ToolbarItem(placement: .bottomBar) {
+                    Button {
+                        showAddStockView.toggle()
+                    } label: {
+                        Label("追加", systemImage: "plus")
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                            .shadow(radius: 3)
                     }
+                    .matchedTransitionSource(id: "add", in: animation)
                 }
             }
             .sheet(isPresented: $showAddStockView) {
