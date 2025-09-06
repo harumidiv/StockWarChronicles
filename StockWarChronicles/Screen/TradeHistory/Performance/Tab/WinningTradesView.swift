@@ -41,7 +41,7 @@ struct WinningTradesView: View {
                         MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma() + "円", iconName: "dollarsign.circle")
                             .foregroundColor(.red)
                         Spacer()
-                        MetricView(label: "平均損益額", value: String(format: "%.0f円", summary.profitAmount), iconName: "banknote.fill")
+                        MetricView(label: "平均損益額", value: "\(summary.profitAmount.withComma())円", iconName: "banknote.fill")
                             .foregroundColor(.red)
                     }
                     HStack {
@@ -76,8 +76,10 @@ struct WinningTradesView: View {
                                 }
                                 
                                 Text(record.name)
+                                    .bold()
+                                    .foregroundColor(.green)
                                 Spacer()
-                                Text(String(format: "%.0f円", Double(record.profitAndLoss)))
+                                Text("\(Double(record.profitAndLoss).withComma())円")
                                     .foregroundColor(.red)
                                     .fontWeight(.semibold)
                             }
@@ -106,6 +108,7 @@ struct WinningTradesView: View {
             .padding()
         }
         .navigationTitle("勝ち取引")
+        .screenBackground()
     }
 }
 

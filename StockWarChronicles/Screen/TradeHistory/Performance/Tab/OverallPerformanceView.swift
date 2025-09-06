@@ -46,7 +46,9 @@ struct OverallPerformanceView: View {
                     HStack {
                         MetricView(label: "勝率", value: String(format: "%.2f%%", calculator.calculateWinRate() ?? 0.0), iconName: "chart.pie.fill")
                         Spacer()
-                        MetricView(label: "平均損益額", value: String(format: "%.0f円", calculator.calculateAverageProfitAndLossAmount() ?? 0.0), iconName: "dollarsign.circle")
+
+                        let totalAmount = calculator.calculateAverageProfitAndLossAmount() ?? 0.0
+                        MetricView(label: "平均損益額", value: "\(totalAmount.withComma())円", iconName: "dollarsign.circle")
                     }
                     HStack {
                         MetricView(label: "平均保有日数", value: String(format: "%.1f日", calculator.calculateAverageHoldingPeriod() ?? 0.0), iconName: "calendar")
@@ -82,6 +84,7 @@ struct OverallPerformanceView: View {
             .padding()
         }
         .navigationTitle("全体パフォーマンス")
+        .screenBackground()
         .onAppear {
             monthlyPerformance = calculator.calculateMonthlyProfit()
         }
