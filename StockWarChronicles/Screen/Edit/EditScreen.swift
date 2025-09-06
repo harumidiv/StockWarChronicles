@@ -77,11 +77,11 @@ struct EditScreen: View {
                             
                         },
                         label: {
-                        HStack {
-                            Image(systemName: "externaldrive")
-                            Text("保存")
-                        }
-                    })
+                            HStack {
+                                Image(systemName: "externaldrive")
+                                Text("保存")
+                            }
+                        })
                 }
                 
                 if !keyboardIsPresented {
@@ -152,36 +152,51 @@ struct EditScreen: View {
 
 struct StockSellEditView: View {
     @Binding var sales: [StockTradeInfo]
-    
     var body: some View {
         Section(header: Text("売却")) {
             ForEach($sales) { $sale in
-                DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
-                
-                HStack {
-                    TextField("購入額", value: $sale.amount, format: .number)
-                        .keyboardType(.numberPad)
-                    Text("円")
-                    
-                    TextField("株数", value: $sale.shares, format: .number)
-                        .keyboardType(.numberPad)
-                    Text("株")
-                }
-                
                 VStack {
-                    HStack {
-                        Text("メモ")
-                            .font(.caption2)
-                            .foregroundColor(.gray)
-                        Spacer()
+                    HStack(alignment: .top) {
+                        Button(action: {
+                            if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
+                                $sales.wrappedValue.remove(at: index)
+                            }
+                            deleteSellHistory = nil
+                        }, label: {
+                            Image(systemName: "xmark.app")
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.red)
+                        })
+                        .buttonStyle(.plain)
+                        DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
                     }
-                    TextEditor(text: $sale.reason)
-                        .frame(height: 100)
-                        .padding(4)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.5))
-                        )
+                    
+                    HStack {
+                        TextField("購入額", value: $sale.amount, format: .number)
+                            .keyboardType(.numberPad)
+                        Text("円")
+                        
+                        TextField("株数", value: $sale.shares, format: .number)
+                            .keyboardType(.numberPad)
+                        Text("株")
+                    }
+                    
+                    VStack {
+                        HStack {
+                            Text("メモ")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                            Spacer()
+                        }
+                        TextEditor(text: $sale.reason)
+                            .frame(height: 100)
+                            .padding(4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.5))
+                            )
+                    }
                 }
             }
         }

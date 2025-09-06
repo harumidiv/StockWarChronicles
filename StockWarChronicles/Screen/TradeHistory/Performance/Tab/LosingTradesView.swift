@@ -44,18 +44,17 @@ struct LosingTradesView: View {
                 Text("負け取引サマリー")
                     .font(.title2)
                     .fontWeight(.bold)
-                VStack {
-                    HStack {
+                HStack {
+                    VStack(alignment: .leading) {
                         MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma() + "円", iconName: "dollarsign.circle")
                             .foregroundColor(.blue)
-                        Spacer()
-                        MetricView(label: "平均損益額", value: String(format: "%.0f円", summary.profitAmount), iconName: "banknote.fill")
-                            .foregroundColor(.blue)
-                    }
-                    HStack {
                         MetricView(label: "平均%", value: String(format: "%.2f%%", summary.profitPercentage), iconName: "percent")
                             .foregroundColor(.blue)
-                        Spacer()
+                    }
+                    Spacer()
+                    VStack(alignment: .leading) {
+                        MetricView(label: "平均損益額", value: "\(summary.profitAmount.withComma())円", iconName: "banknote.fill")
+                            .foregroundColor(.blue)
                         MetricView(label: "平均保有日数", value: String(format: "%d日", Int(summary.holdingDays)), iconName: "calendar")
                     }
                 }
@@ -85,8 +84,10 @@ struct LosingTradesView: View {
                                 }
                                 
                                 Text(record.name)
+                                    .bold()
+                                    .foregroundColor(.green)
                                 Spacer()
-                                Text(String(format: "%.0f円", Double(record.profitAndLoss)))
+                                Text("\(Double(record.profitAndLoss).withComma())円")
                                     .foregroundColor(.blue)
                                     .fontWeight(.semibold)
                             }
@@ -115,6 +116,7 @@ struct LosingTradesView: View {
             .padding()
         }
         .navigationTitle("負け取引")
+        .screenBackground()
     }
 }
 
