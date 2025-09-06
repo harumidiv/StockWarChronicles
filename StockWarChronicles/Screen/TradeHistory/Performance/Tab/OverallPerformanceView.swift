@@ -21,7 +21,7 @@ struct OverallPerformanceView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text("\(selectedYear)年 総合サマリー")
+                Text("\(selectedYear.description)年 総合サマリー")
                     .font(.title2)
                     .fontWeight(.bold)
                 

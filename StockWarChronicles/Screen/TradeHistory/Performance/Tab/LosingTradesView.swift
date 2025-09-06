@@ -73,14 +73,16 @@ struct LosingTradesView: View {
                         
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("\(index + 1)位")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(index == 0 ? .white : .black)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(index == 0 ? Color.red : Color.clear)
-                                    .cornerRadius(8)
+                                ZStack {
+                                    Circle()
+                                        .foregroundColor(Color(.systemBackground))
+                                        .frame(width: 24, height: 24)
+
+                                    // 前面のアイコン
+                                    Image(systemName: "crown.fill")
+                                        .frame(width: 16, height: 16)
+                                        .foregroundColor(crownBackgroundColor(for: index))
+                                }
                                 
                                 Text(record.name)
                                 Spacer()
@@ -117,6 +119,19 @@ struct LosingTradesView: View {
 }
 
 extension LosingTradesView {
+    func crownBackgroundColor(for index: Int) -> Color {
+        switch index {
+        case 0:
+            return Color(red: 1.0, green: 0.84, blue: 0.0)
+        case 1:
+            return Color(red: 0.75, green: 0.75, blue: 0.75)
+        case 2:
+            return Color(red: 0.8, green: 0.5, blue: 0.2)
+        default:
+            return .clear
+        }
+    }
+    
     func cardBackgroundColor(for index: Int) -> Color {
         switch index {
         case 0: // 1位
