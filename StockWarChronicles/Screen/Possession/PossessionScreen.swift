@@ -25,10 +25,8 @@ struct PossessionScreen: View {
                 ForEach(records) { record in
                     if !record.isTradeFinish {
                         stockCell(record: record)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                sellRecord = record
-                            }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     context.delete(record)
@@ -49,21 +47,32 @@ struct PossessionScreen: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .screenBackground()
             .navigationTitle("保有リスト")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("record", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90") {
+                    Button {
                         showStockRecordView.toggle()
+                    } label: {
+                        Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                            .foregroundColor(.blue)
                     }
                 }
                 
-                ToolbarSpacer(.flexible, placement: .bottomBar)
                 ToolbarItem(placement: .bottomBar) {
-                    Button("add", systemImage: "plus") {
+                    Button {
                         showAddStockView.toggle()
+                    } label: {
+                        Label("追加", systemImage: "plus")
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                            .shadow(radius: 3)
                     }
+                    .matchedTransitionSource(id: "add", in: animation)
                 }
-                .matchedTransitionSource(id: "add", in: animation)
             }
             .sheet(isPresented: $showAddStockView) {
                 AddScreen(showAddStockView: $showAddStockView)
@@ -82,25 +91,30 @@ struct PossessionScreen: View {
     }
     
     func stockCell(record: StockRecord) -> some View {
-        Section {
-            VStack {
+        Button {
+            sellRecord = record
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(record.name)
                         .font(.headline)
+                        .foregroundColor(.green)
                     Spacer()
                     Text("\(Int(record.purchase.amount))円")
+                        .font(.headline)
+                        .foregroundColor(.red)
                 }
                 
                 HStack {
-                    
                     Text(record.code)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.blue)
                     
                     Spacer()
                     
                     Text("\(record.remainingShares) / \(record.purchase.shares)株")
                         .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
                 
                 if !record.tags.isEmpty {
@@ -109,7 +123,7 @@ struct PossessionScreen: View {
                     }
                 }
                 
-                DashedLine(direction: .horizontal)
+                Divider()
                 
                 HStack {
                     Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
@@ -119,37 +133,43 @@ struct PossessionScreen: View {
                     Text(record.numberOfDaysHeld.description + "日")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                    
                     Spacer()
                     
                     Menu {
-                        Button(action: {
+                        Button {
                             sellRecord = record
-                        }) {
+                        } label: {
                             Label("売却", systemImage: "cart")
                         }
-                        Button(action: {
+                        Button {
                             editingRecord = record
-                        }) {
+                        } label: {
                             Label("編集", systemImage: "pencil")
                         }
                         
                         Divider()
-                        Button(role: .destructive, action: {
+                        Button(role: .destructive) {
                             context.delete(record)
                             try? context.save()
-                        }) {
+                        } label: {
                             Label("削除", systemImage: "trash")
                         }
                     } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.title3)
-                            .frame(width: 24, height: 24)
-                            .contentShape(Rectangle())
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundColor(.blue)
                     }
                 }
-                .font(.caption)
             }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+            )
         }
+        .buttonStyle(.plain)
+        .padding(.vertical, 4)
     }
 }
 

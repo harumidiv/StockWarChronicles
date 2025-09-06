@@ -137,13 +137,31 @@ extension StockRecord {
                 sales: [StockTradeInfo(amount: 7000.0, shares: 25, date: Date.from(year: 2024, month: 4, day: 20), reason: "一部を利益確定")]
             ),
             
-            // 損切りした取引
+            // 損切りした取引1
             StockRecord(
                 code: "6758", // ソニーグループ
                 market: .tokyo,
                 name: "ソニーグループ",
                 purchase: StockTradeInfo(amount: 15000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 14500.0, shares: 10, date: Date.from(year: 2024, month: 6, day: 5), reason: "想定外の業績下方修正のため損切り")]
+            ),
+            
+            // 損切りした取引2
+            StockRecord(
+                code: "2058", // ヒガシマル
+                market: .hukuoka,
+                name: "ヒガシマル",
+                purchase: StockTradeInfo(amount: 1000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), reason: "技術トレンドの動向を見て購入"),
+                sales: [StockTradeInfo(amount: 800.0, shares: 10, date: Date.from(year: 2024, month: 8, day: 5), reason: "想定外の業績下方修正のため損切り")]
+            ),
+            
+            // 損切りした取引3
+            StockRecord(
+                code: "350A", // デジタルグリッド
+                market: .tokyo,
+                name: "デジタルグリッド",
+                purchase: StockTradeInfo(amount: 12000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), reason: "技術トレンドの動向を見て購入"),
+                sales: [StockTradeInfo(amount: 11200.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 5), reason: "想定外の業績下方修正のため損切り")]
             ),
             
             // 保有中の取引 (売却履歴なし)

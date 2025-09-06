@@ -37,6 +37,7 @@ struct StockFormView: View {
                 TextField("購入額", text: $amountText)
                     .keyboardType(.decimalPad)
                 Text("円")
+                    .padding(.trailing, 8)
                 TextField("株数", text: $sharesText)
                     .keyboardType(.numberPad)
                 Text("株")

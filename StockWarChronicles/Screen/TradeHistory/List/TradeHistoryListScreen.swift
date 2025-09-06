@@ -53,6 +53,7 @@ struct TradeHistoryListScreen: View {
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var showDetail = false
+    @State private var showAnnualPerformance = false
     
     
     // Sort & Filter
@@ -124,16 +125,34 @@ struct TradeHistoryListScreen: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .screenBackground()
             .navigationTitle("取引記録")
             .navigationDestination(isPresented: $showDetail) {
                 if let record = selectedRecord {
                     TradeHistoryDetailScreen(record: record)
                 }
             }
+            .navigationDestination(isPresented: $showAnnualPerformance) {
+                AnnualPerformanceScreen(selectedYear: $selectedYear)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
                         showTradeHistoryListScreen.toggle()
+                    }
+                }
+                
+                if !sortedRecords.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: {
+                            showAnnualPerformance.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: "chart.pie")
+                                Text("年間実績")
+                            }
+                        }
                     }
                 }
             }
@@ -208,10 +227,18 @@ struct TradeHistoryListScreen: View {
     private func stockRecordInfoCell(record: StockRecord) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(record.code + " " + record.name)
-                    .font(.headline)
+                HStack(spacing: 8) {
+                    Text(record.code)
+                        .font(.headline)
+                        .foregroundColor(.green)
+                    Text(record.name)
+                        .font(.headline)
+                        .foregroundColor(.green)
+                }
+                
                 Text("保有日数: \(record.holdingPeriod )日")
                     .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
             Spacer()
             if let percentage = record.profitAndLossParcent {
