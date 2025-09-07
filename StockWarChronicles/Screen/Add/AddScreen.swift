@@ -14,6 +14,7 @@ struct AddScreen: View {
     
     @State private var code = ""
     @State private var market: Market = .tokyo
+    @State private var position: Position = .buy
     @State private var name = ""
     @State private var date = Date.fromToday()
     @State private var amountText = ""
@@ -38,7 +39,7 @@ struct AddScreen: View {
                 Form {
                     StockFormView(
                         code: $code, market: $market, name: $name,
-                        date: $date, amountText: $amountText,
+                        date: $date, position: $position, amountText: $amountText,
                         sharesText: $sharesText, emotion: $emotion,
                         reason: $reason, selectedTags: $selectedTags
                     )

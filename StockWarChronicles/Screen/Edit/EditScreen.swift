@@ -17,6 +17,7 @@ struct EditScreen: View {
     @State private var market: Market = .tokyo
     @State private var name: String = ""
     @State private var date: Date = Date()
+    @State private var position: Position = .buy
     @State private var amountText: String = ""
     @State private var sharesText: String = ""
     @State private var emotion: Emotion = .purchase(.normal)
@@ -38,6 +39,7 @@ struct EditScreen: View {
                         market: $market,
                         name: $name,
                         date: $date,
+                        position: $position,
                         amountText: $amountText,
                         sharesText: $sharesText,
                         emotion: $emotion,
@@ -116,6 +118,8 @@ struct EditScreen: View {
             market = record.market
             name = record.name
             date = record.purchase.date
+            // TODO: ここで入れる
+//            position = record.position
             amountText = String(record.purchase.amount)
             sharesText = String(record.purchase.shares)
             emotion = record.purchase.emotion

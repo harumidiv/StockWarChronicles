@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-enum Position {
-    case buy
-    case sell
+enum Position: String, CaseIterable, Identifiable {
+    case buy = "買い"
+    case sell = "売り"
+    
+    var id: Self { self }
 }

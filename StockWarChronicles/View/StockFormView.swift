@@ -13,6 +13,7 @@ struct StockFormView: View {
     @Binding var market: Market
     @Binding var name: String
     @Binding var date: Date
+    @Binding var position: Position
     @Binding var amountText: String
     @Binding var sharesText: String
     @Binding var emotion: Emotion
@@ -20,7 +21,7 @@ struct StockFormView: View {
     @Binding var selectedTags: [CategoryTag]
     
     var body: some View {
-        Section(header: Text("サマリー")) {
+        Section(header: Text("銘柄情報")) {
             HStack {
                 TextField("銘柄コード", text: $code)
                 Picker("", selection: $market) {
@@ -33,21 +34,32 @@ struct StockFormView: View {
             TextField("銘柄名", text: $name)
         }
         
-        Section(header: Text("購入")) {
+        Section(header: Text("取引情報")) {
+            HStack {
+                Picker("ポジション", selection: $position) {
+                    ForEach(Position.allCases) { value in
+                        Text(value.rawValue)
+                            .tag(value)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
             Picker("感情", selection: $emotion) {
                 ForEach(PurchaseEmotions.allCases) { emotion in
                     Text(emotion.rawValue + emotion.name)
                         .tag(Emotion.purchase(emotion))
                 }
             }
-            DatePicker("購入日", selection: $date, displayedComponents: .date)
+            DatePicker("日付", selection: $date, displayedComponents: .date)
             HStack {
                 TextField("金額", text: $amountText)
                     .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
                 Text("円")
                     .padding(.trailing, 8)
                 TextField("株数", text: $sharesText)
                     .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
                 Text("株")
             }
             
@@ -82,6 +94,7 @@ struct StockFormView: View {
             market: .constant(.tokyo),
             name: .constant("トヨタ自動車"),
             date: .constant(Date()),
+            position: .constant(.buy),
             amountText: .constant("200000"),
             sharesText: .constant("100"),
             emotion: .constant(Emotion.purchase(.random)
