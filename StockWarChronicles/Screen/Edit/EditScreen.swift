@@ -91,6 +91,7 @@ struct EditScreen: View {
                                 Image(systemName: "externaldrive")
                                 Text("保存")
                             }
+                            .padding(.horizontal)
                         })
                 }
                 
@@ -166,12 +167,16 @@ struct EditScreen: View {
 
 struct StockSellEditView: View {
     @Binding var sales: [StockTradeInfo]
+    @State var calendarId: UUID = UUID()
+    
     var body: some View {
         Section(header: Text("売却")) {
             ForEach($sales) { $sale in
                 VStack {
                     HStack(alignment: .top) {
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .heavy)
+                            generator.impactOccurred()
                             if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
                                 $sales.wrappedValue.remove(at: index)
                             }
@@ -182,7 +187,7 @@ struct StockSellEditView: View {
                                 .foregroundColor(.red)
                         })
                         .buttonStyle(.plain)
-                        DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
+                        Spacer()
                     }
                     
                     Picker("感情", selection: $sale.emotion) {
@@ -191,17 +196,50 @@ struct StockSellEditView: View {
                                 .tag(Emotion.sales(emotion))
                         }
                     }
+                    .onChange(of: sale.emotion) { oldValue, newValue in
+                        let generator = UISelectionFeedbackGenerator()
+                        generator.selectionChanged()
+                    }
+                    Divider()
+                        .background(.separator)
+                        .padding(.bottom)
+                    
+                    DatePicker("日付", selection: $sale.date, displayedComponents: .date)
+                        .id(calendarId)
+                        .onChange(of: sale.date) { oldValue, newValue in
+                            let generator = UISelectionFeedbackGenerator()
+                            generator.selectionChanged()
+                            calendarId = UUID()
+                        }
+                    
+                    Divider()
+                        .background(.separator)
+                        .padding(.bottom)
                     
                     HStack {
-                        TextField("購入額", value: $sale.amount, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                        Text("円")
-                        
+                        VStack {
+                            HStack {
+                                TextField("購入額", value: $sale.amount, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                Text("円")
+                            }
+                            Divider()
+                                .background(.separator)
+                                .padding(.bottom)
+                        }
+                        VStack {
+                            HStack {
                         TextField("株数", value: $sale.shares, format: .number)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                         Text("株")
+                            }
+                            Divider()
+                                .background(.separator)
+                                .padding(.bottom)
+                        }
+                        .padding(.leading)
                     }
                     
                     VStack {

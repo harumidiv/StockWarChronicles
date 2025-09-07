@@ -96,8 +96,7 @@ struct PerformanceCalculator {
     }
     
     // 平均保有日数
-    func calculateAverageHoldingPeriod() -> Double? {
-        guard !records.isEmpty else { return nil }
+    func calculateAverageHoldingPeriod() -> Double {
         let totalDays = records.reduce(0) { sum, record in
             sum + record.holdingPeriod
         }

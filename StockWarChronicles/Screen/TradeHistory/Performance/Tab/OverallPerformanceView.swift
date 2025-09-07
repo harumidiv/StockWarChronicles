@@ -55,24 +55,20 @@ struct OverallPerformanceView: View {
                 HStack {
                     VStack(alignment: .leading) {
                         let totalProfitAndLoss = calculator.calculateTotalProfitAndLoss(from: records)
-                        MetricView(label: "合計損益", value: totalProfitAndLoss.withComma() + "円", iconName: "dollarsign.circle")
-                            .foregroundColor(totalProfitAndLoss > 0 ? .red : .blue)
-                        MetricView(label: "平均保有日数", value: String(format: "%.1f日", calculator.calculateAverageHoldingPeriod() ?? 0.0), iconName: "calendar")
+                        MetricView(label: "合計損益", value: totalProfitAndLoss.withComma(), unit: "円", iconName: "dollarsign.circle", color: totalProfitAndLoss >= 0 ? .red : .blue)
+                        MetricView(label: "平均保有日数", value: Int(calculator.calculateAverageHoldingPeriod()).description, unit: "日", iconName: "calendar", color: .primary)
                         
                         let winRate: Double = calculator.calculateWinRate() ?? 0.0
-                        MetricView(label: "勝率", value: String(format: "%.2f%%", winRate), iconName: "chart.pie.fill")
-                            .foregroundColor(winRate > 50 ? .red : .blue)
+                        MetricView(label: "勝率", value: String(format: "%.1f",winRate), unit: "", iconName: "chart.pie.fill", color: winRate >= 50 ? .red : .blue)
                     }
                     Spacer()
                     
                     VStack(alignment: .leading) {
                         let totalAmount = calculator.calculateAverageProfitAndLossAmount() ?? 0.0
-                        MetricView(label: "平均損益額", value: "\(totalAmount.withComma())円", iconName: "banknote.fill")
-                            .foregroundColor(totalAmount > 0 ? .red : .blue)
+                        MetricView(label: "平均損益額", value: Int(totalAmount).withComma(), unit: "円", iconName: "banknote.fill", color: totalAmount >= 0 ? .red : .blue)
                         
                         let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent() ?? 0.0
-                        MetricView(label: "平均%", value: String(format: "%.2f%%", averageParceht), iconName: "percent")
-                            .foregroundColor(averageParceht > 0 ? .red : .blue)
+                        MetricView(label: "平均%", value: String(format: "%.1f", averageParceht), unit: "%", iconName: "percent", color: averageParceht >= 0 ? .red : .blue)
                         Spacer()
                     }
                 }
@@ -103,7 +99,6 @@ struct OverallPerformanceView: View {
             .padding()
         }
         .navigationTitle("全体パフォーマンス")
-        .screenBackground()
         .onAppear {
             monthlyPerformance = calculator.calculateMonthlyProfit()
         }

@@ -42,21 +42,22 @@ struct PossessionScreen: View {
                                     Image(systemName: "square.and.pencil")
                                 }
                                 .tint(.blue)
-                                
                             }
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .screenBackground()
+            .listStyle(.plain)
             .navigationTitle("保有リスト")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showStockRecordView.toggle()
-                    } label: {
-                        Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                            .foregroundColor(.blue)
+                // 取引の完了しているデータがある場合履歴を表示
+                if records.contains(where: { $0.isTradeFinish }) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showStockRecordView.toggle()
+                        } label: {
+                            Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                .foregroundColor(.blue)
+                        }
                     }
                 }
                 
@@ -64,13 +65,12 @@ struct PossessionScreen: View {
                     Button {
                         showAddStockView.toggle()
                     } label: {
-                        Label("追加", systemImage: "plus")
+                        Image(systemName: "plus")
+                            .foregroundColor(.primary)
                             .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
                             .clipShape(Circle())
-                            .shadow(radius: 3)
                     }
+                    .frame(width: 60, height: 60) 
                     .matchedTransitionSource(id: "add", in: animation)
                 }
             }
@@ -98,17 +98,14 @@ struct PossessionScreen: View {
                 HStack {
                     Text(record.name)
                         .font(.headline)
-                        .foregroundColor(.green)
                     Spacer()
                     Text("\(Int(record.purchase.amount))円")
                         .font(.headline)
-                        .foregroundColor(.red)
                 }
                 
                 HStack {
                     Text(record.code)
                         .font(.subheadline)
-                        .foregroundColor(.blue)
                     
                     Spacer()
                     
@@ -156,20 +153,20 @@ struct PossessionScreen: View {
                             Label("削除", systemImage: "trash")
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .foregroundColor(.blue)
+                        Image(systemName: "ellipsis")
+                            .frame(width: 32, height: 24)
+                            .foregroundColor(.green)
                     }
+                    .contentShape(Rectangle())
                 }
             }
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .fill(Color(.tertiarySystemGroupedBackground))
             )
         }
         .buttonStyle(.plain)
-        .padding(.vertical, 4)
     }
 }
 

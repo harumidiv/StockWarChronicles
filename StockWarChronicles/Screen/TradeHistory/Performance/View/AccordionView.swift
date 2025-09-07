@@ -26,7 +26,6 @@ struct AccordionView<Content: View>: View {
                     .renderingMode(.template)
                     .resizable()
                     .frame(width: 12, height: 12)
-                    .foregroundColor(.green)
             }
             .padding(8)
             .contentShape(Rectangle())
