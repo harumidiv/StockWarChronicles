@@ -14,8 +14,8 @@ struct StockFormView: View {
     @Binding var name: String
     @Binding var date: Date
     @Binding var position: Position
-    @Binding var amount: Double
-    @Binding var shares: Int
+    @Binding var amountText: String
+    @Binding var sharesText: String
     @Binding var emotion: Emotion
     @Binding var reason: String
     @Binding var selectedTags: [CategoryTag]
@@ -52,12 +52,12 @@ struct StockFormView: View {
             }
             DatePicker("日付", selection: $date, displayedComponents: .date)
             HStack {
-                TextField("金額", value: $amount, format: .number)
+                TextField("金額", text: $amountText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                 Text("円")
                     .padding(.trailing, 8)
-                TextField("株数", value: $shares, format: .number)
+                TextField("株数", text: $sharesText)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                 Text("株")
@@ -95,8 +95,8 @@ struct StockFormView: View {
             name: .constant("トヨタ自動車"),
             date: .constant(Date()),
             position: .constant(.buy),
-            amount: .constant(200000),
-            shares: .constant(100),
+            amountText: .constant("200000"),
+            sharesText: .constant("100"),
             emotion: .constant(Emotion.purchase(.random)
                               ),
             reason: .constant("長期投資のため"),
