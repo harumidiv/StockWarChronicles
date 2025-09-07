@@ -62,8 +62,6 @@ struct PossessionScreen: View {
                     } label: {
                         Label("追加", systemImage: "plus")
                             .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
                             .clipShape(Circle())
                             .shadow(radius: 3)
                     }
@@ -94,17 +92,14 @@ struct PossessionScreen: View {
                 HStack {
                     Text(record.name)
                         .font(.headline)
-                        .foregroundColor(.green)
                     Spacer()
                     Text("\(Int(record.purchase.amount))円")
                         .font(.headline)
-                        .foregroundColor(.red)
                 }
                 
                 HStack {
                     Text(record.code)
                         .font(.subheadline)
-                        .foregroundColor(.blue)
                     
                     Spacer()
                     

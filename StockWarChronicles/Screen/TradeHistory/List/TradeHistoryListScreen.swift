@@ -230,10 +230,8 @@ struct TradeHistoryListScreen: View {
                     HStack(spacing: 8) {
                         Text(record.code)
                             .font(.headline)
-                            .foregroundColor(.green)
                         Text(record.name)
                             .font(.headline)
-                            .foregroundColor(.green)
                     }
                     
                     Text("保有日数: \(record.holdingPeriod )日")

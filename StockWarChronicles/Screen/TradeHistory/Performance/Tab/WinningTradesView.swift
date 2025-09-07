@@ -77,7 +77,6 @@ struct WinningTradesView: View {
                                 
                                 Text(record.name)
                                     .bold()
-                                    .foregroundColor(.green)
                                 Spacer()
                                 Text("\(Double(record.profitAndLoss).withComma())円")
                                     .foregroundColor(.red)
