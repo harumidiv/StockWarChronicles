@@ -34,6 +34,12 @@ struct SellScreen: View {
             VStack {
                 Form {
                     Section(header: Text(record.code + " " + record.name)) {
+                        Picker("感情", selection: $emotion) {
+                            ForEach(SalesEmotions.allCases) { emotion in
+                                Text(emotion.rawValue + emotion.name)
+                                    .tag(Emotion.sales(emotion))
+                            }
+                        }
                         DatePicker("売却日", selection: $sellDate, displayedComponents: .date)
                         
                         HStack {

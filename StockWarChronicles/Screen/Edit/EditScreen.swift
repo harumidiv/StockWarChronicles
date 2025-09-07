@@ -133,6 +133,7 @@ struct EditScreen: View {
         record.purchase.date = date
         record.purchase.amount = Double(amountText) ?? 0
         record.purchase.shares = Int(sharesText) ?? 0
+        record.purchase.emotion = emotion
         record.purchase.reason = reason
         record.tags = selectedTags.map { .init(name: $0.name, color: $0.color) }
         record.sales = sales
@@ -172,6 +173,13 @@ struct StockSellEditView: View {
                         })
                         .buttonStyle(.plain)
                         DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
+                    }
+                    
+                    Picker("感情", selection: $sale.emotion) {
+                        ForEach(SalesEmotions.allCases) { emotion in
+                            Text(emotion.rawValue + emotion.name)
+                                .tag(Emotion.sales(emotion))
+                        }
                     }
                     
                     HStack {

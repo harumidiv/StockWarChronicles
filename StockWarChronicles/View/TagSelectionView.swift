@@ -39,6 +39,7 @@ struct TagSelectionView: View {
                     }
                 }
             }
+            .padding(.bottom, 4)
             
             HStack(spacing: 8) {
                 TextField("新しいタグを追加", text: $newTagInput)
