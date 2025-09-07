@@ -71,7 +71,13 @@ struct EditScreen: View {
                             let isOversold =  totalSold > Int(sharesText) ?? 0
                             
                             let totalSoldDate = sales.map(\.date)
-                            let isInvalidDate = totalSoldDate.first(where: { $0 < date }) != nil
+                            let calendar = Calendar.current
+                            let startOfDate = calendar.startOfDay(for: date)
+
+                            let isInvalidDate = totalSoldDate.first(where: {
+                                let startOfSoldDate = calendar.startOfDay(for: $0)
+                                return startOfSoldDate < startOfDate
+                            }) != nil
                             
                             if isOversold || isInvalidDate {
                                 showOversoldAlert.toggle()
