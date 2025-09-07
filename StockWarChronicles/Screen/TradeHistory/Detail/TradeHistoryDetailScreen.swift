@@ -222,7 +222,7 @@ struct TradeHistoryDetailScreen: View {
                 }
             }
             Section(header: Text("購入メモ").font(.headline)) {
-                Text(record.purchase.reason)
+                Text(record.purchase.emotion.emoji + record.purchase.reason)
                     .font(.body)
                     .padding(.vertical, 4)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -231,7 +231,7 @@ struct TradeHistoryDetailScreen: View {
             Section(header: Text("売却メモ").font(.headline)) {
                 VStack(spacing: 0) {
                     ForEach(record.sales) { sale in
-                        Text(sale.reason)
+                        Text(sale.emotion.emoji + sale.reason)
                             .font(.body)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
