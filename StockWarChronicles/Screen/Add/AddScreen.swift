@@ -8,6 +8,27 @@
 import SwiftUI
 import SwiftData
 
+enum PurchaseEmotions: String, CaseIterable {
+    case excitement = "🤩"
+    case confidence = "🤔"
+    case normal = "😐"
+    case anxiety = "😨"
+    case frustration = "😞"
+    case anguish = "😖"
+    
+    /// 感情に対応する日本語名
+    var name: String {
+        switch self {
+        case .excitement: return "興奮・期待"
+        case .confidence: return "熟考・自信"
+        case .normal: return "無"
+        case .anxiety: return "不安・恐怖"
+        case .frustration: return "不満・妥協"
+        case .anguish: return "苦悩"
+        }
+    }
+}
+
 struct AddScreen: View {
     @Environment(\.modelContext) private var context
     @Binding var showAddStockView: Bool

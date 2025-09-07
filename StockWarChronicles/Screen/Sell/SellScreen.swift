@@ -8,6 +8,27 @@
 import SwiftUI
 import SwiftData
 
+enum SalesEmotions: String, CaseIterable {
+    case satisfaction = "🤑"
+    case relief = "😌"
+    case accomplishment = "🥳"
+    case normal = "😐"
+    case regret = "😭"
+    case sadness = "😱"
+    case angry = "🤬"
+    
+    var name: String {
+        switch self {
+        case .satisfaction: return "満足"
+        case .relief: return "安堵"
+        case .accomplishment: return "達成感"
+        case .normal: return "無"
+        case .regret: return "後悔・悲しみ"
+        case .sadness: return "絶望"
+        case .angry: return "怒り"
+        }
+    }
+}
 
 struct SellScreen: View {
     enum SellUnit {

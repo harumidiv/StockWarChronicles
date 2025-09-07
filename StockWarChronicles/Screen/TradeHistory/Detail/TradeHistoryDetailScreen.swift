@@ -221,14 +221,14 @@ struct TradeHistoryDetailScreen: View {
                     }
                 }
             }
-            Section(header: Text("メモ").font(.headline)) {
+            Section(header: Text("購入メモ").font(.headline)) {
                 Text(record.purchase.reason)
                     .font(.body)
                     .padding(.vertical, 4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            Section(header: Text("売却根拠").font(.headline)) {
+            Section(header: Text("売却メモ").font(.headline)) {
                 VStack(spacing: 0) {
                     ForEach(record.sales) { sale in
                         Text(sale.reason)
