@@ -116,7 +116,6 @@ struct LosingTradesView: View {
             .padding()
         }
         .navigationTitle("負け取引")
-        .screenBackground()
     }
 }
 

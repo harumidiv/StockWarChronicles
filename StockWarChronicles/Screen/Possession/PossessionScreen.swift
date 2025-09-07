@@ -25,7 +25,6 @@ struct PossessionScreen: View {
                 ForEach(records) { record in
                     if !record.isTradeFinish {
                         stockCell(record: record)
-                            .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
@@ -42,13 +41,10 @@ struct PossessionScreen: View {
                                     Image(systemName: "square.and.pencil")
                                 }
                                 .tint(.blue)
-                                
                             }
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .screenBackground()
             .navigationTitle("保有リスト")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -164,8 +160,7 @@ struct PossessionScreen: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .fill(Color(.systemGroupedBackground))
             )
         }
         .buttonStyle(.plain)

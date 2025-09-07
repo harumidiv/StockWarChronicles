@@ -126,7 +126,6 @@ struct TradeHistoryListScreen: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .screenBackground()
             .navigationTitle("取引記録")
             .navigationDestination(isPresented: $showDetail) {
                 if let record = selectedRecord {

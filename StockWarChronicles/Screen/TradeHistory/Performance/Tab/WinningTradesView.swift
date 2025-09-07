@@ -108,7 +108,6 @@ struct WinningTradesView: View {
             .padding()
         }
         .navigationTitle("勝ち取引")
-        .screenBackground()
     }
 }
 

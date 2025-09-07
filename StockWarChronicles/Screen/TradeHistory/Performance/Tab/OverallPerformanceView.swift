@@ -103,7 +103,6 @@ struct OverallPerformanceView: View {
             .padding()
         }
         .navigationTitle("全体パフォーマンス")
-        .screenBackground()
         .onAppear {
             monthlyPerformance = calculator.calculateMonthlyProfit()
         }
