@@ -15,7 +15,7 @@ struct MetricView: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: iconName)
-                .foregroundColor(.accentColor)
+                .foregroundColor(.primary)
                 .font(.title)
                 .frame(width: 30, height: 30)
             VStack(alignment: .leading) {

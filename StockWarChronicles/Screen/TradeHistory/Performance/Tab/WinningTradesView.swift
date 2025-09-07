@@ -39,15 +39,12 @@ struct WinningTradesView: View {
                 HStack {
                     VStack(alignment: .leading) {
                         MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma() + "円", iconName: "dollarsign.circle")
-                            .foregroundColor(.red)
                         MetricView(label: "平均%", value: String(format: "%.2f%%", summary.profitPercentage), iconName: "percent")
-                            .foregroundColor(.red)
                         
                     }
                     Spacer()
                     VStack(alignment: .leading) {
                         MetricView(label: "平均損益額", value: "\(summary.profitAmount.withComma())円", iconName: "banknote.fill")
-                            .foregroundColor(.red)
                         MetricView(label: "平均保有日数", value: String(format: "%d日", Int(summary.holdingDays)), iconName: "calendar")
                     }
                 }
@@ -69,7 +66,6 @@ struct WinningTradesView: View {
                                         .foregroundColor(Color(.systemBackground))
                                         .frame(width: 24, height: 24)
 
-                                    // 前面のアイコン
                                     Image(systemName: "crown.fill")
                                         .frame(width: 16, height: 16)
                                         .foregroundColor(crownBackgroundColor(for: index))
@@ -79,7 +75,6 @@ struct WinningTradesView: View {
                                     .bold()
                                 Spacer()
                                 Text("\(Double(record.profitAndLoss).withComma())円")
-                                    .foregroundColor(.red)
                                     .fontWeight(.semibold)
                             }
                             .padding(.bottom, 4)
@@ -88,7 +83,6 @@ struct WinningTradesView: View {
                                 Text("保有日数 \(record.holdingPeriod)日")
                                 Spacer()
                                 Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
-                                    .foregroundColor(.red)
                                     .fontWeight(.semibold)
                             }
                         }
