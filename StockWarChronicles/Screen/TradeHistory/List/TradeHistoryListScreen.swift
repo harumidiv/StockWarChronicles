@@ -190,7 +190,7 @@ struct TradeHistoryListScreen: View {
                             self.selectedYear = year
                         }
                     }) {
-                        Text("\(year)年")
+                        Text("\(year.description)年")
                     }
                 }
             } label: {
