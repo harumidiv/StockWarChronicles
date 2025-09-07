@@ -127,21 +127,19 @@ struct LosingTradesView: View {
 }
 
 extension LosingTradesView {
-    /// 王冠の背景色を青系グラデーションに設定
     func crownBackgroundColor(for index: Int) -> Color {
         switch index {
         case 0:
-            return Color(red: 0.2, green: 0.2, blue: 0.8) // Dark Blue
+            return Color(red: 1.0, green: 0.84, blue: 0.0)
         case 1:
-            return Color(red: 0.4, green: 0.4, blue: 0.9) // Medium Blue
+            return Color(red: 0.75, green: 0.75, blue: 0.75)
         case 2:
-            return Color(red: 0.6, green: 0.6, blue: 1.0) // Light Blue
+            return Color(red: 0.8, green: 0.5, blue: 0.2)
         default:
             return .clear
         }
     }
     
-    /// カードの背景色を青系グラデーションに設定
     func cardBackgroundColor(for index: Int) -> Color {
         switch index {
         case 0: // 1st Place
@@ -154,8 +152,7 @@ extension LosingTradesView {
             return Color(.systemGray6)
         }
     }
-
-    /// カードの影の色はそのまま
+    
     func cardShadowColor(for index: Int) -> Color {
         switch index {
         case 0, 1, 2:
