@@ -120,11 +120,19 @@ struct TradeHistoryListScreen: View {
                             } label: {
                                 stockRecordInfoCell(record: record)
                             }
+                            .padding()
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             .buttonStyle(.plain)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color(.tertiarySystemGroupedBackground))
+                            )
                         }
                     }
                 }
             }
+            .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .navigationTitle("取引記録")
             .navigationDestination(isPresented: $showDetail) {
@@ -155,7 +163,6 @@ struct TradeHistoryListScreen: View {
                     }
                 }
             }
-            .background(Color(.systemBackground))
         }
     }
     
@@ -227,42 +234,43 @@ struct TradeHistoryListScreen: View {
     }
     
     private func stockRecordInfoCell(record: StockRecord) -> some View {
-        VStack {
-            HStack {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Text(record.code)
-                            .font(.headline)
-                        Text(record.name)
-                            .font(.headline)
-                    }
-                    
-                    Text("保有日数: \(record.holdingPeriod )日")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                if let percentage = record.profitAndLossParcent {
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text(String(format: "%.1f", percentage) + "%")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(percentage >= 0 ? .red : .blue)
+        HStack {
+            VStack {
+                HStack {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Text(record.code)
+                                .font(.headline)
+                            Text(record.name)
+                                .font(.headline)
+                        }
                         
-                        Text("\(record.profitAndLoss.withComma())円")
-                            .fontWeight(.bold)
-                            .foregroundColor(percentage >= 0 ? .red : .blue)
+                        Text("保有日数: \(record.holdingPeriod )日")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    if let percentage = record.profitAndLossParcent {
+                        VStack(alignment: .trailing, spacing: 8) {
+                            Text(String(format: "%.1f", percentage) + "%")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(percentage >= 0 ? .red : .blue)
+                            
+                            Text("\(record.profitAndLoss.withComma())円")
+                                .fontWeight(.bold)
+                                .foregroundColor(percentage >= 0 ? .red : .blue)
+                        }
                     }
                 }
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-            }
-            if !record.tags.isEmpty {
-                ChipsView(tags: record.tags) { tag in
-                    TagView(name: tag.name, color: tag.color)
+                if !record.tags.isEmpty {
+                    ChipsView(tags: record.tags) { tag in
+                        TagView(name: tag.name, color: tag.color)
+                    }
                 }
             }
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
         }
         .contentShape(Rectangle())
     }
