@@ -139,6 +139,7 @@ struct EditScreen: View {
         record.code = code
         record.market = market
         record.name = name
+        record.position = position
         record.purchase.date = date
         record.purchase.amount = Double(amountText) ?? 0
         record.purchase.shares = Int(sharesText) ?? 0
