@@ -20,6 +20,8 @@ struct StockFormView: View {
     @Binding var reason: String
     @Binding var selectedTags: [CategoryTag]
     
+    @State var calendarId: UUID = UUID()
+    
     var body: some View {
         Section(header: Text("銘柄情報")) {
             HStack {
@@ -30,27 +32,47 @@ struct StockFormView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .onChange(of: market) { oldValue, newValue in
+                    let generator = UISelectionFeedbackGenerator()
+                    generator.selectionChanged()
+                }
+                
             }
             TextField("銘柄名", text: $name)
         }
         
         Section(header: Text("取引情報")) {
-            HStack {
-                Picker("ポジション", selection: $position) {
-                    ForEach(Position.allCases) { value in
-                        Text(value.rawValue)
-                            .tag(value)
-                    }
+            Picker("ポジション", selection: $position) {
+                ForEach(Position.allCases) { value in
+                    Text(value.rawValue)
+                        .tag(value)
                 }
-                .pickerStyle(.segmented)
             }
+            .pickerStyle(.segmented)
+            .onChange(of: position) { oldValue, newValue in
+                let generator = UISelectionFeedbackGenerator()
+                generator.selectionChanged()
+            }
+            
             Picker("感情", selection: $emotion) {
                 ForEach(PurchaseEmotions.allCases) { emotion in
                     Text(emotion.rawValue + emotion.name)
                         .tag(Emotion.purchase(emotion))
                 }
             }
+            .onChange(of: emotion) { oldValue, newValue in
+                let generator = UISelectionFeedbackGenerator()
+                generator.selectionChanged()
+            }
+            
             DatePicker("日付", selection: $date, displayedComponents: .date)
+                .id(calendarId)
+                .onChange(of: date) { oldValue, newValue in
+                    let generator = UISelectionFeedbackGenerator()
+                    generator.selectionChanged()
+                    calendarId = UUID()
+                }
+            
             HStack {
                 TextField("金額", text: $amountText)
                     .keyboardType(.decimalPad)

@@ -167,12 +167,16 @@ struct EditScreen: View {
 
 struct StockSellEditView: View {
     @Binding var sales: [StockTradeInfo]
+    @State var calendarId: UUID = UUID()
+    
     var body: some View {
         Section(header: Text("売却")) {
             ForEach($sales) { $sale in
                 VStack {
                     HStack(alignment: .top) {
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .heavy)
+                            generator.impactOccurred()
                             if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
                                 $sales.wrappedValue.remove(at: index)
                             }
@@ -184,6 +188,12 @@ struct StockSellEditView: View {
                         })
                         .buttonStyle(.plain)
                         DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
+                            .id(calendarId)
+                            .onChange(of: sale.date) { oldValue, newValue in
+                                let generator = UISelectionFeedbackGenerator()
+                                generator.selectionChanged()
+                                calendarId = UUID()
+                            }
                     }
                     
                     Picker("感情", selection: $sale.emotion) {
@@ -191,6 +201,10 @@ struct StockSellEditView: View {
                             Text(emotion.rawValue + emotion.name)
                                 .tag(Emotion.sales(emotion))
                         }
+                    }
+                    .onChange(of: sale.emotion) { oldValue, newValue in
+                        let generator = UISelectionFeedbackGenerator()
+                        generator.selectionChanged()
                     }
                     
                     HStack {
