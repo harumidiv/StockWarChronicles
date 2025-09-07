@@ -34,6 +34,7 @@ struct StockFormView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .tint(.green)
                 }
                 
                 Divider()
@@ -81,6 +82,7 @@ struct StockFormView: View {
                                 .tag(Emotion.purchase(emotion))
                         }
                     }
+                    .tint(.green)
                     .onChange(of: emotion) { oldValue, newValue in
                         let generator = UISelectionFeedbackGenerator()
                         generator.selectionChanged()

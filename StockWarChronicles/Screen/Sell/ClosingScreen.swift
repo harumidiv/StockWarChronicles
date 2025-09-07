@@ -41,6 +41,7 @@ struct ClosingScreen: View {
                                         .tag(Emotion.sales(emotion))
                                 }
                             }
+                            .tint(.green)
                             Divider().background(.separator)
                         }
                         
@@ -73,6 +74,7 @@ struct ClosingScreen: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
+                                .tint(.green)
                                 
                                 Button(action: {
                                     withAnimation {
@@ -89,6 +91,7 @@ struct ClosingScreen: View {
                                     Image(systemName: "arrow.up.arrow.down")
                                         .font(.title3)
                                 }
+                                .tint(.green)
                             }
                             Divider().background(.separator)
                         }
