@@ -35,6 +35,10 @@ struct StockFormView: View {
                     }
                     .pickerStyle(.menu)
                     .tint(.green)
+                    .onChange(of: market) { oldValue, newValue in
+                        let generator = UISelectionFeedbackGenerator()
+                        generator.selectionChanged()
+                    }
                 }
                 
                 Divider()
