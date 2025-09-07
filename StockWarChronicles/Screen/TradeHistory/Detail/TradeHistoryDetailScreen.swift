@@ -208,10 +208,7 @@ struct TradeHistoryDetailScreen: View {
                             
                             Spacer()
                             
-                            let purchaseAmount = record.purchase.amount * Double(sale.shares)
-                            let salesAmount = sale.amount * Double(sale.shares)
-                            let totalProfitAndLoss = salesAmount - purchaseAmount
-                            let profitAndLossPercentage = (totalProfitAndLoss / purchaseAmount) * 100
+                            let profitAndLossPercentage = record.profitAndLossParcent(with: sale) ?? 0
                             
                             Text(String(format: "%.1f", profitAndLossPercentage) + "％")
                                 .font(.subheadline)
@@ -320,7 +317,7 @@ extension TradeHistoryDetailScreen {
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "目標達成1"),
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
         ]
-    let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", purchase: purchase, sales: sales)
+    let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", position: .buy, purchase: purchase, sales: sales)
     NavigationStack {
         TradeHistoryDetailScreen(record: record)
     }

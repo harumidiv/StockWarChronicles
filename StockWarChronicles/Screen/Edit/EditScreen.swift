@@ -17,8 +17,9 @@ struct EditScreen: View {
     @State private var market: Market = .tokyo
     @State private var name: String = ""
     @State private var date: Date = Date()
-    @State private var amountText: String = ""
-    @State private var sharesText: String = ""
+    @State private var position: Position = .buy
+    @State private var amount: Double = 0.0
+    @State private var shares: Int = 0
     @State private var emotion: Emotion = .purchase(.normal)
     @State private var reason: String = ""
     @State private var selectedTags: [CategoryTag] = []
@@ -38,8 +39,9 @@ struct EditScreen: View {
                         market: $market,
                         name: $name,
                         date: $date,
-                        amountText: $amountText,
-                        sharesText: $sharesText,
+                        position: $position,
+                        amount: $amount,
+                        shares: $shares,
                         emotion: $emotion,
                         reason: $reason,
                         selectedTags: $selectedTags
@@ -66,10 +68,16 @@ struct EditScreen: View {
                         action: {
                             /// 売り枚数の方が方が大きくなっていないか
                             let totalSold = sales.map(\.shares).reduce(0, +)
-                            let isOversold =  totalSold > Int(sharesText) ?? 0
+                            let isOversold =  totalSold > shares
                             
                             let totalSoldDate = sales.map(\.date)
-                            let isInvalidDate = totalSoldDate.first(where: { $0 < date }) != nil
+                            let calendar = Calendar.current
+                            let startOfDate = calendar.startOfDay(for: date)
+
+                            let isInvalidDate = totalSoldDate.first(where: {
+                                let startOfSoldDate = calendar.startOfDay(for: $0)
+                                return startOfSoldDate < startOfDate
+                            }) != nil
                             
                             if isOversold || isInvalidDate {
                                 showOversoldAlert.toggle()
@@ -116,8 +124,9 @@ struct EditScreen: View {
             market = record.market
             name = record.name
             date = record.purchase.date
-            amountText = String(record.purchase.amount)
-            sharesText = String(record.purchase.shares)
+            position = record.position
+            amount = record.purchase.amount
+            shares = record.purchase.shares
             emotion = record.purchase.emotion
             reason = record.purchase.reason
             selectedTags = record.tags.map { .init(name: $0.name, color: $0.color) }
@@ -130,9 +139,10 @@ struct EditScreen: View {
         record.code = code
         record.market = market
         record.name = name
+        record.position = position
         record.purchase.date = date
-        record.purchase.amount = Double(amountText) ?? 0
-        record.purchase.shares = Int(sharesText) ?? 0
+        record.purchase.amount = amount
+        record.purchase.shares = shares
         record.purchase.emotion = emotion
         record.purchase.reason = reason
         record.tags = selectedTags.map { .init(name: $0.name, color: $0.color) }
@@ -185,10 +195,12 @@ struct StockSellEditView: View {
                     HStack {
                         TextField("購入額", value: $sale.amount, format: .number)
                             .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
                         Text("円")
                         
                         TextField("株数", value: $sale.shares, format: .number)
                             .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
                         Text("株")
                     }
                     

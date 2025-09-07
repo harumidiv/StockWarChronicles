@@ -1,5 +1,5 @@
 //
-//  SellScreen.swift
+//  ClosingScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/19.
@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct SellScreen: View {
+struct ClosingScreen: View {
     enum SellUnit {
         case hundreds
         case ones
@@ -40,10 +40,10 @@ struct SellScreen: View {
                                     .tag(Emotion.sales(emotion))
                             }
                         }
-                        DatePicker("売却日", selection: $sellDate, displayedComponents: .date)
+                        DatePicker("日付", selection: $sellDate, displayedComponents: .date)
                         
                         HStack {
-                            TextField("売却額", text: $amount)
+                            TextField("金額", text: $amount)
                                 .keyboardType(.decimalPad)
                             Text("円")
                         }
@@ -98,7 +98,7 @@ struct SellScreen: View {
                     }
                 }
             }
-            .navigationTitle("売却")
+            .navigationTitle("手仕舞い")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
@@ -152,5 +152,5 @@ struct SellScreen: View {
 }
 
 #Preview {
-    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
+    ClosingScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", position: .buy, purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
 }

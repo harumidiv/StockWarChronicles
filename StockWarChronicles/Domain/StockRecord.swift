@@ -13,25 +13,27 @@ final class StockRecord {
     var code: String
     private var marketRawValue: String
     var name: String
+    var position: Position
     var purchase: StockTradeInfo
     var sales: [StockTradeInfo]
     var tags: [Tag]
-
+    
     // 計算プロパティで Market に変換
     var market: Market {
         get { Market(rawValue: marketRawValue) ?? .none }
         set { marketRawValue = newValue.rawValue }
     }
-
-    init(code: String, market: Market, name: String, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
+    
+    init(code: String, market: Market, name: String, position: Position, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
         self.code = code
         self.marketRawValue = market.rawValue
         self.name = name
+        self.position = position
         self.purchase = purchase
         self.sales = sales
         self.tags = tags
     }
-
+    
     /// 購入から売却まで完了しているか
     var isTradeFinish: Bool {
         let totalSold = sales.map(\.shares).reduce(0, +)
@@ -54,7 +56,7 @@ final class StockRecord {
         let end = calendar.startOfDay(for: saleDate)
         
         let components = calendar.dateComponents([.day], from: start, to: end)
-
+        
         return components.day ?? 0
     }
     
@@ -65,49 +67,78 @@ final class StockRecord {
         let end = calendar.startOfDay(for: Date())
         
         let components = calendar.dateComponents([.day], from: start, to: end)
-
+        
         return components.day ?? 0
     }
     
     /// 損益の金額
     var profitAndLoss: Int {
-        // 購入金額を計算
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
-        
-        // 売却金額の合計を計算
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
         
-        // 損益を計算
-        let totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        var totalProfitAndLoss: Double
+        switch position {
+        case .buy:
+            // For a buy position, profit is from selling higher than the purchase price
+            totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        case .sell:
+            // For a sell position, profit is from buying back lower than the sales price
+            totalProfitAndLoss = totalPurchaseAmount - totalSalesAmount
+        }
         
-        // 金額を文字列にフォーマットして返す
         return Int(totalProfitAndLoss)
     }
     
     /// 損益の%
     var profitAndLossParcent: Double? {
-        // 保有中の場合はnilを返す
         if !isTradeFinish {
             return nil
         }
         
-        // 購入金額を計算
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
-        
-        // 売却金額の合計を計算
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
         
-        // 損益を金額で計算
-        let totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        var totalProfitAndLoss: Double
+        switch position {
+        case .buy:
+            // Buy position: (Sell price - Buy price)
+            totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        case .sell:
+            // Sell position: (Buy price - Sell price)
+            totalProfitAndLoss = totalPurchaseAmount - totalSalesAmount
+        }
         
-        // 損益をパーセントで計算
         guard totalPurchaseAmount != 0 else {
-            return nil // 購入金額が0の場合はnilを返す
+            return nil
         }
         
         let profitAndLossPercentage = (totalProfitAndLoss / totalPurchaseAmount) * 100
         
-        // 計算結果のDoubleをそのまま返す
+        return profitAndLossPercentage
+    }
+    
+    /// 外部から受け取った売却情報と、買い情報・ポジションを考慮して損益率を計算します。
+    /// - Parameter sellInfo: 1つの売却情報
+    /// - Returns: 計算された損益率（%）。購入金額が0の場合はnil。
+    func profitAndLossParcent(with sellInfo: StockTradeInfo) -> Double? {
+        let totalProfitAndLoss: Double
+        switch self.position {
+        case .buy:
+            // 買いポジション: (売却価格 - 購入価格)
+            totalProfitAndLoss = sellInfo.amount - purchase.amount
+        case .sell:
+            // 売りポジション: (購入価格 - 売却価格)
+            totalProfitAndLoss = purchase.amount - sellInfo.amount
+        }
+        
+        // 購入金額が0の場合はnilを返す
+        guard purchase.amount != 0 else {
+            return nil
+        }
+        
+        // 正しいパーセント計算: 損益を**購入金額で割る**
+        let profitAndLossPercentage = (totalProfitAndLoss / purchase.amount) * 100
+        
         return profitAndLossPercentage
     }
 }
@@ -123,6 +154,7 @@ extension StockRecord {
                 code: "7203", // トヨタ自動車
                 market: .tokyo,
                 name: "トヨタ自動車",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 2500.0, shares: 100, date: Date.from(year: 2024, month: 1, day: 10), emotion: Emotion.purchase(.random), reason: "長期保有目的で購入"),
                 sales: [StockTradeInfo(amount: 2800.0, shares: 100, date: Date.from(year: 2024, month: 3, day: 15), emotion: Emotion.sales(.random), reason: "目標価格に到達したため売却")],
                 tags: [.init(name: "長期保有", color: .green)]
@@ -133,6 +165,7 @@ extension StockRecord {
                 code: "9984", // ソフトバンクグループ
                 market: .tokyo,
                 name: "ソフトバンクグループ",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 6500.0, shares: 50, date: Date.from(year: 2024, month: 2, day: 5), emotion: Emotion.purchase(.random), reason: "今後の成長を期待して購入"),
                 sales: [StockTradeInfo(amount: 7000.0, shares: 25, date: Date.from(year: 2024, month: 4, day: 20), emotion: Emotion.sales(.random), reason: "一部を利益確定")]
             ),
@@ -142,6 +175,7 @@ extension StockRecord {
                 code: "6758", // ソニーグループ
                 market: .tokyo,
                 name: "ソニーグループ",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 15000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), emotion: Emotion.purchase(.random), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 14500.0, shares: 10, date: Date.from(year: 2024, month: 6, day: 5), emotion: Emotion.sales(.random), reason: "想定外の業績下方修正のため損切り")]
             ),
@@ -151,6 +185,7 @@ extension StockRecord {
                 code: "2058", // ヒガシマル
                 market: .hukuoka,
                 name: "ヒガシマル",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 1000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), emotion: Emotion.purchase(.random), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 800.0, shares: 10, date: Date.from(year: 2024, month: 8, day: 5), emotion: Emotion.sales(.random), reason: "想定外の業績下方修正のため損切り")]
             ),
@@ -160,6 +195,7 @@ extension StockRecord {
                 code: "350A", // デジタルグリッド
                 market: .tokyo,
                 name: "デジタルグリッド",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 12000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), emotion: Emotion.purchase(.random), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 11200.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 5), emotion: Emotion.sales(.random), reason: "想定外の業績下方修正のため損切り")]
             ),
@@ -169,6 +205,7 @@ extension StockRecord {
                 code: "9501", // 東京電力ホールディングス
                 market: .tokyo,
                 name: "東京電力HD",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), emotion: Emotion.purchase(.random), reason: "高配当を期待して購入"),
                 tags:  [.init(name: "長期保有", color: .green), .init(name: "高配当", color: .yellow)]
             ),
@@ -178,6 +215,7 @@ extension StockRecord {
                 code: "148A", // 東京電力ホールディングス
                 market: .tokyo,
                 name: "ハッチ・ワーク",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 2100.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), emotion: Emotion.purchase(.random), reason: "高配当を期待して購入"),
                 tags:  [.init(name: "長期保有", color: .green),
                         .init(name: "高配当", color: .yellow),
@@ -194,6 +232,7 @@ extension StockRecord {
                 code: "8306", // 三菱UFJフィナンシャル・グループ
                 market: .tokyo,
                 name: "三菱UFJFG",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 1200.0, shares: 300, date: Date.from(year: 2024, month: 1, day: 20), emotion: Emotion.purchase(.random), reason: "金利上昇を見込んで購入"),
                 sales: [
                     StockTradeInfo(amount: 1300.0, shares: 150, date: Date.from(year: 2024, month: 2, day: 15), emotion: Emotion.sales(.random), reason: "一部利益確定"),
