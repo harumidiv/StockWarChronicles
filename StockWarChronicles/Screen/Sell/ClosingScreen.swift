@@ -34,50 +34,63 @@ struct ClosingScreen: View {
             VStack {
                 Form {
                     Section(header: Text(record.code + " " + record.name)) {
-                        Picker("感情", selection: $emotion) {
-                            ForEach(SalesEmotions.allCases) { emotion in
-                                Text(emotion.rawValue + emotion.name)
-                                    .tag(Emotion.sales(emotion))
-                            }
-                        }
-                        DatePicker("日付", selection: $sellDate, displayedComponents: .date)
-                        
-                        HStack {
-                            TextField("金額", text: $amount)
-                                .keyboardType(.decimalPad)
-                            Text("円")
-                        }
-                        
-                        HStack {
-                            Picker("株数", selection: $shares) {
-                                switch sellUnit {
-                                case .hundreds:
-                                    ForEach(Array(stride(from: 100, through: record.remainingShares, by: 100)), id: \.self) { num in
-                                        Text("\(num)").tag(num)
-                                    }
-                                case .ones:
-                                    ForEach(Array(stride(from: 1, through: record.remainingShares, by: 1)), id: \.self) { num in
-                                        Text("\(num)").tag(num)
-                                    }
+                        VStack {
+                            Picker("感情", selection: $emotion) {
+                                ForEach(SalesEmotions.allCases) { emotion in
+                                    Text(emotion.rawValue + emotion.name)
+                                        .tag(Emotion.sales(emotion))
                                 }
                             }
-                            .pickerStyle(.menu)
-                            
-                            Button(action: {
-                                withAnimation {
+                            Divider().background(.separator)
+                        }
+                        
+                        VStack {
+                            DatePicker("日付", selection: $sellDate, displayedComponents: .date)
+                            Divider().background(.separator)
+                        }
+                        
+                        VStack {
+                            HStack {
+                                TextField("金額", text: $amount)
+                                    .keyboardType(.decimalPad)
+                                Text("円")
+                            }
+                            Divider().background(.separator)
+                        }
+                        
+                        VStack {
+                            HStack {
+                                Picker("株数", selection: $shares) {
                                     switch sellUnit {
                                     case .hundreds:
-                                        sellUnit = .ones
-                                        shares = 1
+                                        ForEach(Array(stride(from: 100, through: record.remainingShares, by: 100)), id: \.self) { num in
+                                            Text("\(num)").tag(num)
+                                        }
                                     case .ones:
-                                        sellUnit = .hundreds
-                                        shares = 100
+                                        ForEach(Array(stride(from: 1, through: record.remainingShares, by: 1)), id: \.self) { num in
+                                            Text("\(num)").tag(num)
+                                        }
                                     }
                                 }
-                            }) {
-                                Image(systemName: "arrow.2.circlepath")
-                                    .font(.title3)
+                                .pickerStyle(.menu)
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        switch sellUnit {
+                                        case .hundreds:
+                                            sellUnit = .ones
+                                            shares = 1
+                                        case .ones:
+                                            sellUnit = .hundreds
+                                            shares = 100
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "arrow.up.arrow.down")
+                                        .font(.title3)
+                                }
                             }
+                            Divider().background(.separator)
                         }
                         
                         VStack {
@@ -96,6 +109,7 @@ struct ClosingScreen: View {
                                 )
                         }
                     }
+                    .listRowSeparator(.hidden)
                 }
             }
             .navigationTitle("手仕舞い")
