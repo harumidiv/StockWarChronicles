@@ -40,10 +40,10 @@ struct ClosingScreen: View {
                                     .tag(Emotion.sales(emotion))
                             }
                         }
-                        DatePicker("売却日", selection: $sellDate, displayedComponents: .date)
+                        DatePicker("日付", selection: $sellDate, displayedComponents: .date)
                         
                         HStack {
-                            TextField("売却額", text: $amount)
+                            TextField("金額", text: $amount)
                                 .keyboardType(.decimalPad)
                             Text("円")
                         }
@@ -98,7 +98,7 @@ struct ClosingScreen: View {
                     }
                 }
             }
-            .navigationTitle("売却")
+            .navigationTitle("手仕舞い")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
