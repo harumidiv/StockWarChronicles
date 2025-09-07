@@ -221,17 +221,17 @@ struct TradeHistoryDetailScreen: View {
                     }
                 }
             }
-            Section(header: Text("メモ").font(.headline)) {
-                Text(record.purchase.reason)
+            Section(header: Text("購入メモ").font(.headline)) {
+                Text(record.purchase.emotion.emoji + record.purchase.reason)
                     .font(.body)
                     .padding(.vertical, 4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            Section(header: Text("売却根拠").font(.headline)) {
+            Section(header: Text("売却メモ").font(.headline)) {
                 VStack(spacing: 0) {
                     ForEach(record.sales) { sale in
-                        Text(sale.reason)
+                        Text(sale.emotion.emoji + sale.reason)
                             .font(.body)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -315,10 +315,10 @@ extension TradeHistoryDetailScreen {
 }
 
 #Preview {
-    let purchase = StockTradeInfo(amount: 5000, shares: 100, date: Date(), reason: "成長期待")
+    let purchase = StockTradeInfo(amount: 5000, shares: 100, date: Date(), emotion: Emotion.purchase(.random), reason: "成長期待")
     let sales = [
-        StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成1"),
-        StockTradeInfo(amount: 6000, shares: 100, date: Date(), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
+        StockTradeInfo(amount: 6000, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "目標達成1"),
+        StockTradeInfo(amount: 6000, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
         ]
     let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", purchase: purchase, sales: sales)
     NavigationStack {

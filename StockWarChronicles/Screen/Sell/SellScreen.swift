@@ -8,7 +8,6 @@
 import SwiftUI
 import SwiftData
 
-
 struct SellScreen: View {
     enum SellUnit {
         case hundreds
@@ -25,6 +24,7 @@ struct SellScreen: View {
     @State private var shares = 0
     @State private var sellUnit: SellUnit = .hundreds
     @State private var reason = ""
+    @State private var emotion: Emotion = .sales(.normal)
     
     @State private var keyboardIsPresented: Bool = false
     @State private var showDateAlert: Bool = false
@@ -34,6 +34,12 @@ struct SellScreen: View {
             VStack {
                 Form {
                     Section(header: Text(record.code + " " + record.name)) {
+                        Picker("感情", selection: $emotion) {
+                            ForEach(SalesEmotions.allCases) { emotion in
+                                Text(emotion.rawValue + emotion.name)
+                                    .tag(Emotion.sales(emotion))
+                            }
+                        }
                         DatePicker("売却日", selection: $sellDate, displayedComponents: .date)
                         
                         HStack {
@@ -137,7 +143,7 @@ struct SellScreen: View {
     private func saveSell() {
         guard let amount = Double(amount) else { return }
         
-        let sellInfo = StockTradeInfo(amount: amount, shares: shares, date: sellDate, reason: reason)
+        let sellInfo = StockTradeInfo(amount: amount, shares: shares, date: sellDate, emotion: emotion, reason: reason)
         record.sales.append(sellInfo)
         
         try? context.save()
@@ -146,5 +152,5 @@ struct SellScreen: View {
 }
 
 #Preview {
-    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), reason: "ストック売り上げ")))
+    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
 }

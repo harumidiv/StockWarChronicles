@@ -23,7 +23,12 @@ struct OverallPerformanceView: View {
         records
             .filter { $0.profitAndLossParcent ?? 0.0 > 0.0}
             .flatMap { $0.sales }
-            .map { $0.reason }
+            .map {
+                if !$0.reason.isEmpty {
+                   return $0.emotion.emoji + $0.reason
+                }
+                return ""
+            }
             .filter { !$0.isEmpty }
     }
     
@@ -31,7 +36,12 @@ struct OverallPerformanceView: View {
         records
             .filter { $0.profitAndLossParcent ?? 0.0 < 0.0}
             .flatMap { $0.sales }
-            .map { $0.reason }
+            .map {
+                if !$0.reason.isEmpty {
+                   return $0.emotion.emoji + $0.reason
+                }
+                return ""
+            }
             .filter { !$0.isEmpty }
     }
     
@@ -74,7 +84,7 @@ struct OverallPerformanceView: View {
                 AccordionView(isExpanded: $winTradeExpanded, title: "勝ちトレードメモ一覧") {
                     ForEach(filteredWinRecordsMemo, id: \.self) { memo in
                         HStack() {
-                            Text("・\(memo)")
+                            Text(memo)
                             Spacer()
                         }
                     }
@@ -83,7 +93,7 @@ struct OverallPerformanceView: View {
                 AccordionView(isExpanded: $loseTradeExpand, title: "負けトレードメモ一覧") {
                     ForEach(filteredLoseRecordsMemo, id: \.self) { memo in
                         HStack() {
-                            Text("・\(memo)")
+                            Text(memo)
                             Spacer()
                         }
                     }

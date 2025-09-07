@@ -18,7 +18,7 @@ struct TagSelectionView: View {
     
     @Binding var selectedTags: [CategoryTag]
     
-    var onDelete: ((CategoryTag) -> Void)?
+    @State private var deleteTag: CategoryTag?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -39,6 +39,7 @@ struct TagSelectionView: View {
                     }
                 }
             }
+            .padding(.bottom, 4)
             
             HStack(spacing: 8) {
                 TextField("新しいタグを追加", text: $newTagInput)
@@ -76,7 +77,7 @@ struct TagSelectionView: View {
                                     }
                                 },
                                 onDelete: { deleteTag in
-                                    onDelete?(deleteTag)
+                                    self.deleteTag = deleteTag
                                 }
                             )
                         }
@@ -85,6 +86,18 @@ struct TagSelectionView: View {
             }
         }
         .padding()
+        .alert(item: $deleteTag) { item in
+            Alert(
+                title: Text("このタグを本当に削除しますか？"),
+                message: Text("選択されたタグは「\(item.name)」です。"),
+                primaryButton: .destructive(Text("削除")) {
+                    context.delete(item)
+                    try? context.save()
+                    deleteTag = nil
+                },
+                secondaryButton: .cancel(Text("キャンセル")) { }
+            )
+        }
     }
     
     private func addTag() {

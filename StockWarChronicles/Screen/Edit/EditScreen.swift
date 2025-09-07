@@ -19,6 +19,7 @@ struct EditScreen: View {
     @State private var date: Date = Date()
     @State private var amountText: String = ""
     @State private var sharesText: String = ""
+    @State private var emotion: Emotion = .purchase(.normal)
     @State private var reason: String = ""
     @State private var selectedTags: [CategoryTag] = []
     @State private var sales: [StockTradeInfo] = []
@@ -39,6 +40,7 @@ struct EditScreen: View {
                         date: $date,
                         amountText: $amountText,
                         sharesText: $sharesText,
+                        emotion: $emotion,
                         reason: $reason,
                         selectedTags: $selectedTags
                     )
@@ -116,6 +118,7 @@ struct EditScreen: View {
             date = record.purchase.date
             amountText = String(record.purchase.amount)
             sharesText = String(record.purchase.shares)
+            emotion = record.purchase.emotion
             reason = record.purchase.reason
             selectedTags = record.tags.map { .init(name: $0.name, color: $0.color) }
             // 🌾SwiftDataに保存している関係でclassで作っていて参照型なのでcopyする
@@ -130,6 +133,7 @@ struct EditScreen: View {
         record.purchase.date = date
         record.purchase.amount = Double(amountText) ?? 0
         record.purchase.shares = Int(sharesText) ?? 0
+        record.purchase.emotion = emotion
         record.purchase.reason = reason
         record.tags = selectedTags.map { .init(name: $0.name, color: $0.color) }
         record.sales = sales
@@ -169,6 +173,13 @@ struct StockSellEditView: View {
                         })
                         .buttonStyle(.plain)
                         DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
+                    }
+                    
+                    Picker("感情", selection: $sale.emotion) {
+                        ForEach(SalesEmotions.allCases) { emotion in
+                            Text(emotion.rawValue + emotion.name)
+                                .tag(Emotion.sales(emotion))
+                        }
                     }
                     
                     HStack {
