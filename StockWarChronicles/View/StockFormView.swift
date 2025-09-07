@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct StockFormView: View {
     @Binding var code: String
@@ -69,9 +70,7 @@ struct StockFormView: View {
         }
         
         Section(header: Text("タグ")) {
-            TagSelectionView(selectedTags: $selectedTags) { tag in
-                // タグ削除の処理は親ビューに渡してもいい
-            }
+            TagSelectionView(selectedTags: $selectedTags)
         }
     }
 }
