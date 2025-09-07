@@ -49,12 +49,15 @@ struct PossessionScreen: View {
             .listStyle(.plain)
             .navigationTitle("保有リスト")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showStockRecordView.toggle()
-                    } label: {
-                        Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                            .foregroundColor(.blue)
+                // 取引の完了しているデータがある場合履歴を表示
+                if records.contains(where: { $0.isTradeFinish }) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showStockRecordView.toggle()
+                        } label: {
+                            Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                .foregroundColor(.blue)
+                        }
                     }
                 }
                 
