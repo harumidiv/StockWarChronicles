@@ -79,7 +79,7 @@ struct AddScreen: View {
             date: date, emotion: emotion, reason: reason
         )
         let stockRecord = StockRecord(
-            code: code, market: market, name: name,
+            code: code, market: market, name: name, position: .buy,
             purchase: tradeInfo, sales: [],
             tags: selectedTags.map { Tag(categoryTag: $0) }
         )

@@ -13,6 +13,7 @@ final class StockRecord {
     var code: String
     private var marketRawValue: String
     var name: String
+    var position: Position
     var purchase: StockTradeInfo
     var sales: [StockTradeInfo]
     var tags: [Tag]
@@ -23,10 +24,11 @@ final class StockRecord {
         set { marketRawValue = newValue.rawValue }
     }
 
-    init(code: String, market: Market, name: String, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
+    init(code: String, market: Market, name: String, position: Position, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
         self.code = code
         self.marketRawValue = market.rawValue
         self.name = name
+        self.position = position
         self.purchase = purchase
         self.sales = sales
         self.tags = tags
@@ -123,6 +125,7 @@ extension StockRecord {
                 code: "7203", // トヨタ自動車
                 market: .tokyo,
                 name: "トヨタ自動車",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 2500.0, shares: 100, date: Date.from(year: 2024, month: 1, day: 10), emotion: Emotion.purchase(.random), reason: "長期保有目的で購入"),
                 sales: [StockTradeInfo(amount: 2800.0, shares: 100, date: Date.from(year: 2024, month: 3, day: 15), emotion: Emotion.sales(.random), reason: "目標価格に到達したため売却")],
                 tags: [.init(name: "長期保有", color: .green)]
@@ -133,6 +136,7 @@ extension StockRecord {
                 code: "9984", // ソフトバンクグループ
                 market: .tokyo,
                 name: "ソフトバンクグループ",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 6500.0, shares: 50, date: Date.from(year: 2024, month: 2, day: 5), emotion: Emotion.purchase(.random), reason: "今後の成長を期待して購入"),
                 sales: [StockTradeInfo(amount: 7000.0, shares: 25, date: Date.from(year: 2024, month: 4, day: 20), emotion: Emotion.sales(.random), reason: "一部を利益確定")]
             ),
@@ -142,6 +146,7 @@ extension StockRecord {
                 code: "6758", // ソニーグループ
                 market: .tokyo,
                 name: "ソニーグループ",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 15000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), emotion: Emotion.purchase(.random), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 14500.0, shares: 10, date: Date.from(year: 2024, month: 6, day: 5), emotion: Emotion.sales(.random), reason: "想定外の業績下方修正のため損切り")]
             ),
@@ -151,6 +156,7 @@ extension StockRecord {
                 code: "2058", // ヒガシマル
                 market: .hukuoka,
                 name: "ヒガシマル",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 1000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), emotion: Emotion.purchase(.random), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 800.0, shares: 10, date: Date.from(year: 2024, month: 8, day: 5), emotion: Emotion.sales(.random), reason: "想定外の業績下方修正のため損切り")]
             ),
@@ -160,6 +166,7 @@ extension StockRecord {
                 code: "350A", // デジタルグリッド
                 market: .tokyo,
                 name: "デジタルグリッド",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 12000.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 1), emotion: Emotion.purchase(.random), reason: "技術トレンドの動向を見て購入"),
                 sales: [StockTradeInfo(amount: 11200.0, shares: 10, date: Date.from(year: 2024, month: 5, day: 5), emotion: Emotion.sales(.random), reason: "想定外の業績下方修正のため損切り")]
             ),
@@ -169,6 +176,7 @@ extension StockRecord {
                 code: "9501", // 東京電力ホールディングス
                 market: .tokyo,
                 name: "東京電力HD",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 700.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), emotion: Emotion.purchase(.random), reason: "高配当を期待して購入"),
                 tags:  [.init(name: "長期保有", color: .green), .init(name: "高配当", color: .yellow)]
             ),
@@ -178,6 +186,7 @@ extension StockRecord {
                 code: "148A", // 東京電力ホールディングス
                 market: .tokyo,
                 name: "ハッチ・ワーク",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 2100.0, shares: 200, date: Date.from(year: 2024, month: 7, day: 1), emotion: Emotion.purchase(.random), reason: "高配当を期待して購入"),
                 tags:  [.init(name: "長期保有", color: .green),
                         .init(name: "高配当", color: .yellow),
@@ -194,6 +203,7 @@ extension StockRecord {
                 code: "8306", // 三菱UFJフィナンシャル・グループ
                 market: .tokyo,
                 name: "三菱UFJFG",
+                position: .buy,
                 purchase: StockTradeInfo(amount: 1200.0, shares: 300, date: Date.from(year: 2024, month: 1, day: 20), emotion: Emotion.purchase(.random), reason: "金利上昇を見込んで購入"),
                 sales: [
                     StockTradeInfo(amount: 1300.0, shares: 150, date: Date.from(year: 2024, month: 2, day: 15), emotion: Emotion.sales(.random), reason: "一部利益確定"),

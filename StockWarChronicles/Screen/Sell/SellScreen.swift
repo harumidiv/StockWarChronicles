@@ -152,5 +152,5 @@ struct SellScreen: View {
 }
 
 #Preview {
-    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
+    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", position: .buy, purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
 }

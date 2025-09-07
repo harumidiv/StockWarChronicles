@@ -118,8 +118,7 @@ struct EditScreen: View {
             market = record.market
             name = record.name
             date = record.purchase.date
-            // TODO: ここで入れる
-//            position = record.position
+            position = record.position
             amountText = String(record.purchase.amount)
             sharesText = String(record.purchase.shares)
             emotion = record.purchase.emotion

@@ -320,7 +320,7 @@ extension TradeHistoryDetailScreen {
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "目標達成1"),
         StockTradeInfo(amount: 6000, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "目標達成2esrtdhyfgaersthgrfewqratshdytrtsegafwfrhtydtrsgeawetshratregtergetwrgearg")
         ]
-    let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", purchase: purchase, sales: sales)
+    let record = StockRecord(code: "140A", market: .tokyo, name: "ハッチ・ワーク", position: .buy, purchase: purchase, sales: sales)
     NavigationStack {
         TradeHistoryDetailScreen(record: record)
     }
