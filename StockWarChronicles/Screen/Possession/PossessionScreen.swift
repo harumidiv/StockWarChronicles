@@ -82,7 +82,7 @@ struct PossessionScreen: View {
                 EditScreen(record: record)
             }
             .sheet(item: $sellRecord) { record in
-                SellScreen(record: record)
+                ClosingScreen(record: record)
             }
             .fullScreenCover(isPresented: $showStockRecordView) {
                 TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
