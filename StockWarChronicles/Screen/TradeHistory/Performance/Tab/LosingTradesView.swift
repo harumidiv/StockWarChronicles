@@ -11,13 +11,15 @@ import SwiftUI
 struct LosingTradesView: View {
     let records: [StockRecord]
     
+    @State private var selectedRecord: StockRecord? = nil
+    
     // PerformanceCalculatorのインスタンスを作成
     private var calculator: PerformanceCalculator {
         // 負け取引のみをフィルタリングして渡す
         let losingRecords = records.filter { $0.profitAndLoss < 0 }
         return PerformanceCalculator(records: losingRecords)
     }
-
+    
     var summary: TradeSummary {
         return TradeSummary(
             profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
@@ -29,7 +31,7 @@ struct LosingTradesView: View {
             riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0
         )
     }
-
+    
     var worstTrades: [StockRecord] {
         let losingRecords = records.filter { $0.profitAndLoss < 0 }
         return losingRecords
@@ -59,48 +61,57 @@ struct LosingTradesView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
                 
-
+                
                 VStack(alignment: .leading) {
                     Text("ワースト取引トップ3")
                         .font(.headline)
-
+                    
                     ForEach(worstTrades.indices, id: \.self) { index in
                         let record = worstTrades[index]
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        Button(action: {
+                            selectedRecord = record
+                        }) {
                             HStack {
-                                ZStack {
-                                    Circle()
-                                        .foregroundColor(Color(.systemBackground))
-                                        .frame(width: 24, height: 24)
-
-                                    // 前面のアイコン
-                                    Image(systemName: "crown.fill")
-                                        .frame(width: 16, height: 16)
-                                        .foregroundColor(crownBackgroundColor(for: index))
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        ZStack {
+                                            Circle()
+                                                .foregroundColor(Color(.systemBackground))
+                                                .frame(width: 24, height: 24)
+                                            
+                                            // 前面のアイコン
+                                            Image(systemName: "crown.fill")
+                                                .frame(width: 16, height: 16)
+                                                .foregroundColor(crownBackgroundColor(for: index))
+                                        }
+                                        
+                                        Text(record.name)
+                                            .bold()
+                                        Spacer()
+                                        Text("\(Double(record.profitAndLoss).withComma())円")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .padding(.bottom, 4)
+                                    
+                                    HStack {
+                                        Text("保有日数 \(record.holdingPeriod)日")
+                                        Spacer()
+                                        Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
+                                            .fontWeight(.semibold)
+                                    }
                                 }
-                                
-                                Text(record.name)
-                                    .bold()
-                                Spacer()
-                                Text("\(Double(record.profitAndLoss).withComma())円")
-                                    .fontWeight(.semibold)
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
                             }
-                            .padding(.bottom, 4)
-                            
-                            HStack {
-                                Text("保有日数 \(record.holdingPeriod)日")
-                                Spacer()
-                                Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
-                                    .fontWeight(.semibold)
-                            }
+                            .tint(.primary)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(cardBackgroundColor(for: index))
+                                    .shadow(color: cardShadowColor(for: index), radius: 6, x: 0, y: 3)
+                            )
                         }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(cardBackgroundColor(for: index))
-                                .shadow(color: cardShadowColor(for: index), radius: 6, x: 0, y: 3)
-                        )
                     }
                 }
                 .padding()
@@ -109,7 +120,9 @@ struct LosingTradesView: View {
             }
             .padding()
         }
-        .navigationTitle("負け取引")
+        .navigationDestination(item: $selectedRecord) { record in
+            TradeHistoryDetailScreen(record: record)
+        }
     }
 }
 
@@ -139,7 +152,7 @@ extension LosingTradesView {
             return Color(.systemGray6)
         }
     }
-
+    
     func cardShadowColor(for index: Int) -> Color {
         switch index {
         case 0, 1, 2:
