@@ -187,13 +187,7 @@ struct StockSellEditView: View {
                                 .foregroundColor(.red)
                         })
                         .buttonStyle(.plain)
-                        DatePicker("売却日", selection: $sale.date, displayedComponents: .date)
-                            .id(calendarId)
-                            .onChange(of: sale.date) { oldValue, newValue in
-                                let generator = UISelectionFeedbackGenerator()
-                                generator.selectionChanged()
-                                calendarId = UUID()
-                            }
+                        Spacer()
                     }
                     
                     Picker("感情", selection: $sale.emotion) {
@@ -206,17 +200,46 @@ struct StockSellEditView: View {
                         let generator = UISelectionFeedbackGenerator()
                         generator.selectionChanged()
                     }
+                    Divider()
+                        .background(.separator)
+                        .padding(.bottom)
+                    
+                    DatePicker("日付", selection: $sale.date, displayedComponents: .date)
+                        .id(calendarId)
+                        .onChange(of: sale.date) { oldValue, newValue in
+                            let generator = UISelectionFeedbackGenerator()
+                            generator.selectionChanged()
+                            calendarId = UUID()
+                        }
+                    
+                    Divider()
+                        .background(.separator)
+                        .padding(.bottom)
                     
                     HStack {
-                        TextField("購入額", value: $sale.amount, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                        Text("円")
-                        
+                        VStack {
+                            HStack {
+                                TextField("購入額", value: $sale.amount, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                Text("円")
+                            }
+                            Divider()
+                                .background(.separator)
+                                .padding(.bottom)
+                        }
+                        VStack {
+                            HStack {
                         TextField("株数", value: $sale.shares, format: .number)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                         Text("株")
+                            }
+                            Divider()
+                                .background(.separator)
+                                .padding(.bottom)
+                        }
+                        .padding(.leading)
                     }
                     
                     VStack {

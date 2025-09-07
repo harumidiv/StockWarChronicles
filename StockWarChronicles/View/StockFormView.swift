@@ -24,22 +24,40 @@ struct StockFormView: View {
     
     var body: some View {
         Section(header: Text("銘柄情報")) {
-            HStack {
-                TextField("銘柄コード", text: $code)
-                Picker("", selection: $market) {
-                    ForEach(Market.allCases) { market in
-                        Text(market.rawValue).tag(market)
+            VStack {
+                HStack {
+                    Text("市場")
+                    // Pickerは分離せずにTextの横に配置
+                    Picker("", selection: $market) {
+                        ForEach(Market.allCases) { market in
+                            Text(market.rawValue).tag(market)
+                        }
                     }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: market) { oldValue, newValue in
-                    let generator = UISelectionFeedbackGenerator()
-                    generator.selectionChanged()
+                    .pickerStyle(.menu)
                 }
                 
+                Divider()
+                    .background(.separator)
+                    .padding(.bottom)
+                
+                HStack {
+                    Text("銘柄コード")
+                    TextField("(例)7203", text: $code)
+                        .multilineTextAlignment(.trailing)
+                }
+                Divider()
+                    .background(.separator)
+                    .padding(.bottom)
+                
+                HStack {
+                    Text("銘柄名")
+                    TextField("(例)トヨタ自動車", text: $name)
+                        .multilineTextAlignment(.trailing)
+                }
+                Divider().background(.separator)
             }
-            TextField("銘柄名", text: $name)
         }
+        .listRowSeparator(.hidden)
         
         Section(header: Text("取引情報")) {
             Picker("ポジション", selection: $position) {
@@ -54,36 +72,60 @@ struct StockFormView: View {
                 generator.selectionChanged()
             }
             
-            Picker("感情", selection: $emotion) {
-                ForEach(PurchaseEmotions.allCases) { emotion in
-                    Text(emotion.rawValue + emotion.name)
-                        .tag(Emotion.purchase(emotion))
+            HStack {
+                VStack {
+                    
+                    Picker("感情", selection: $emotion) {
+                        ForEach(PurchaseEmotions.allCases) { emotion in
+                            Text(emotion.rawValue + emotion.name)
+                                .tag(Emotion.purchase(emotion))
+                        }
+                    }
+                    .onChange(of: emotion) { oldValue, newValue in
+                        let generator = UISelectionFeedbackGenerator()
+                        generator.selectionChanged()
+                    }
+                    Divider().background(.separator)
                 }
             }
-            .onChange(of: emotion) { oldValue, newValue in
-                let generator = UISelectionFeedbackGenerator()
-                generator.selectionChanged()
-            }
-            
-            DatePicker("日付", selection: $date, displayedComponents: .date)
-                .id(calendarId)
-                .onChange(of: date) { oldValue, newValue in
-                    let generator = UISelectionFeedbackGenerator()
-                    generator.selectionChanged()
-                    calendarId = UUID()
-                }
             
             HStack {
-                TextField("金額", text: $amountText)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                Text("円")
-                    .padding(.trailing, 8)
-                TextField("株数", text: $sharesText)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                Text("株")
+                VStack {
+                    DatePicker("日付", selection: $date, displayedComponents: .date)
+                        .id(calendarId)
+                        .onChange(of: date) { oldValue, newValue in
+                            let generator = UISelectionFeedbackGenerator()
+                            generator.selectionChanged()
+                            calendarId = UUID()
+                        }
+                    Divider().background(.separator)
+                }
             }
+            
+            HStack {
+                VStack {
+                    HStack {
+                        TextField("金額", text: $amountText)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                        Text("円")
+                    }
+                    Divider().background(.separator)
+                }
+                
+                VStack {
+                    HStack {
+                        TextField(
+                            "株数", text: $sharesText)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        Text("株")
+                    }
+                    Divider().background(.separator)
+                }
+                .padding(.leading)
+            }
+            
             
             VStack {
                 HStack {
@@ -102,6 +144,7 @@ struct StockFormView: View {
             }
             
         }
+        .listRowSeparator(.hidden)
         
         Section(header: Text("タグ")) {
             TagSelectionView(selectedTags: $selectedTags)
