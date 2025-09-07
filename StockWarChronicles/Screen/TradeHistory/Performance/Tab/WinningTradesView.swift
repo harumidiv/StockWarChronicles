@@ -118,32 +118,35 @@ struct WinningTradesView: View {
 }
 
 extension WinningTradesView {
+    /// 王冠の背景色を赤系グラデーションに設定
     func crownBackgroundColor(for index: Int) -> Color {
         switch index {
-        case 0: 
-            return Color(red: 1.0, green: 0.84, blue: 0.0)
+        case 0:
+            return Color(red: 0.9, green: 0.3, blue: 0.3) // 濃い赤
         case 1:
-            return Color(red: 0.75, green: 0.75, blue: 0.75)
+            return Color(red: 0.9, green: 0.5, blue: 0.5) // 中間の赤
         case 2:
-            return Color(red: 0.8, green: 0.5, blue: 0.2)
+            return Color(red: 1.0, green: 0.7, blue: 0.7) // 薄い赤
         default:
             return .clear
         }
     }
     
+    /// カードの背景色を赤系グラデーションに設定
     func cardBackgroundColor(for index: Int) -> Color {
         switch index {
         case 0: // 1位
-            return Color(red: 0.2, green: 0.8, blue: 0.2).opacity(0.2)
+            return Color(red: 0.9, green: 0.3, blue: 0.3).opacity(0.2)
         case 1: // 2位
-            return Color(red: 0.4, green: 0.9, blue: 0.4).opacity(0.2)
+            return Color(red: 0.9, green: 0.5, blue: 0.5).opacity(0.2)
         case 2: // 3位
-            return Color(red: 0.6, green: 1.0, blue: 0.6).opacity(0.2)
+            return Color(red: 1.0, green: 0.7, blue: 0.7).opacity(0.2)
         default: // 4位以下
             return Color(.systemGray6)
         }
     }
 
+    /// カードの影の色はそのまま
     func cardShadowColor(for index: Int) -> Color {
         switch index {
         case 0, 1, 2:
