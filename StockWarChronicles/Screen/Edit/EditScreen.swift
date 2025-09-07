@@ -91,6 +91,7 @@ struct EditScreen: View {
                                 Image(systemName: "externaldrive")
                                 Text("保存")
                             }
+                            .padding(.horizontal)
                         })
                 }
                 

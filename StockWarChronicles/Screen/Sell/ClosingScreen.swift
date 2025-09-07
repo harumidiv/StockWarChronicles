@@ -120,6 +120,8 @@ struct ClosingScreen: View {
                             Image(systemName: "externaldrive")
                             Text("保存")
                         }
+                        .padding(.horizontal)
+                        .opacity(amount.isEmpty ? 0.5 : 1.0)
                     })
                     .disabled(amount.isEmpty)
                 }

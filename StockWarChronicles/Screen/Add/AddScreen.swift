@@ -60,10 +60,12 @@ struct AddScreen: View {
                             saveAction()
                         },
                         label: {
-                        HStack {
-                            Image(systemName: "externaldrive")
-                            Text("追加")
-                        }
+                            HStack {
+                                Image(systemName: "externaldrive")
+                                Text("追加")
+                            }
+                            .padding(.horizontal)
+                            .opacity(isDisable ? 0.5 : 1.0)
                     })
                     .disabled(isDisable)
                 }
