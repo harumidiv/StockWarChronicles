@@ -131,7 +131,11 @@ struct TagSelectionView: View {
 
         var body: some View {
             HStack(spacing: 4) {
-                Button(action: onTap) {
+                Button(action: {
+                    onTap()
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                }) {
                     TagView(name: tag.name,
                             color: isSelected ? tag.color : Color.gray.opacity(0.2))
                 }
