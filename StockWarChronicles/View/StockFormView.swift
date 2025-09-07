@@ -14,6 +14,7 @@ struct StockFormView: View {
     @Binding var date: Date
     @Binding var amountText: String
     @Binding var sharesText: String
+    @Binding var emotion: Emotion
     @Binding var reason: String
     @Binding var selectedTags: [CategoryTag]
     
@@ -32,9 +33,15 @@ struct StockFormView: View {
         }
         
         Section(header: Text("購入")) {
+            Picker("感情", selection: $emotion) {
+                ForEach(PurchaseEmotions.allCases) { emotion in
+                    Text(emotion.rawValue + emotion.name)
+                        .tag(Emotion.purchase(emotion))
+                }
+            }
             DatePicker("購入日", selection: $date, displayedComponents: .date)
             HStack {
-                TextField("購入額", text: $amountText)
+                TextField("金額", text: $amountText)
                     .keyboardType(.decimalPad)
                 Text("円")
                     .padding(.trailing, 8)
@@ -78,6 +85,8 @@ struct StockFormView: View {
             date: .constant(Date()),
             amountText: .constant("200000"),
             sharesText: .constant("100"),
+            emotion: .constant(Emotion.purchase(.random)
+                              ),
             reason: .constant("長期投資のため"),
             selectedTags: .constant([
                 CategoryTag(name: "自動車", color: .blue),

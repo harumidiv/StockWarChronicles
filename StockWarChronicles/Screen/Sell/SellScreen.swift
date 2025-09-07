@@ -8,28 +8,6 @@
 import SwiftUI
 import SwiftData
 
-enum SalesEmotions: String, CaseIterable {
-    case satisfaction = "🤑"
-    case relief = "😌"
-    case accomplishment = "🥳"
-    case normal = "😐"
-    case regret = "😭"
-    case sadness = "😱"
-    case angry = "🤬"
-    
-    var name: String {
-        switch self {
-        case .satisfaction: return "満足"
-        case .relief: return "安堵"
-        case .accomplishment: return "達成感"
-        case .normal: return "無"
-        case .regret: return "後悔・悲しみ"
-        case .sadness: return "絶望"
-        case .angry: return "怒り"
-        }
-    }
-}
-
 struct SellScreen: View {
     enum SellUnit {
         case hundreds
@@ -46,6 +24,7 @@ struct SellScreen: View {
     @State private var shares = 0
     @State private var sellUnit: SellUnit = .hundreds
     @State private var reason = ""
+    @State private var emotion: Emotion = .sales(.normal)
     
     @State private var keyboardIsPresented: Bool = false
     @State private var showDateAlert: Bool = false
@@ -158,7 +137,7 @@ struct SellScreen: View {
     private func saveSell() {
         guard let amount = Double(amount) else { return }
         
-        let sellInfo = StockTradeInfo(amount: amount, shares: shares, date: sellDate, reason: reason)
+        let sellInfo = StockTradeInfo(amount: amount, shares: shares, date: sellDate, emotion: emotion, reason: reason)
         record.sales.append(sellInfo)
         
         try? context.save()
@@ -167,5 +146,5 @@ struct SellScreen: View {
 }
 
 #Preview {
-    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), reason: "ストック売り上げ")))
+    SellScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
 }
