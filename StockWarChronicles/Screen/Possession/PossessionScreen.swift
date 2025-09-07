@@ -62,11 +62,13 @@ struct PossessionScreen: View {
                     Button {
                         showAddStockView.toggle()
                     } label: {
-                        Label("追加", systemImage: "plus")
+                        Image(systemName: "plus")
+                            .foregroundColor(.white)
                             .padding()
                             .clipShape(Circle())
                             .shadow(radius: 3)
                     }
+                    .frame(width: 60, height: 60) 
                     .matchedTransitionSource(id: "add", in: animation)
                 }
             }

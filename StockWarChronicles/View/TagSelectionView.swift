@@ -14,7 +14,7 @@ struct TagSelectionView: View {
     @Query private var allExistingTags: [CategoryTag]
     
     @State private var newTagInput: String = ""
-    @State private var selectedNewTagColor: Color = .purple
+    @State private var selectedNewTagColor: Color = Color.randomPastel()
     
     @Binding var selectedTags: [CategoryTag]
     
