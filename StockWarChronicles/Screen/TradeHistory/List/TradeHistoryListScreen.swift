@@ -179,6 +179,7 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
+                .foregroundColor(.green)
             }
         
             Menu {
@@ -199,6 +200,7 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
+                .foregroundColor(.green)
             }
             
             Menu {
@@ -218,6 +220,7 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
+                .foregroundColor(.green)
             }
         }
         .padding(.horizontal, 16)

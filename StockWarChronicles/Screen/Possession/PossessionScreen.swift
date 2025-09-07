@@ -147,9 +147,11 @@ struct PossessionScreen: View {
                             Label("削除", systemImage: "trash")
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .foregroundColor(.blue)
+                        Image(systemName: "ellipsis")
+                            .frame(width: 32, height: 24)
+                            .foregroundColor(.green)
                     }
+                    .contentShape(Rectangle())
                 }
             }
             .padding()
