@@ -11,6 +11,8 @@ import SwiftUI
 struct WinningTradesView: View {
     let records: [StockRecord]
     
+    @State private var selectedRecord: StockRecord? = nil
+    
     var body: some View {
         let calculator = PerformanceCalculator(records: records)
         
@@ -59,39 +61,48 @@ struct WinningTradesView: View {
                     ForEach(bestTrades.indices, id: \.self) { index in
                         let record = bestTrades[index]
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        Button(action: {
+                            selectedRecord = record
+                        }) {
                             HStack {
-                                ZStack {
-                                    Circle()
-                                        .foregroundColor(Color(.systemBackground))
-                                        .frame(width: 24, height: 24)
-
-                                    Image(systemName: "crown.fill")
-                                        .frame(width: 16, height: 16)
-                                        .foregroundColor(crownBackgroundColor(for: index))
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        ZStack {
+                                            Circle()
+                                                .foregroundColor(Color(.systemBackground))
+                                                .frame(width: 24, height: 24)
+                                            
+                                            Image(systemName: "crown.fill")
+                                                .frame(width: 16, height: 16)
+                                                .foregroundColor(crownBackgroundColor(for: index))
+                                        }
+                                        
+                                        Text(record.name)
+                                            .bold()
+                                        Spacer()
+                                        Text("\(Double(record.profitAndLoss).withComma())円")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .padding(.bottom, 4)
+                                    
+                                    HStack {
+                                        Text("保有日数 \(record.holdingPeriod)日")
+                                        Spacer()
+                                        Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
+                                            .fontWeight(.semibold)
+                                    }
                                 }
-                                
-                                Text(record.name)
-                                    .bold()
-                                Spacer()
-                                Text("\(Double(record.profitAndLoss).withComma())円")
-                                    .fontWeight(.semibold)
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
                             }
-                            .padding(.bottom, 4)
-                            
-                            HStack {
-                                Text("保有日数 \(record.holdingPeriod)日")
-                                Spacer()
-                                Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
-                                    .fontWeight(.semibold)
-                            }
+                            .tint(.primary)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(cardBackgroundColor(for: index))
+                                    .shadow(color: cardShadowColor(for: index), radius: 6, x: 0, y: 3)
+                            )
                         }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(cardBackgroundColor(for: index))
-                                .shadow(color: cardShadowColor(for: index), radius: 6, x: 0, y: 3)
-                        )
                     }
                 }
                 .padding()
@@ -100,7 +111,9 @@ struct WinningTradesView: View {
             }
             .padding()
         }
-        .navigationTitle("勝ち取引")
+        .navigationDestination(item: $selectedRecord) { record in
+            TradeHistoryDetailScreen(record: record)
+        }
     }
 }
 
