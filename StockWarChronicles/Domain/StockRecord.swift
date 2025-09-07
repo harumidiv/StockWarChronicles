@@ -73,43 +73,47 @@ final class StockRecord {
     
     /// 損益の金額
     var profitAndLoss: Int {
-        // 購入金額を計算
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
-        
-        // 売却金額の合計を計算
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
+
+        var totalProfitAndLoss: Double
+        switch position {
+        case .buy:
+            // For a buy position, profit is from selling higher than the purchase price
+            totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        case .sell:
+            // For a sell position, profit is from buying back lower than the sales price
+            totalProfitAndLoss = totalPurchaseAmount - totalSalesAmount
+        }
         
-        // 損益を計算
-        let totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
-        
-        // 金額を文字列にフォーマットして返す
         return Int(totalProfitAndLoss)
     }
     
     /// 損益の%
     var profitAndLossParcent: Double? {
-        // 保有中の場合はnilを返す
         if !isTradeFinish {
             return nil
         }
-        
-        // 購入金額を計算
+
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
-        
-        // 売却金額の合計を計算
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
         
-        // 損益を金額で計算
-        let totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
-        
-        // 損益をパーセントで計算
-        guard totalPurchaseAmount != 0 else {
-            return nil // 購入金額が0の場合はnilを返す
+        var totalProfitAndLoss: Double
+        switch position {
+        case .buy:
+            // Buy position: (Sell price - Buy price)
+            totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+        case .sell:
+            // Sell position: (Buy price - Sell price)
+            totalProfitAndLoss = totalPurchaseAmount - totalSalesAmount
         }
-        
+
+        guard totalPurchaseAmount != 0 else {
+            return nil
+        }
+
         let profitAndLossPercentage = (totalProfitAndLoss / totalPurchaseAmount) * 100
         
-        // 計算結果のDoubleをそのまま返す
         return profitAndLossPercentage
     }
 }
