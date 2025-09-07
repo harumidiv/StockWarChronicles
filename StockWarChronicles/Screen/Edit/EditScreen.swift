@@ -195,10 +195,12 @@ struct StockSellEditView: View {
                     HStack {
                         TextField("購入額", value: $sale.amount, format: .number)
                             .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
                         Text("円")
                         
                         TextField("株数", value: $sale.shares, format: .number)
                             .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
                         Text("株")
                     }
                     

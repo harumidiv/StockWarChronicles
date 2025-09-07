@@ -208,10 +208,7 @@ struct TradeHistoryDetailScreen: View {
                             
                             Spacer()
                             
-                            let purchaseAmount = record.purchase.amount * Double(sale.shares)
-                            let salesAmount = sale.amount * Double(sale.shares)
-                            let totalProfitAndLoss = salesAmount - purchaseAmount
-                            let profitAndLossPercentage = (totalProfitAndLoss / purchaseAmount) * 100
+                            let profitAndLossPercentage = record.profitAndLossParcent(with: sale) ?? 0
                             
                             Text(String(format: "%.1f", profitAndLossPercentage) + "％")
                                 .font(.subheadline)

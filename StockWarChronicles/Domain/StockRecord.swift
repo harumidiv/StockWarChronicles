@@ -17,13 +17,13 @@ final class StockRecord {
     var purchase: StockTradeInfo
     var sales: [StockTradeInfo]
     var tags: [Tag]
-
+    
     // 計算プロパティで Market に変換
     var market: Market {
         get { Market(rawValue: marketRawValue) ?? .none }
         set { marketRawValue = newValue.rawValue }
     }
-
+    
     init(code: String, market: Market, name: String, position: Position, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
         self.code = code
         self.marketRawValue = market.rawValue
@@ -33,7 +33,7 @@ final class StockRecord {
         self.sales = sales
         self.tags = tags
     }
-
+    
     /// 購入から売却まで完了しているか
     var isTradeFinish: Bool {
         let totalSold = sales.map(\.shares).reduce(0, +)
@@ -56,7 +56,7 @@ final class StockRecord {
         let end = calendar.startOfDay(for: saleDate)
         
         let components = calendar.dateComponents([.day], from: start, to: end)
-
+        
         return components.day ?? 0
     }
     
@@ -67,7 +67,7 @@ final class StockRecord {
         let end = calendar.startOfDay(for: Date())
         
         let components = calendar.dateComponents([.day], from: start, to: end)
-
+        
         return components.day ?? 0
     }
     
@@ -75,7 +75,7 @@ final class StockRecord {
     var profitAndLoss: Int {
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
-
+        
         var totalProfitAndLoss: Double
         switch position {
         case .buy:
@@ -94,7 +94,7 @@ final class StockRecord {
         if !isTradeFinish {
             return nil
         }
-
+        
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
         
@@ -107,12 +107,37 @@ final class StockRecord {
             // Sell position: (Buy price - Sell price)
             totalProfitAndLoss = totalPurchaseAmount - totalSalesAmount
         }
-
+        
         guard totalPurchaseAmount != 0 else {
             return nil
         }
-
+        
         let profitAndLossPercentage = (totalProfitAndLoss / totalPurchaseAmount) * 100
+        
+        return profitAndLossPercentage
+    }
+    
+    /// 外部から受け取った売却情報と、買い情報・ポジションを考慮して損益率を計算します。
+    /// - Parameter sellInfo: 1つの売却情報
+    /// - Returns: 計算された損益率（%）。購入金額が0の場合はnil。
+    func profitAndLossParcent(with sellInfo: StockTradeInfo) -> Double? {
+        let totalProfitAndLoss: Double
+        switch self.position {
+        case .buy:
+            // 買いポジション: (売却価格 - 購入価格)
+            totalProfitAndLoss = sellInfo.amount - purchase.amount
+        case .sell:
+            // 売りポジション: (購入価格 - 売却価格)
+            totalProfitAndLoss = purchase.amount - sellInfo.amount
+        }
+        
+        // 購入金額が0の場合はnilを返す
+        guard purchase.amount != 0 else {
+            return nil
+        }
+        
+        // 正しいパーセント計算: 損益を**購入金額で割る**
+        let profitAndLossPercentage = (totalProfitAndLoss / purchase.amount) * 100
         
         return profitAndLossPercentage
     }
