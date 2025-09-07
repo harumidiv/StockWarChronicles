@@ -17,21 +17,13 @@ struct AddScreen: View {
     @State private var position: Position = .buy
     @State private var name = ""
     @State private var date = Date.fromToday()
-    @State private var amountText = ""
-    @State private var sharesText = ""
+    @State private var amount = 0.0
+    @State private var shares = 0
     @State private var emotion: Emotion = Emotion.purchase(.normal)
     @State private var reason = ""
     @State private var selectedTags: [CategoryTag] = []
     
     @State private var keyboardIsPresented: Bool = false
-    
-    var amount: Double {
-        Double(amountText) ?? 0
-    }
-    
-    var shares: Int {
-        Int(sharesText) ?? 0
-    }
     
     var body: some View {
         NavigationView {
@@ -39,8 +31,8 @@ struct AddScreen: View {
                 Form {
                     StockFormView(
                         code: $code, market: $market, name: $name,
-                        date: $date, position: $position, amountText: $amountText,
-                        sharesText: $sharesText, emotion: $emotion,
+                        date: $date, position: $position, amount: $amount,
+                        shares: $shares, emotion: $emotion,
                         reason: $reason, selectedTags: $selectedTags
                     )
                 }
@@ -74,8 +66,8 @@ struct AddScreen: View {
     
     private func saveAction() {
         let tradeInfo = StockTradeInfo(
-            amount: Double(amountText) ?? 0,
-            shares: Int(sharesText) ?? 0,
+            amount: amount,
+            shares: shares,
             date: date, emotion: emotion, reason: reason
         )
         let stockRecord = StockRecord(
