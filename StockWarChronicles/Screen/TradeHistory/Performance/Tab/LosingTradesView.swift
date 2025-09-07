@@ -48,13 +48,15 @@ struct LosingTradesView: View {
                     .fontWeight(.bold)
                 HStack {
                     VStack(alignment: .leading) {
-                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma() + "円", iconName: "dollarsign.circle")
-                        MetricView(label: "平均%", value: String(format: "%.2f%%", summary.profitPercentage), iconName: "percent")
+                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma(), unit: "円", iconName: "dollarsign.circle", color: .blue)
+                        
+                        MetricView(label: "平均保有日数", value: Int(summary.holdingDays).description, unit: "日", iconName: "calendar", color: .primary)
+                        
                     }
                     Spacer()
                     VStack(alignment: .leading) {
-                        MetricView(label: "平均損益額", value: "\(summary.profitAmount.withComma())円", iconName: "banknote.fill")
-                        MetricView(label: "平均保有日数", value: String(format: "%d日", Int(summary.holdingDays)), iconName: "calendar")
+                        MetricView(label: "平均損益額", value: summary.profitAmount.withComma(), unit: "円", iconName: "banknote.fill", color: .blue)
+                        MetricView(label: "平均%", value: String(format: "%.1f", summary.profitPercentage), unit: "%", iconName: "percent", color: .blue)
                     }
                 }
                 .padding()
