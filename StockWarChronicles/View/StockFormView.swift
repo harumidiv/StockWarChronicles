@@ -8,6 +8,24 @@
 import SwiftUI
 import SwiftData
 
+enum StockFormFocusFields: Hashable {
+    case code
+    case name
+    case amount
+    case shares
+    case memo
+    
+    func next() -> StockFormFocusFields {
+        switch self {
+        case .code: return .name
+        case .name: return .amount
+        case .amount: return .shares
+        case .shares: return .memo
+        case .memo: return .code
+        }
+    }
+}
+
 struct StockFormView: View {
     @Binding var code: String
     @Binding var market: Market
@@ -21,6 +39,8 @@ struct StockFormView: View {
     @Binding var selectedTags: [CategoryTag]
     
     @State var calendarId: UUID = UUID()
+    
+    @FocusState.Binding var focusedField: StockFormFocusFields?
     
     var body: some View {
         Section(header: Text("銘柄情報")) {
@@ -46,6 +66,10 @@ struct StockFormView: View {
                     Text("銘柄コード")
                     TextField("(例)7203", text: $code)
                         .multilineTextAlignment(.trailing)
+                        .focused($focusedField, equals: .code)
+                        .onSubmit {
+                            focusedField = .name
+                        }
                 }
                 Divider()
                     .background(.separator)
@@ -55,6 +79,10 @@ struct StockFormView: View {
                     Text("銘柄名")
                     TextField("(例)トヨタ自動車", text: $name)
                         .multilineTextAlignment(.trailing)
+                        .focused($focusedField, equals: .name)
+                        .onSubmit {
+                            focusedField = .amount
+                        }
                 }
                 Divider().background(.separator)
             }
@@ -112,6 +140,10 @@ struct StockFormView: View {
                         TextField("金額", text: $amountText)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .amount)
+                            .onSubmit {
+                                focusedField = .shares
+                            }
                         Text("円")
                     }
                     Divider().background(.separator)
@@ -123,6 +155,10 @@ struct StockFormView: View {
                             "株数", text: $sharesText)
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
+                        .focused($focusedField, equals: .shares)
+                        .onSubmit {
+                            focusedField = .memo
+                        }
                         Text("株")
                     }
                     Divider().background(.separator)
@@ -145,6 +181,7 @@ struct StockFormView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.5))
                     )
+                    .focused($focusedField, equals: .memo)
             }
             
         }
@@ -157,6 +194,7 @@ struct StockFormView: View {
 }
 
 #Preview {
+    @FocusState var focusedField: StockFormFocusFields?
     Form {
         StockFormView(
             code: .constant("7203"),
@@ -172,7 +210,8 @@ struct StockFormView: View {
             selectedTags: .constant([
                 CategoryTag(name: "自動車", color: .blue),
                 CategoryTag(name: "大型株", color: .green)
-            ])
+            ]),
+            focusedField: $focusedField
         )
     }
 }

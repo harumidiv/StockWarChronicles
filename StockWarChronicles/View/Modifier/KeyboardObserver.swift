@@ -6,27 +6,50 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct KeyboardObserver: ViewModifier {
     @Binding var keyboardIsPresented: Bool
+    let isNeedNextBotton: Bool
+    let onNext: () -> Void
 
+    // イニシャライザでハンドラを受け取る
+    init(keyboardIsPresented: Binding<Bool>, isNeedNextBotton: Bool, onNext: @escaping () -> Void,) {
+        self._keyboardIsPresented = keyboardIsPresented
+        self.isNeedNextBotton = isNeedNextBotton
+        self.onNext = onNext
+    }
+    
     func body(content: Content) -> some View {
         VStack {
             content
-
+            
             if keyboardIsPresented {
                 HStack {
-                    Spacer()
-                    Button {
+                    // 「閉じる」ボタン
+                    Button(action: {
                         UIApplication.shared.closeKeyboard()
-                    } label: {
+                    }) {
                         Text("閉じる")
-                            .foregroundColor(.blue)
                             .padding()
+                            .foregroundColor(.green)
+                    }
+                    
+                    
+                    Spacer()
+                    
+                    if isNeedNextBotton {
+                        Button(action: {
+                            onNext()
+                        }) {
+                            Text("次へ")
+                                .padding()
+                                .foregroundColor(.green)
+                        }
+                        
                     }
                 }
-                .padding(.horizontal)
-                .background(.ultraThinMaterial)
+                
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
@@ -38,8 +61,19 @@ struct KeyboardObserver: ViewModifier {
     }
 }
 
+// ビューモディファイアを使いやすくするExtension
 extension View {
-    func withKeyboardToolbar(keyboardIsPresented: Binding<Bool>) -> some View {
-        self.modifier(KeyboardObserver(keyboardIsPresented: keyboardIsPresented))
+    func withKeyboardToolbar(
+        keyboardIsPresented: Binding<Bool>,
+        isNeedNextBotton: Bool = false,
+        onNext: @escaping () -> Void
+    ) -> some View {
+        self.modifier(
+            KeyboardObserver(
+                keyboardIsPresented: keyboardIsPresented,
+                isNeedNextBotton: isNeedNextBotton,
+                onNext: onNext,
+            )
+        )
     }
 }

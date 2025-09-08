@@ -29,6 +29,7 @@ struct EditScreen: View {
     @State private var showDeleteAlert: Bool = false
     
     @State private var keyboardIsPresented: Bool = false
+    @FocusState private var focusedField: StockFormFocusFields?
     
     var body: some View {
         NavigationView {
@@ -44,7 +45,8 @@ struct EditScreen: View {
                         sharesText: $sharesText,
                         emotion: $emotion,
                         reason: $reason,
-                        selectedTags: $selectedTags
+                        selectedTags: $selectedTags,
+                        focusedField: $focusedField
                     )
                     
                     if !sales.isEmpty {
@@ -119,7 +121,9 @@ struct EditScreen: View {
                 Text("この株取引データは完全に削除されます。")
             }
         }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented) {
+            focusedField = focusedField?.next()
+        }
         .onAppear {
             code = record.code
             market = record.market
