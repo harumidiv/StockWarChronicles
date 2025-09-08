@@ -11,15 +11,17 @@ import SwiftData
 struct TagSelectionView: View {
     @Environment(\.modelContext) private var context
     
-    @Query private var allExistingTags: [CategoryTag]
+    @Query private var records: [StockRecord]
     
     @State private var newTagInput: String = ""
     @State private var selectedNewTagColor: Color = Color.randomPastel()
     
-    @Binding var selectedTags: [CategoryTag]
+    private var allExistingTags: [Tag] {
+        let uniqueTagNamesSet = Set(records.flatMap { $0.tags })
+        return uniqueTagNamesSet.compactMap { $0 }
+    }
     
-    @State private var deleteTag: CategoryTag?
-    
+    @Binding var selectedTags: [Tag]
     var body: some View {
         VStack(alignment: .leading) {
             
@@ -75,9 +77,6 @@ struct TagSelectionView: View {
                                     } else {
                                         selectedTags.append(tag)
                                     }
-                                },
-                                onDelete: { deleteTag in
-                                    self.deleteTag = deleteTag
                                 }
                             )
                         }
@@ -86,18 +85,6 @@ struct TagSelectionView: View {
             }
         }
         .padding()
-        .alert(item: $deleteTag) { item in
-            Alert(
-                title: Text("このタグを本当に削除しますか？"),
-                message: Text("選択されたタグは「\(item.name)」です。"),
-                primaryButton: .destructive(Text("削除")) {
-                    context.delete(item)
-                    try? context.save()
-                    deleteTag = nil
-                },
-                secondaryButton: .cancel(Text("キャンセル")) { }
-            )
-        }
     }
     
     private func addTag() {
@@ -113,21 +100,20 @@ struct TagSelectionView: View {
                 selectedTags.append(tag)
             }
         } else {
-            let newCategoryTag = CategoryTag(name: tagName, color: selectedNewTagColor)
-            context.insert(newCategoryTag)
+            let tag = Tag(name: tagName, color: selectedNewTagColor)
+            context.insert(tag)
             try? context.save()
-            selectedTags.append(newCategoryTag)
+            selectedTags.append(tag)
             
         }
         newTagInput = ""
     }
     
     struct TagChipView: View {
-        let tag: CategoryTag
+        let tag: Tag
         let isSelected: Bool
         let isDeletable: Bool
         let onTap: () -> Void
-        var onDelete: ((CategoryTag) -> Void)?
 
         var body: some View {
             HStack(spacing: 4) {
@@ -141,7 +127,7 @@ struct TagSelectionView: View {
                 }
 
                 if isDeletable {
-                    Button(action: { onDelete?(tag) }) {
+                    Button(action: { }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.caption)
                             .foregroundColor(.gray)
@@ -165,11 +151,11 @@ struct TagSelectionView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: CategoryTag.self, configurations: config)
+    let container = try! ModelContainer(for: Tag.self, configurations: config)
     
-    CategoryTag.mockTags.forEach { tag in
+    Tag.mockTags.forEach { tag in
         container.mainContext.insert(tag)
     }
-    return TagSelectionView(selectedTags: .constant([CategoryTag.mockTags.first!]))
+    return TagSelectionView(selectedTags: .constant([Tag.mockTags.first!]))
         .modelContainer(container)
 }

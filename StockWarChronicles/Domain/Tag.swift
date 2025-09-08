@@ -17,16 +17,35 @@ final class Tag: Hashable {
         self.name = name
         self.colorData = try! NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
     }
-    
-    init(categoryTag: CategoryTag) {
-        self.name = categoryTag.name
-        self.colorData = try! NSKeyedArchiver.archivedData(withRootObject: UIColor(categoryTag.color), requiringSecureCoding: false)
-    }
 
     var color: Color {
+        // Your color property implementation
         if let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData) {
             return Color(uiColor)
         }
         return .gray
     }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(colorData)
+    }
+
+    static func == (lhs: Tag, rhs: Tag) -> Bool {
+        return lhs.name == rhs.name && lhs.colorData == rhs.colorData
+    }
 }
+
+#if DEBUG
+extension Tag {
+    static var mockTags: [Tag] {
+        [
+            Tag(name: "長期保有", color: .blue),
+            Tag(name: "成長株", color: .green),
+            Tag(name: "損切り", color: .red),
+            Tag(name: "高配当", color: .purple),
+            Tag(name: "IPO", color: .orange)
+        ]
+    }
+}
+#endif

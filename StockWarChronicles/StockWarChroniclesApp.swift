@@ -13,7 +13,7 @@ struct StockWarChroniclesApp: App {
     var body: some Scene {
         WindowGroup {
             PossessionScreen()
-                .modelContainer(for: [StockRecord.self, CategoryTag.self])
+                .modelContainer(for: [StockRecord.self])
                 .environment(\.locale, Locale(identifier: "ja_JP"))
         }
     }

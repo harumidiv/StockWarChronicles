@@ -22,7 +22,7 @@ struct EditScreen: View {
     @State private var sharesText: String = ""
     @State private var emotion: Emotion = .purchase(.normal)
     @State private var reason: String = ""
-    @State private var selectedTags: [CategoryTag] = []
+    @State private var selectedTags: [Tag] = []
     @State private var sales: [StockTradeInfo] = []
     
     @State private var showOversoldAlert = false

@@ -36,7 +36,7 @@ struct StockFormView: View {
     @Binding var sharesText: String
     @Binding var emotion: Emotion
     @Binding var reason: String
-    @Binding var selectedTags: [CategoryTag]
+    @Binding var selectedTags: [Tag]
     
     @State var calendarId: UUID = UUID()
     
@@ -208,8 +208,8 @@ struct StockFormView: View {
                               ),
             reason: .constant("長期投資のため"),
             selectedTags: .constant([
-                CategoryTag(name: "自動車", color: .blue),
-                CategoryTag(name: "大型株", color: .green)
+                Tag(name: "自動車", color: .blue),
+                Tag(name: "大型株", color: .green)
             ]),
             focusedField: $focusedField
         )

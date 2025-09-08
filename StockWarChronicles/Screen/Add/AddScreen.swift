@@ -21,7 +21,7 @@ struct AddScreen: View {
     @State private var sharesText = ""
     @State private var emotion: Emotion = Emotion.purchase(.normal)
     @State private var reason = ""
-    @State private var selectedTags: [CategoryTag] = []
+    @State private var selectedTags: [Tag] = []
     
     @State private var keyboardIsPresented: Bool = false
     @FocusState private var focusedField: StockFormFocusFields?
@@ -86,7 +86,7 @@ struct AddScreen: View {
         let stockRecord = StockRecord(
             code: code, market: market, name: name, position: position,
             purchase: tradeInfo, sales: [],
-            tags: selectedTags.map { Tag(categoryTag: $0) }
+            tags: selectedTags
         )
         context.insert(stockRecord)
         try? context.save()
