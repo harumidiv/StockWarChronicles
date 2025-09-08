@@ -74,6 +74,7 @@ struct TradeHistoryDetailScreen: View {
                     LineMark(x: .value("time", date),
                              y: .value("price", price))
                     .opacity(0.4)
+                    .foregroundStyle(.primary)
                     
                     if date.isSameYearMonthDay(as: record.purchase.date) {
                         PointMark(x: .value("time", date),
@@ -91,7 +92,7 @@ struct TradeHistoryDetailScreen: View {
                         .annotation(position: .bottom) {
                             Text("売却")
                                 .font(.caption)
-                                .foregroundColor(.green)
+                                .foregroundColor(.red)
                         }
                     }
                 }
