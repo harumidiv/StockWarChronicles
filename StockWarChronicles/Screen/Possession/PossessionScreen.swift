@@ -18,6 +18,7 @@ struct PossessionScreen: View {
     
     @State private var editingRecord: StockRecord?
     @State private var sellRecord: StockRecord?
+    @State private var deleteRecord: StockRecord?
     
     var body: some View {
         NavigationView {
@@ -91,6 +92,20 @@ struct PossessionScreen: View {
             .fullScreenCover(isPresented: $showStockRecordView) {
                 TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
             }
+            .alert(item: $deleteRecord) { record in
+                Alert(
+                    title: Text("本当に削除しますか？"),
+                    message: Text("この株取引データは完全に削除されます。"),
+                    primaryButton: .destructive(Text("削除")) {
+                        context.delete(record)
+                        try? context.save()
+                        deleteRecord = nil
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                    },
+                    secondaryButton: .cancel(Text("キャンセル")) { }
+                )
+            }
         }
     }
     
@@ -151,8 +166,7 @@ struct PossessionScreen: View {
                         
                         Divider()
                         Button(role: .destructive) {
-                            context.delete(record)
-                            try? context.save()
+                            deleteRecord = record
                         } label: {
                             Label("削除", systemImage: "trash")
                         }
