@@ -22,7 +22,7 @@ struct AccordionView<Content: View>: View {
                     .font(.title2)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Image(systemName: isExpanded ? "chevron.down.dotted.2" : "chevron.right.dotted.chevron.right")
+                Image(systemName: isExpanded ? "chevron.up.dotted.2" : "chevron.down.dotted.2")
                     .renderingMode(.template)
                     .resizable()
                     .frame(width: 12, height: 12)
