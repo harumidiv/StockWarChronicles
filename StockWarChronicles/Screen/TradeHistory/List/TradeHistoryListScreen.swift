@@ -133,7 +133,6 @@ struct TradeHistoryListScreen: View {
                 }
             }
             .sensoryFeedback(.selection, trigger: showAnnualPerformance)
-            .sensoryFeedback(.selection, trigger: showDetail)
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .navigationTitle("取引記録")
