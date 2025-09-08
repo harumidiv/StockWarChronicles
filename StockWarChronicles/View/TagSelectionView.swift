@@ -34,7 +34,7 @@ struct TagSelectionView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(selectedTags, id: \.name) { tag in
-                            TagChipView(tag: tag, isSelected: true, isDeletable: false) {
+                            TagChipView(tag: tag, isSelected: true) {
                                 selectedTags.removeAll(where: { $0.name == tag.name })
                             }
                         }
@@ -70,7 +70,6 @@ struct TagSelectionView: View {
                             TagChipView(
                                 tag: tag,
                                 isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-                                isDeletable: true,
                                 onTap: {
                                     if selectedTags.contains(where: { $0.name == tag.name }) {
                                         selectedTags.removeAll(where: { $0.name == tag.name })
@@ -112,7 +111,6 @@ struct TagSelectionView: View {
     struct TagChipView: View {
         let tag: Tag
         let isSelected: Bool
-        let isDeletable: Bool
         let onTap: () -> Void
 
         var body: some View {
@@ -125,26 +123,7 @@ struct TagSelectionView: View {
                     TagView(name: tag.name,
                             color: isSelected ? tag.color : Color.gray.opacity(0.2))
                 }
-
-                if isDeletable {
-                    Button(action: { }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .buttonStyle(.plain)
-                }
             }
-            .padding(.horizontal, isDeletable ? 6 : 0)
-            .padding(.vertical, isDeletable ? 4 : 0)
-            .background(
-                Group {
-                    if isDeletable {
-                        Capsule()
-                            .stroke(tag.color, lineWidth: 1)
-                    }
-                }
-            )
         }
     }
 }
