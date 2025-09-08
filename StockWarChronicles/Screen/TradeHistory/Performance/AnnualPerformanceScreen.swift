@@ -12,6 +12,8 @@ struct AnnualPerformanceScreen: View {
     @Query private var records: [StockRecord]
     @Binding var selectedYear: Int
     
+    @State private var selection = 0
+    
     var filteredYearRecords: [StockRecord] {
         records
             .filter {
@@ -31,25 +33,36 @@ struct AnnualPerformanceScreen: View {
     }
     
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             // MARK: - 全体タブ
             OverallPerformanceView(records: filteredYearRecords, selectedYear: $selectedYear)
                 .tabItem {
                     Label("全体", systemImage: "chart.bar.fill")
                 }
+                .tag(0)
             
-            // MARK: - 勝ち取引タブ
-            WinningTradesView(records: filteredWinRecords)
-                .tabItem {
-                    Label("勝ち", systemImage: "arrow.up.right.circle.fill")
-                }
+            if !filteredWinRecords.isEmpty {
+                // MARK: - 勝ち取引タブ
+                WinningTradesView(records: filteredWinRecords)
+                    .tabItem {
+                        Label("勝ち", systemImage: "arrow.up.right.circle.fill")
+                    }
+                    .tag(1)
+            }
             
-            // MARK: - 負け取引タブ
-            LosingTradesView(records: filteredLoseRecords)
-                .tabItem {
-                    Label("負け", systemImage: "arrow.down.right.circle.fill")
-                }
+            if !filteredLoseRecords.isEmpty {
+                // MARK: - 負け取引タブ
+                LosingTradesView(records: filteredLoseRecords)
+                    .tabItem {
+                        Label("負け", systemImage: "arrow.down.right.circle.fill")
+                    }
+                    .tag(2)
+            }
         }
+        .onChange(of: selection) { oldValue, newValue in
+                    let generator = UIImpactFeedbackGenerator(style: .light)
+                    generator.impactOccurred()
+                }
     }
     
     func calculateAverageProfitAndLossPercent(from records: [StockRecord]) -> Double {
