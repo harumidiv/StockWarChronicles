@@ -132,6 +132,8 @@ struct TradeHistoryListScreen: View {
                     }
                 }
             }
+            .sensoryFeedback(.selection, trigger: showAnnualPerformance)
+            .sensoryFeedback(.selection, trigger: showDetail)
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .navigationTitle("取引記録")
@@ -187,6 +189,7 @@ struct TradeHistoryListScreen: View {
                         .fontWeight(.bold)
                 }
                 .foregroundColor(.green)
+                .sensoryFeedback(.selection, trigger: selectedTag)
             }
         
             Menu {
@@ -208,6 +211,7 @@ struct TradeHistoryListScreen: View {
                         .fontWeight(.bold)
                 }
                 .foregroundColor(.green)
+                .sensoryFeedback(.selection, trigger: selectedYear)
             }
             
             Menu {
@@ -228,6 +232,7 @@ struct TradeHistoryListScreen: View {
                         .fontWeight(.bold)
                 }
                 .foregroundColor(.green)
+                .sensoryFeedback(.selection, trigger: currentSortType)
             }
         }
         .padding(.horizontal, 16)
