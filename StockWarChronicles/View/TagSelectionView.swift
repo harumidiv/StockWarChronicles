@@ -24,12 +24,23 @@ struct TagSelectionView: View {
     @Binding var selectedTags: [Tag]
     var body: some View {
         VStack(alignment: .leading) {
-            
+            HStack {
+                Spacer()
+                
+                Button {
+                    // TODO: 編集画面に遷移させる
+                    print("あああ")
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 22))
+                        .foregroundColor(.primary)
+                }
+                .buttonStyle(.plain)
+            }
             // 選択済みのタグを表示
             VStack(alignment: .leading, spacing: 8) {
-                Text("選択済みのタグ")
+                Text("選択済みタグ")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -44,9 +55,11 @@ struct TagSelectionView: View {
             .padding(.bottom, 4)
             
             HStack(spacing: 8) {
-                TextField("新しいタグを追加", text: $newTagInput)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.never)
+                VStack(spacing: 4) {
+                    TextField("新しいタグを追加", text: $newTagInput)
+                        .textInputAutocapitalization(.never)
+                    Divider()
+                }
                 
                 ColorPicker("", selection: $selectedNewTagColor)
                     .labelsHidden()
@@ -56,13 +69,12 @@ struct TagSelectionView: View {
                         .font(.title2)
                         .foregroundColor(newTagInput.isEmpty ? .gray : .accentColor)
                 }
-                .disabled(newTagInput.isEmpty)
+                .disabled(newTagInput.isEmpty || isDuplicateTag)
             }
             
             VStack(alignment: .leading, spacing: 8) {
                 Text("既存タグ")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -84,6 +96,11 @@ struct TagSelectionView: View {
             }
         }
         .padding()
+    }
+    
+    private var isDuplicateTag: Bool {
+        let tagName = newTagInput.trimmingCharacters(in: .whitespaces)
+        return allExistingTags.contains { $0.name == tagName }
     }
     
     private func addTag() {
