@@ -140,7 +140,7 @@ struct PossessionScreen: View {
                 
                 Divider()
                 
-                HStack {
+                HStack(spacing: 0) {
                     Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -172,7 +172,7 @@ struct PossessionScreen: View {
                     } label: {
                         Image(systemName: "ellipsis")
                             .frame(width: 32, height: 24)
-                            .foregroundColor(.green)
+                            .foregroundColor(.primary)
                     }
                     .contentShape(Rectangle())
                 }

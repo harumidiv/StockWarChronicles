@@ -32,7 +32,7 @@ struct KeyboardObserver: ViewModifier {
                     }) {
                         Text("閉じる")
                             .padding()
-                            .foregroundColor(.green)
+                            .foregroundColor(.primary)
                     }
                     
                     
@@ -44,7 +44,7 @@ struct KeyboardObserver: ViewModifier {
                         }) {
                             Text("次へ")
                                 .padding()
-                                .foregroundColor(.green)
+                                .foregroundColor(.primary)
                         }
                         
                     }

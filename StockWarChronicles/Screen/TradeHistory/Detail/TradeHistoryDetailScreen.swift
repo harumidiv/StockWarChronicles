@@ -74,6 +74,7 @@ struct TradeHistoryDetailScreen: View {
                     LineMark(x: .value("time", date),
                              y: .value("price", price))
                     .opacity(0.4)
+                    .foregroundStyle(.primary)
                     
                     if date.isSameYearMonthDay(as: record.purchase.date) {
                         PointMark(x: .value("time", date),
@@ -91,7 +92,7 @@ struct TradeHistoryDetailScreen: View {
                         .annotation(position: .bottom) {
                             Text("売却")
                                 .font(.caption)
-                                .foregroundColor(.green)
+                                .foregroundColor(.red)
                         }
                     }
                 }
@@ -129,17 +130,17 @@ struct TradeHistoryDetailScreen: View {
                         HStack {
                             HStack(spacing: 0) {
                                 Text(record.purchase.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                                 Text("~")
+                                    .foregroundColor(.secondary)
                                 Text(sale.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            .font(.callout)
                             
                             Text(sale.shares.description + "株")
-                                .font(.body)
-                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+                                .font(.callout)
                             
                             Spacer()
                             
@@ -194,17 +195,17 @@ struct TradeHistoryDetailScreen: View {
                         HStack {
                             HStack(spacing: 0) {
                                 Text(record.purchase.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                                 Text("~")
+                                    .foregroundColor(.secondary)
                                 Text(sale.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            .font(.callout)
                             
                             Text(sale.shares.description + "株")
-                                .font(.body)
-                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+                                .font(.callout)
                             
                             Spacer()
                             

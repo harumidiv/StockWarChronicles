@@ -221,7 +221,7 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .foregroundColor(.green)
+                .foregroundColor(.primary)
                 .sensoryFeedback(.selection, trigger: selectedTag)
             }
         
@@ -243,7 +243,7 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .foregroundColor(.green)
+                .foregroundColor(.primary)
                 .sensoryFeedback(.selection, trigger: selectedYear)
             }
             
@@ -264,7 +264,7 @@ struct TradeHistoryListScreen: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .foregroundColor(.green)
+                .foregroundColor(.primary)
                 .sensoryFeedback(.selection, trigger: currentSortType)
             }
         }
