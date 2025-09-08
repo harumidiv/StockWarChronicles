@@ -158,7 +158,8 @@ struct ClosingScreen: View {
                 }
             }
         }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented) { // NOP
+        }
         .onAppear {
             shares = record.remainingShares
             if shares < 100 {

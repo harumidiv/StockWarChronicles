@@ -24,6 +24,7 @@ struct AddScreen: View {
     @State private var selectedTags: [CategoryTag] = []
     
     @State private var keyboardIsPresented: Bool = false
+    @FocusState private var focusedField: StockFormFocusFields?
     
     var amount: Double {
         Double(amountText) ?? 0
@@ -41,7 +42,7 @@ struct AddScreen: View {
                         code: $code, market: $market, name: $name,
                         date: $date, position: $position, amountText: $amountText,
                         sharesText: $sharesText, emotion: $emotion,
-                        reason: $reason, selectedTags: $selectedTags
+                        reason: $reason, selectedTags: $selectedTags, focusedField: $focusedField
                     )
                 }
             }
@@ -71,7 +72,9 @@ struct AddScreen: View {
                 }
             }
         }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented, isNeedNextBotton: true) {
+            focusedField = focusedField?.next()
+        }
     }
     
     private func saveAction() {
