@@ -46,7 +46,7 @@ struct AnnualPerformanceScreen: View {
                     }
             }
             
-            if filteredLoseRecords.isEmpty {
+            if !filteredLoseRecords.isEmpty {
                 // MARK: - 負け取引タブ
                 LosingTradesView(records: filteredLoseRecords)
                     .tabItem {
