@@ -196,10 +196,7 @@ struct StockSellEditView: View {
                                 .tag(Emotion.sales(emotion))
                         }
                     }
-                    .onChange(of: sale.emotion) { oldValue, newValue in
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
-                    }
+                    .sensoryFeedback(.selection, trigger: sale.emotion)
                     Divider()
                         .background(.separator)
                         .padding(.bottom)
@@ -207,9 +204,15 @@ struct StockSellEditView: View {
                     DatePicker("日付", selection: $sale.date, displayedComponents: .date)
                         .id(calendarId)
                         .onChange(of: sale.date) { oldValue, newValue in
-                            let generator = UISelectionFeedbackGenerator()
-                            generator.selectionChanged()
-                            calendarId = UUID()
+                            let calendar = Calendar.current
+                            let oldDateWithoutTime = calendar.component(.day, from: oldValue)
+                            let newDateWithoutTime = calendar.component(.day, from: newValue)
+                            
+                            if oldDateWithoutTime != newDateWithoutTime {
+                                let generator = UISelectionFeedbackGenerator()
+                                generator.selectionChanged()
+                                calendarId = UUID()
+                            }
                         }
                     
                     Divider()

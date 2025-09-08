@@ -46,6 +46,10 @@ struct PossessionScreen: View {
                     }
                 }
             }
+            .sensoryFeedback(.selection, trigger: showStockRecordView)
+            .sensoryFeedback(.selection, trigger: showAddStockView)
+            .sensoryFeedback(.selection, trigger: sellRecord)
+            .sensoryFeedback(.selection, trigger: editingRecord)
             .listStyle(.plain)
             .navigationTitle("保有リスト")
             .toolbar {

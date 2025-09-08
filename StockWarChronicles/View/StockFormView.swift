@@ -35,10 +35,7 @@ struct StockFormView: View {
                     }
                     .pickerStyle(.menu)
                     .tint(.green)
-                    .onChange(of: market) { oldValue, newValue in
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
-                    }
+                    .sensoryFeedback(.selection, trigger: market)
                 }
                 
                 Divider()
@@ -72,10 +69,7 @@ struct StockFormView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .onChange(of: position) { oldValue, newValue in
-                let generator = UISelectionFeedbackGenerator()
-                generator.selectionChanged()
-            }
+            .sensoryFeedback(.selection, trigger: position)
             
             HStack {
                 VStack {
@@ -87,10 +81,8 @@ struct StockFormView: View {
                         }
                     }
                     .tint(.green)
-                    .onChange(of: emotion) { oldValue, newValue in
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
-                    }
+                    .sensoryFeedback(.selection, trigger: emotion)
+
                     Divider().background(.separator)
                 }
             }
@@ -100,9 +92,15 @@ struct StockFormView: View {
                     DatePicker("日付", selection: $date, displayedComponents: .date)
                         .id(calendarId)
                         .onChange(of: date) { oldValue, newValue in
-                            let generator = UISelectionFeedbackGenerator()
-                            generator.selectionChanged()
-                            calendarId = UUID()
+                            let calendar = Calendar.current
+                            let oldDateWithoutTime = calendar.component(.day, from: oldValue)
+                            let newDateWithoutTime = calendar.component(.day, from: newValue)
+                            
+                            if oldDateWithoutTime != newDateWithoutTime {
+                                let generator = UISelectionFeedbackGenerator()
+                                generator.selectionChanged()
+                                calendarId = UUID()
+                            }
                         }
                     Divider().background(.separator)
                 }

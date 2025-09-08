@@ -29,6 +29,8 @@ struct ClosingScreen: View {
     @State private var keyboardIsPresented: Bool = false
     @State private var showDateAlert: Bool = false
     
+    @State var calendarId: UUID = UUID()
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -47,6 +49,18 @@ struct ClosingScreen: View {
                         
                         VStack {
                             DatePicker("日付", selection: $sellDate, displayedComponents: .date)
+                                .id(calendarId)
+                                .onChange(of: sellDate) {oldValue, newValue in
+                                let calendar = Calendar.current
+                                    let oldDateWithoutTime = calendar.component(.day, from: oldValue)
+                                    let newDateWithoutTime = calendar.component(.day, from: newValue)
+                                
+                                if oldDateWithoutTime != newDateWithoutTime {
+                                    let generator = UISelectionFeedbackGenerator()
+                                    generator.selectionChanged()
+                                    calendarId = UUID()
+                                }
+                            }
                             Divider().background(.separator)
                         }
                         
