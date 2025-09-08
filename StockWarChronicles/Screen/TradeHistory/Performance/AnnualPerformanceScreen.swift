@@ -38,17 +38,21 @@ struct AnnualPerformanceScreen: View {
                     Label("全体", systemImage: "chart.bar.fill")
                 }
             
-            // MARK: - 勝ち取引タブ
-            WinningTradesView(records: filteredWinRecords)
-                .tabItem {
-                    Label("勝ち", systemImage: "arrow.up.right.circle.fill")
-                }
+            if !filteredWinRecords.isEmpty {
+                // MARK: - 勝ち取引タブ
+                WinningTradesView(records: filteredWinRecords)
+                    .tabItem {
+                        Label("勝ち", systemImage: "arrow.up.right.circle.fill")
+                    }
+            }
             
-            // MARK: - 負け取引タブ
-            LosingTradesView(records: filteredLoseRecords)
-                .tabItem {
-                    Label("負け", systemImage: "arrow.down.right.circle.fill")
-                }
+            if filteredLoseRecords.isEmpty {
+                // MARK: - 負け取引タブ
+                LosingTradesView(records: filteredLoseRecords)
+                    .tabItem {
+                        Label("負け", systemImage: "arrow.down.right.circle.fill")
+                    }
+            }
         }
     }
     
