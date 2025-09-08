@@ -54,7 +54,7 @@ struct StockFormView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .tint(.green)
+                    .tint(.primary)
                     .sensoryFeedback(.selection, trigger: market)
                 }
                 
@@ -108,7 +108,7 @@ struct StockFormView: View {
                                 .tag(Emotion.purchase(emotion))
                         }
                     }
-                    .tint(.green)
+                    .tint(.primary)
                     .sensoryFeedback(.selection, trigger: emotion)
 
                     Divider().background(.separator)
