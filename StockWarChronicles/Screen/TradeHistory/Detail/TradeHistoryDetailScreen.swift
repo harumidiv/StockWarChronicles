@@ -130,17 +130,17 @@ struct TradeHistoryDetailScreen: View {
                         HStack {
                             HStack(spacing: 0) {
                                 Text(record.purchase.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                                 Text("~")
+                                    .foregroundColor(.secondary)
                                 Text(sale.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            .font(.callout)
                             
                             Text(sale.shares.description + "株")
-                                .font(.body)
-                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+                                .font(.callout)
                             
                             Spacer()
                             
@@ -195,17 +195,17 @@ struct TradeHistoryDetailScreen: View {
                         HStack {
                             HStack(spacing: 0) {
                                 Text(record.purchase.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                                 Text("~")
+                                    .foregroundColor(.secondary)
                                 Text(sale.date.formatted(as: .md))
-                                    .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            .font(.callout)
                             
                             Text(sale.shares.description + "株")
-                                .font(.body)
-                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+                                .font(.callout)
                             
                             Spacer()
                             
