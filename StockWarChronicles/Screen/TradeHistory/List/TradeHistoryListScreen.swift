@@ -8,7 +8,6 @@
 
 import SwiftUI
 import SwiftData
-
 import SwiftUI
 
 enum SortType: CaseIterable, Identifiable {
@@ -50,11 +49,14 @@ struct TradeHistoryListScreen: View {
     @Binding var showTradeHistoryListScreen: Bool
     
     @Query private var records: [StockRecord]
+    @Environment(\.modelContext) private var context
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var showDetail = false
     @State private var showAnnualPerformance = false
     
+    @State private var editingRecord: StockRecord?
+    @State private var deleteRecord: StockRecord?
     
     // Sort & Filter
     @State private var selectedTag: String = "すべてのタグ"
@@ -128,6 +130,21 @@ struct TradeHistoryListScreen: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(Color(.tertiarySystemGroupedBackground))
                             )
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    deleteRecord = record
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                .tint(.red)
+                                
+                                Button {
+                                    editingRecord = record
+                                } label: {
+                                    Image(systemName: "square.and.pencil")
+                                }
+                                .tint(.blue)
+                            }
                         }
                     }
                 }
@@ -163,6 +180,23 @@ struct TradeHistoryListScreen: View {
                         }
                     }
                 }
+            }
+            .sheet(item: $editingRecord) { record in
+                EditScreen(record: record)
+            }
+            .alert(item: $deleteRecord) { record in
+                Alert(
+                    title: Text("本当に削除しますか？"),
+                    message: Text("この株取引データは完全に削除されます。"),
+                    primaryButton: .destructive(Text("削除")) {
+                        context.delete(record)
+                        try? context.save()
+                        deleteRecord = nil
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                    },
+                    secondaryButton: .cancel(Text("キャンセル")) { }
+                )
             }
         }
     }
