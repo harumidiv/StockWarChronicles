@@ -30,8 +30,7 @@ struct PossessionScreen: View {
                             .listRowSeparator(.hidden)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
-                                    context.delete(record)
-                                    try? context.save()
+                                    deleteRecord = record
                                 } label: {
                                     Image(systemName: "trash")
                                 }
