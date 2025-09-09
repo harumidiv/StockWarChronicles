@@ -56,10 +56,14 @@ struct TagEditView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     ChipsView(tags: editTags) { tag in
                         Button {
-                            selectedTag = tag
-                            originalName = tag.name
-                            name = tag.name
-                            color = tag.color
+                            if selectedTag == tag {
+                                setup()
+                            } else {
+                                selectedTag = tag
+                                originalName = tag.name
+                                name = tag.name
+                                color = tag.color
+                            }
                         } label: {
                             TagView(
                                 name: tag.name,
@@ -68,7 +72,7 @@ struct TagEditView: View {
                                 : Color.gray.opacity(0.2)
                             )
                         }
-                    } didChangeSelection: { _ in }
+                    }
                 }
                 Spacer()
             }
