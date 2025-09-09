@@ -25,73 +25,10 @@ struct TagSelectionView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Spacer()
-                
-                Button {
-                    showTagEdit.toggle()
-                } label: {
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.system(size: 22))
-                        .foregroundColor(.primary)
-                }
-                .buttonStyle(.plain)
-            }
-            // 選択済みのタグを表示
-            VStack(alignment: .leading, spacing: 8) {
-                Text("選択済みタグ")
-                    .font(.subheadline)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(selectedTags, id: \.name) { tag in
-                            TagChipView(tag: tag, isSelected: true) {
-                                selectedTags.removeAll(where: { $0.name == tag.name })
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(.bottom, 4)
-            
-            HStack(spacing: 8) {
-                VStack(spacing: 4) {
-                    TextField("新しいタグを追加", text: $newTagName)
-                        .textInputAutocapitalization(.never)
-                    Divider()
-                }
-                
-                ColorPicker("", selection: $selectedNewTagColor)
-                    .labelsHidden()
-                
-                Button(action: addTag) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(newTagName.isEmpty ? .gray : .accentColor)
-                }
-                .disabled(newTagName.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("既存タグ")
-                    .font(.subheadline)
-
-                ChipsView(tags: allTags) { tag in
-                    TagChipView(tag: tag, isSelected: selectedTags.contains(where: { $0.name == tag.name })) {
-                        if selectedTags.contains(where: { $0.name == tag.name }) {
-                            // 含まれている場合は削除
-                            selectedTags.removeAll(where: { $0.name == tag.name })
-                        } else {
-                            // 含まれていない場合は追加
-                            selectedTags.append(tag)
-                        }
-                    }
-                } onTap: { tag in
-                    // onTapを使うと選択がバグるのでここでは使わない
-                }
-            }
+            selectedTagView
+            addTagView
+            existingTagView
         }
-        .padding()
         .onAppear {
             allTags = Array(records.flatMap { $0.tags }.unique())
         }
@@ -104,6 +41,90 @@ struct TagSelectionView: View {
             TagEditView()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+        }
+    }
+    
+    var editTagButton: some View {
+        HStack {
+            Spacer()
+            
+            Button {
+                showTagEdit.toggle()
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 22))
+                    .foregroundColor(.primary)
+            }
+            .buttonStyle(.plain)
+        }    }
+    
+    var selectedTagView: some View {
+        // 選択済みのタグを表示
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .bottom) {
+                Text("選択済みタグ")
+                    .foregroundColor(.secondary)
+                    .font(.caption)
+                Spacer()
+                editTagButton
+            }
+            
+            ChipsView(tags: selectedTags) { tag in
+                TagChipView(tag: tag, isSelected: selectedTags.contains(where: { $0.name == tag.name })) {
+                    selectedTags.removeAll(where: { $0.name == tag.name })
+                }
+            } onTap: { tag in
+                // onTapを使うと全てのタグが返却されてしまうので使わない
+            }
+            .frame(minHeight: 28)
+            .padding(4)
+            .background(.thinMaterial)
+        }
+        .padding(.bottom, 4)
+    }
+    
+    var addTagView: some View {
+        HStack(spacing: 8) {
+            VStack(spacing: 4) {
+                TextField("新しいタグを追加", text: $newTagName)
+                    .textInputAutocapitalization(.never)
+                Divider()
+            }
+            
+            ColorPicker("", selection: $selectedNewTagColor)
+                .labelsHidden()
+            
+            Button(action: addTag) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(newTagName.isEmpty ? .gray : .accentColor)
+            }
+            .disabled(newTagName.trimmingCharacters(in: .whitespaces).isEmpty)
+        }
+    }
+    
+    var existingTagView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("既存タグ")
+                .foregroundColor(.secondary)
+                .font(.caption)
+
+            ChipsView(tags: allTags) { tag in
+                TagChipView(tag: tag, isSelected: selectedTags.contains(where: { $0.name == tag.name })) {
+                    if selectedTags.contains(where: { $0.name == tag.name }) {
+                        // 含まれている場合は削除
+                        selectedTags.removeAll(where: { $0.name == tag.name })
+                    } else {
+                        // 含まれていない場合は追加
+                        selectedTags.append(tag)
+                    }
+                }
+            } onTap: { tag in
+                // onTapを使うと全てのタグが返却されてしまうので使わない
+            }
+            .frame(minHeight: 28)
+            .padding(4)
+            .background(.thinMaterial)
         }
     }
     
