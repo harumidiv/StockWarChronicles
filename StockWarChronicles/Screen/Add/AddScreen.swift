@@ -38,13 +38,22 @@ struct AddScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                Form {
-                    StockFormView(
-                        code: $code, market: $market, name: $name,
-                        date: $date, position: $position, amountText: $amountText,
-                        sharesText: $sharesText, emotion: $emotion,
-                        reason: $reason, selectedTags: $selectedTags, focusedField: $focusedField
-                    )
+                ScrollViewReader { proxy in
+                    Form {
+                        StockFormView(
+                            code: $code, market: $market, name: $name,
+                            date: $date, position: $position, amountText: $amountText,
+                            sharesText: $sharesText, emotion: $emotion,
+                            reason: $reason, selectedTags: $selectedTags, focusedField: $focusedField
+                        )
+                    }
+                    .onChange(of: focusedField) {
+                        if let focusedField = focusedField {
+                            withAnimation {
+                                proxy.scrollTo(focusedField, anchor: .top)
+                            }
+                        }
+                    }
                 }
             }
             .navigationTitle("追加")

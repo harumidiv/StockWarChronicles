@@ -43,6 +43,18 @@ struct StockFormView: View {
     @FocusState.Binding var focusedField: StockFormFocusFields?
     
     var body: some View {
+        stockInfoSection
+            .id(StockFormFocusFields.name)
+        tradeInfoSection
+            .id(StockFormFocusFields.amount)
+            .id(StockFormFocusFields.shares)
+        Section(header: Text("タグ")) {
+            TagSelectionView(selectedTags: $selectedTags)
+        }
+        
+    }
+    
+    var stockInfoSection: some View {
         Section(header: Text("銘柄情報")) {
             VStack {
                 HStack {
@@ -80,15 +92,14 @@ struct StockFormView: View {
                     TextField("(例)トヨタ自動車", text: $name)
                         .multilineTextAlignment(.trailing)
                         .focused($focusedField, equals: .name)
-                        .onSubmit {
-                            focusedField = .amount
-                        }
                 }
                 Divider().background(.separator)
             }
         }
         .listRowSeparator(.hidden)
-        
+    }
+    
+    var tradeInfoSection: some View {
         Section(header: Text("取引情報")) {
             Picker("ポジション", selection: $position) {
                 ForEach(Position.allCases) { value in
@@ -177,17 +188,12 @@ struct StockFormView: View {
                     }
                     .tint(.primary)
                     .sensoryFeedback(.selection, trigger: emotion)
-
+                    
                     Divider().background(.separator)
                 }
             }
-            
         }
         .listRowSeparator(.hidden)
-        
-        Section(header: Text("タグ")) {
-            TagSelectionView(selectedTags: $selectedTags)
-        }
     }
 }
 
@@ -197,7 +203,7 @@ struct StockFormView: View {
 
 private struct StockFormViewPreviewWrapper: View {
     @FocusState private var focusedField: StockFormFocusFields?
-
+    
     var body: some View {
         Form {
             StockFormView(
