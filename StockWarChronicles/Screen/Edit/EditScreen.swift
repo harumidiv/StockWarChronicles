@@ -195,17 +195,6 @@ struct StockSellEditView: View {
                         Spacer()
                     }
                     
-                    Picker("感情", selection: $sale.emotion) {
-                        ForEach(SalesEmotions.allCases) { emotion in
-                            Text(emotion.rawValue + emotion.name)
-                                .tag(Emotion.sales(emotion))
-                        }
-                    }
-                    .sensoryFeedback(.selection, trigger: sale.emotion)
-                    Divider()
-                        .background(.separator)
-                        .padding(.bottom)
-                    
                     DatePicker("日付", selection: $sale.date, displayedComponents: .date)
                         .id(calendarId)
                         .onChange(of: sale.date) { oldValue, newValue in
@@ -265,6 +254,17 @@ struct StockSellEditView: View {
                                     .stroke(Color.gray.opacity(0.5))
                             )
                     }
+                    
+                    Picker("感情", selection: $sale.emotion) {
+                        ForEach(SalesEmotions.allCases) { emotion in
+                            Text(emotion.rawValue + emotion.name)
+                                .tag(Emotion.sales(emotion))
+                        }
+                    }
+                    .sensoryFeedback(.selection, trigger: sale.emotion)
+                    Divider()
+                        .background(.separator)
+                        .padding(.bottom)
                 }
             }
         }

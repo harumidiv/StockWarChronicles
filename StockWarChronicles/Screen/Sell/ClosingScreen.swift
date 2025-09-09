@@ -37,17 +37,6 @@ struct ClosingScreen: View {
                 Form {
                     Section(header: Text(record.code + " " + record.name)) {
                         VStack {
-                            Picker("感情", selection: $emotion) {
-                                ForEach(SalesEmotions.allCases) { emotion in
-                                    Text(emotion.rawValue + emotion.name)
-                                        .tag(Emotion.sales(emotion))
-                                }
-                            }
-                            .tint(.primary)
-                            Divider().background(.separator)
-                        }
-                        
-                        VStack {
                             DatePicker("日付", selection: $sellDate, displayedComponents: .date)
                                 .id(calendarId)
                                 .onChange(of: sellDate) {oldValue, newValue in
@@ -123,6 +112,17 @@ struct ClosingScreen: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.gray.opacity(0.5))
                                 )
+                        }
+                        
+                        VStack {
+                            Picker("感情", selection: $emotion) {
+                                ForEach(SalesEmotions.allCases) { emotion in
+                                    Text(emotion.rawValue + emotion.name)
+                                        .tag(Emotion.sales(emotion))
+                                }
+                            }
+                            .tint(.primary)
+                            Divider().background(.separator)
                         }
                     }
                     .listRowSeparator(.hidden)

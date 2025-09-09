@@ -101,22 +101,6 @@ struct StockFormView: View {
             
             HStack {
                 VStack {
-                    
-                    Picker("感情", selection: $emotion) {
-                        ForEach(PurchaseEmotions.allCases) { emotion in
-                            Text(emotion.rawValue + emotion.name)
-                                .tag(Emotion.purchase(emotion))
-                        }
-                    }
-                    .tint(.primary)
-                    .sensoryFeedback(.selection, trigger: emotion)
-
-                    Divider().background(.separator)
-                }
-            }
-            
-            HStack {
-                VStack {
                     DatePicker("日付", selection: $date, displayedComponents: .date)
                         .id(calendarId)
                         .onChange(of: date) { oldValue, newValue in
@@ -166,7 +150,6 @@ struct StockFormView: View {
                 .padding(.leading)
             }
             
-            
             VStack {
                 HStack {
                     Text("メモ")
@@ -182,6 +165,21 @@ struct StockFormView: View {
                             .stroke(Color.gray.opacity(0.5))
                     )
                     .focused($focusedField, equals: .memo)
+            }
+            
+            HStack {
+                VStack {
+                    Picker("感情", selection: $emotion) {
+                        ForEach(PurchaseEmotions.allCases) { emotion in
+                            Text(emotion.rawValue + emotion.name)
+                                .tag(Emotion.purchase(emotion))
+                        }
+                    }
+                    .tint(.primary)
+                    .sensoryFeedback(.selection, trigger: emotion)
+
+                    Divider().background(.separator)
+                }
             }
             
         }
