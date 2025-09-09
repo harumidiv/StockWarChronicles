@@ -21,6 +21,8 @@ struct TagEditView: View {
     @State private var name: String = ""
     @State private var color: Color = .primary
     
+    @State private var showDeleteAlert: Bool = false
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -34,7 +36,9 @@ struct TagEditView: View {
                     ColorPicker("", selection: $color)
                         .labelsHidden()
                     
-                    Button(action: delete) {
+                    Button(action: {
+                        showDeleteAlert.toggle()
+                    }) {
                         Image(systemName: "trash.fill")
                             .font(.title2)
                             .foregroundColor(.white)
@@ -75,7 +79,6 @@ struct TagEditView: View {
                 
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        context.rollback()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -101,13 +104,25 @@ struct TagEditView: View {
             .onAppear {
                 editTags = Array(records.flatMap { $0.tags }.unique())
             }
+            .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
+                Button("削除", role: .destructive) {
+                    delete()
+                }
+                Button("キャンセル", role: .cancel) { }
+            } message: {
+                Text("全ての履歴からこのタグを削除します")
+            }
         }
     }
     
-    // TOOD: 全てのRecordに登録されているタグが消えるのでアラートをつける
     func delete() {
         for record in records {
             record.tags.removeAll { $0.name == originalName }
+        }
+        
+        // 編集画面に表示しているものも整合性を合わせるために消す
+        if let tagToRemove = selectedTag {
+            editTags.removeAll { $0.name == tagToRemove.name }
         }
         
         try? context.save()
