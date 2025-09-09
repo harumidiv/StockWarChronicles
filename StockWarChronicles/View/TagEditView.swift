@@ -101,6 +101,7 @@ struct TagEditView: View {
                 
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -158,6 +159,8 @@ struct TagEditView: View {
         tag.name = name
         tag.setColor(color: color)
         try? context.save()
+        
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         
         setup()
     }

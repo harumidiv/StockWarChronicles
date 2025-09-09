@@ -24,7 +24,7 @@ struct TagSelectionView: View {
     @State private var showTagEdit: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 24) {
             selectedTagView
             addTagView
             existingTagView
@@ -51,12 +51,17 @@ struct TagSelectionView: View {
             Button {
                 showTagEdit.toggle()
             } label: {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 22))
+                Text("編集")
+                    .font(.title3)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
                     .foregroundColor(.primary)
+                    .glassEffect()
+                    .shadow(color: Color.black.opacity(0.2), radius: 6, x: 0, y: 4)
             }
             .buttonStyle(.plain)
-        }    }
+        }
+    }
     
     var selectedTagView: some View {
         // 選択済みのタグを表示
