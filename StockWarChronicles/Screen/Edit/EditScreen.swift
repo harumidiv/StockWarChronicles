@@ -181,8 +181,7 @@ struct StockSellEditView: View {
                 VStack {
                     HStack(alignment: .top) {
                         Button(action: {
-                            let generator = UIImpactFeedbackGenerator(style: .heavy)
-                            generator.impactOccurred()
+                            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                             if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
                                 $sales.wrappedValue.remove(at: index)
                             }

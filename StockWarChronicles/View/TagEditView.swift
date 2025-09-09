@@ -26,15 +26,35 @@ struct TagEditView: View {
     var body: some View {
         NavigationView {
             VStack {
+                Group {
+                    if selectedTag != nil {
+                        Text(name)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .foregroundColor(color.isLight() ? .black : .white)
+                            .background(color)
+                            .lineLimit(1)
+                            .clipShape(Capsule())
+                    } else {
+                        Spacer()
+                    }
+                }
+                .frame(height: 70)
+                
+                
                 HStack(spacing: 8) {
                     VStack(spacing: 4) {
                         TextField("選択されたタグ名の編集", text: $name)
                             .textInputAutocapitalization(.never)
+                            .disabled(selectedTag == nil)
                         Divider()
                     }
                     
                     ColorPicker("", selection: $color)
                         .labelsHidden()
+                        .disabled(selectedTag == nil)
                     
                     Button(action: {
                         showDeleteAlert.toggle()
@@ -72,13 +92,16 @@ struct TagEditView: View {
                         }
                     }
                 }
+                .padding()
                 Spacer()
             }
+            .padding()
             .navigationTitle("タグ編集")
             .toolbar {
                 
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -137,6 +160,8 @@ struct TagEditView: View {
         tag.setColor(color: color)
         try? context.save()
         
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        
         setup()
     }
     
@@ -149,8 +174,14 @@ struct TagEditView: View {
 }
 
 #Preview {
-    TagEditView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
+    
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
+    }
+    
+    return TagEditView()
+        .modelContainer(container)
+    
 }
-
-// アラートをつける
-// 保存ボタンのdisable

@@ -60,9 +60,8 @@ struct AnnualPerformanceScreen: View {
             }
         }
         .onChange(of: selection) { oldValue, newValue in
-                    let generator = UIImpactFeedbackGenerator(style: .light)
-                    generator.impactOccurred()
-                }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
     }
     
     func calculateAverageProfitAndLossPercent(from records: [StockRecord]) -> Double {
