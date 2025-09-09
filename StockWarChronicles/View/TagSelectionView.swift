@@ -77,8 +77,7 @@ struct TagSelectionView: View {
                     .font(.subheadline)
 
                 ChipsView(tags: allTags) { tag in
-                    Button {
-                        // selectedTagsに既にタグが含まれているか判定
+                    TagChipView(tag: tag, isSelected: selectedTags.contains(where: { $0.name == tag.name })) {
                         if selectedTags.contains(where: { $0.name == tag.name }) {
                             // 含まれている場合は削除
                             selectedTags.removeAll(where: { $0.name == tag.name })
@@ -86,18 +85,9 @@ struct TagSelectionView: View {
                             // 含まれていない場合は追加
                             selectedTags.append(tag)
                         }
-                            
-                    } label: {
-                        TagView(
-                            name: tag.name,
-                            // 選択状態に応じて色を切り替える
-                            color: selectedTags.contains(where: { $0.name == tag.name })
-                                ? tag.color
-                                : Color.gray.opacity(0.2)
-                        )
                     }
                 } onTap: { tag in
-                    // onTapを使うと選択がバグるので使わない
+                    // onTapを使うと選択がバグるのでここでは使わない
                 }
             }
         }
@@ -145,24 +135,6 @@ struct TagSelectionView: View {
     }
 }
 
-struct TagChipView: View {
-    let tag: Tag
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Button(action: {
-                onTap()
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
-            }) {
-                TagView(name: tag.name,
-                        color: isSelected ? tag.color : Color.gray.opacity(0.2))
-            }
-        }
-    }
-}
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: Tag.self, configurations: config)

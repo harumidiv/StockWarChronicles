@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @Model
-final class Tag: Hashable, Equatable {
+final class Tag: Equatable {
     var name: String
     private var colorData: Data
 
@@ -27,12 +27,11 @@ final class Tag: Hashable, Equatable {
     }
     
     func setColor(color: Color) {
-        self.colorData = try! NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(colorData)
+        do {
+            self.colorData = try NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
+        } catch {
+            print("色の保存失敗")
+        }
     }
 
     static func == (lhs: Tag, rhs: Tag) -> Bool {
