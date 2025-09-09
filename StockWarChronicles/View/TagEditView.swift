@@ -55,22 +55,20 @@ struct TagEditView: View {
                 .padding(.horizontal)
                 ScrollView(.vertical, showsIndicators: false) {
                     ChipsView(tags: editTags) { tag in
-                        Button {
-                            if selectedTag == tag {
-                                setup()
-                            } else {
-                                selectedTag = tag
-                                originalName = tag.name
-                                name = tag.name
-                                color = tag.color
-                            }
-                        } label: {
-                            TagView(
-                                name: tag.name,
-                                color: selectedTag?.name == tag.name
-                                ? tag.color
-                                : Color.gray.opacity(0.2)
-                            )
+                        TagView(
+                            name: tag.name,
+                            color: selectedTag?.name == tag.name
+                            ? tag.color
+                            : Color.gray.opacity(0.2)
+                        )
+                    } onTap: { tag in
+                        if selectedTag == tag {
+                            setup()
+                        } else {
+                            selectedTag = tag
+                            originalName = tag.name
+                            name = tag.name
+                            color = tag.color
                         }
                     }
                 }

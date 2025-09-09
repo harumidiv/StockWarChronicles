@@ -13,11 +13,19 @@ struct ChipsView<Content: View>: View {
     
     var tags: [Tag]
     @ViewBuilder var content: (Tag) -> Content
+    var onTap: ((Tag) -> Void)? = nil
     
     var body: some View {
         CustomClipLayout(spacing: spacing) {
             ForEach(tags, id: \.self) { tag in
-                content(tag)
+                Button(action: {
+                    onTap?(tag)
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                }) {
+                    content(tag)
+                }
+                
             }
         }
     }

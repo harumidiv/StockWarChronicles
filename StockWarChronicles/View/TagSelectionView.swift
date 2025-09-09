@@ -13,15 +13,11 @@ struct TagSelectionView: View {
     
     @Query private var records: [StockRecord]
     
-    @State private var newTagInput: String = ""
+    @State private var newTagName: String = ""
     @State private var selectedNewTagColor: Color = Color.randomPastel()
-        
-    private var allExistingTags: [Tag] {
-        let recordTags = Set(records.flatMap { $0.tags })
-        let selectedTagSet = Set(selectedTags)
-        let combined = recordTags.union(selectedTagSet)
-        return Array(combined)
-    }
+    
+    
+    @State private var allTags: [Tag] = []
     
     @Binding var selectedTags: [Tag]
     
@@ -60,7 +56,7 @@ struct TagSelectionView: View {
             
             HStack(spacing: 8) {
                 VStack(spacing: 4) {
-                    TextField("新しいタグを追加", text: $newTagInput)
+                    TextField("新しいタグを追加", text: $newTagName)
                         .textInputAutocapitalization(.never)
                     Divider()
                 }
@@ -71,63 +67,61 @@ struct TagSelectionView: View {
                 Button(action: addTag) {
                     Image(systemName: "plus.circle.fill")
                         .font(.title2)
-                        .foregroundColor(newTagInput.isEmpty ? .gray : .accentColor)
+                        .foregroundColor(newTagName.isEmpty ? .gray : .accentColor)
                 }
-                .disabled(newTagInput.isEmpty)
+                .disabled(newTagName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             
             VStack(alignment: .leading, spacing: 8) {
                 Text("既存タグ")
                     .font(.subheadline)
-                
-                // TODO: 大量になった時に選択しずらいのでタグを一覧で見せたい
-//                ChipsView(tags: allExistingTags) { tag in
-//                    TagChipView(
-//                        tag: tag,
-//                        isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-//                        onTap: {
-//                            if selectedTags.contains(where: { $0.name == tag.name }) {
-//                                selectedTags.removeAll(where: { $0.name == tag.name })
-//                            } else {
-//                                selectedTags.append(tag)
-//                            }
-//                        }
-//                    )
-//                }
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(allExistingTags, id: \.name) { tag in
-                            TagChipView(
-                                tag: tag,
-                                isSelected: selectedTags.contains(where: { $0.name == tag.name }),
-                                onTap: {
-                                    if selectedTags.contains(where: { $0.name == tag.name }) {
-                                        selectedTags.removeAll(where: { $0.name == tag.name })
-                                    } else {
-                                        selectedTags.append(tag)
-                                    }
-                                }
-                            )
+
+                ChipsView(tags: allTags) { tag in
+                    Button {
+                        // selectedTagsに既にタグが含まれているか判定
+                        if selectedTags.contains(where: { $0.name == tag.name }) {
+                            // 含まれている場合は削除
+                            selectedTags.removeAll(where: { $0.name == tag.name })
+                        } else {
+                            // 含まれていない場合は追加
+                            selectedTags.append(tag)
                         }
+                    } label: {
+                        TagView(
+                            name: tag.name,
+                            // 選択状態に応じて色を切り替える
+                            color: selectedTags.contains(where: { $0.name == tag.name })
+                                ? tag.color
+                                : Color.gray.opacity(0.2)
+                        )
                     }
+                } onTap: { tag in
+                    // onTapを使うと選択がバグるので使わない
                 }
             }
         }
         .padding()
+        .onAppear {
+            allTags = Array(records.flatMap { $0.tags }.unique())
+        }
+        .onChange(of: showTagEdit) {
+            if showTagEdit == false {
+                allTags = Array(records.flatMap { $0.tags }.unique())
+            }
+        }
         .sheet(isPresented: $showTagEdit) {
             TagEditView()
-                .presentationDetents([.medium, .large]) // 👈 中サイズと全画面を指定
-                .presentationDragIndicator(.visible)   // 上のバーを表示
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
-
+    
     private func addTag() {
-        let tagName = newTagInput.trimmingCharacters(in: .whitespaces)
+        let tagName = newTagName.trimmingCharacters(in: .whitespaces)
         guard !tagName.isEmpty else { return }
         
         // 既存のタグに同じ名前がないか確認
-        let existingTag = allExistingTags.first(where: { $0.name == tagName })
+        let existingTag = allTags.first(where: { $0.name == tagName })
         
         if let tag = existingTag {
             // 既存のタグが見つかった場合はそれを選択リストに追加
@@ -137,7 +131,10 @@ struct TagSelectionView: View {
         } else {
             selectedTags.append(Tag(name: tagName, color: selectedNewTagColor))
         }
-        newTagInput = ""
+        
+        newTagName = ""
+        selectedNewTagColor = Color.randomPastel()
+        
     }
 }
 
@@ -145,7 +142,7 @@ struct TagChipView: View {
     let tag: Tag
     let isSelected: Bool
     let onTap: () -> Void
-
+    
     var body: some View {
         HStack(spacing: 4) {
             Button(action: {
