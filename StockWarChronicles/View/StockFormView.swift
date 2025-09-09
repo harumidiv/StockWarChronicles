@@ -36,7 +36,7 @@ struct StockFormView: View {
     @Binding var sharesText: String
     @Binding var emotion: Emotion
     @Binding var reason: String
-    @Binding var selectedTags: [CategoryTag]
+    @Binding var selectedTags: [Tag]
     
     @State var calendarId: UUID = UUID()
     
@@ -194,24 +194,30 @@ struct StockFormView: View {
 }
 
 #Preview {
-    @FocusState var focusedField: StockFormFocusFields?
-    Form {
-        StockFormView(
-            code: .constant("7203"),
-            market: .constant(.tokyo),
-            name: .constant("トヨタ自動車"),
-            date: .constant(Date()),
-            position: .constant(.buy),
-            amountText: .constant("200000"),
-            sharesText: .constant("100"),
-            emotion: .constant(Emotion.purchase(.random)
-                              ),
-            reason: .constant("長期投資のため"),
-            selectedTags: .constant([
-                CategoryTag(name: "自動車", color: .blue),
-                CategoryTag(name: "大型株", color: .green)
-            ]),
-            focusedField: $focusedField
-        )
+    StockFormViewPreviewWrapper()
+}
+
+private struct StockFormViewPreviewWrapper: View {
+    @FocusState private var focusedField: StockFormFocusFields?
+
+    var body: some View {
+        Form {
+            StockFormView(
+                code: .constant("7203"),
+                market: .constant(.tokyo),
+                name: .constant("トヨタ自動車"),
+                date: .constant(Date()),
+                position: .constant(.buy),
+                amountText: .constant("200000"),
+                sharesText: .constant("100"),
+                emotion: .constant(Emotion.purchase(.random)),
+                reason: .constant("長期投資のため"),
+                selectedTags: .constant([
+                    Tag(name: "自動車", color: .blue),
+                    Tag(name: "大型株", color: .green)
+                ]),
+                focusedField: $focusedField
+            )
+        }
     }
 }
