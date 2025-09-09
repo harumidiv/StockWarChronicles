@@ -17,8 +17,7 @@ struct TagChipView: View {
         HStack(spacing: 4) {
             Button(action: {
                 onTap()
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }) {
                 TagView(name: tag.name,
                         color: isSelected ? tag.color : Color.gray.opacity(0.2))

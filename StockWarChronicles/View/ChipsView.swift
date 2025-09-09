@@ -20,8 +20,7 @@ struct ChipsView<Content: View>: View {
             ForEach(tags, id: \.self) { tag in
                 Button(action: {
                     onTap?(tag)
-                    let generator = UIImpactFeedbackGenerator(style: .medium)
-                    generator.impactOccurred()
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 }) {
                     content(tag)
                 }

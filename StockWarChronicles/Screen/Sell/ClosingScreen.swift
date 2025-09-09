@@ -56,8 +56,7 @@ struct ClosingScreen: View {
                                     let newDateWithoutTime = calendar.component(.day, from: newValue)
                                 
                                 if oldDateWithoutTime != newDateWithoutTime {
-                                    let generator = UISelectionFeedbackGenerator()
-                                    generator.selectionChanged()
+                                     UISelectionFeedbackGenerator().selectionChanged()
                                     calendarId = UUID()
                                 }
                             }

@@ -192,8 +192,7 @@ struct TradeHistoryListScreen: View {
                         context.delete(record)
                         try? context.save()
                         deleteRecord = nil
-                        let generator = UIImpactFeedbackGenerator(style: .heavy)
-                        generator.impactOccurred()
+                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                     },
                     secondaryButton: .cancel(Text("キャンセル")) { }
                 )
