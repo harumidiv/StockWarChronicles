@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 @Model
-final class Tag: Equatable {
+final class Tag: Equatable, Identifiable {
+    var id = UUID()
     var name: String
     private var colorData: Data
 
