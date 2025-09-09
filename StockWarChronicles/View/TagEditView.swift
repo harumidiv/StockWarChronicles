@@ -157,7 +157,7 @@ struct TagEditView: View {
         guard let tag = selectedTag else { return }
         
         tag.name = name
-        tag.setColor(color: color)
+        tag.setColor(color)
         try? context.save()
         
         UIImpactFeedbackGenerator(style: .light).impactOccurred()

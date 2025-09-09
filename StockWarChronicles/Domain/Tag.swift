@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @Model
-final class Tag: Equatable, Identifiable {
+final class Tag: Hashable, Identifiable {
     var id = UUID()
     var name: String
     private var colorData: Data
@@ -20,14 +20,13 @@ final class Tag: Equatable, Identifiable {
     }
 
     var color: Color {
-        // Your color property implementation
         if let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData) {
             return Color(uiColor)
         }
         return .gray
     }
-    
-    func setColor(color: Color) {
+
+    func setColor(_ color: Color) {
         do {
             self.colorData = try NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
         } catch {
@@ -35,10 +34,16 @@ final class Tag: Equatable, Identifiable {
         }
     }
 
+    // Equatable / Hashable は id 基準で判定
     static func == (lhs: Tag, rhs: Tag) -> Bool {
-        return lhs.name == rhs.name && lhs.colorData == rhs.colorData
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
+
 
 #if DEBUG
 extension Tag {
