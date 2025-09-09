@@ -101,7 +101,7 @@ struct TradeHistoryListScreen: View {
     private var allTags: [String] {
         let filteredRecords: [StockRecord] = records.filter {
             Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
-        }
+        }.filter { $0.isTradeFinish }
         let uniqueTagNamesSet = Set(filteredRecords.flatMap { $0.tags }.map { $0.name })
         var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }
         uniqueTagNames.insert("すべてのタグ", at: 0)
