@@ -25,6 +25,10 @@ final class Tag: Hashable {
         }
         return .gray
     }
+    
+    func setColor(color: Color) {
+        self.colorData = try! NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
+    }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(name)
