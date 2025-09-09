@@ -53,24 +53,22 @@ struct TagEditView: View {
                     .disabled(selectedTag == nil)
                 }
                 .padding(.horizontal)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(editTags, id: \.name) { tag in
-                            Button {
-                                selectedTag = tag
-                                originalName = tag.name
-                                name = tag.name
-                                color = tag.color
-                            } label: {
-                                TagView(
-                                    name: tag.name,
-                                    color: selectedTag?.name == tag.name
-                                    ? tag.color
-                                    : Color.gray.opacity(0.2)
-                                )
-                            }
+                ScrollView(.vertical, showsIndicators: false) {
+                    ChipsView(tags: editTags) { tag in
+                        Button {
+                            selectedTag = tag
+                            originalName = tag.name
+                            name = tag.name
+                            color = tag.color
+                        } label: {
+                            TagView(
+                                name: tag.name,
+                                color: selectedTag?.name == tag.name
+                                ? tag.color
+                                : Color.gray.opacity(0.2)
+                            )
                         }
-                    }
+                    } didChangeSelection: { _ in }
                 }
                 Spacer()
             }

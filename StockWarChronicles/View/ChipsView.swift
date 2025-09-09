@@ -13,10 +13,11 @@ struct ChipsView<Content: View>: View {
     
     var tags: [Tag]
     @ViewBuilder var content: (Tag) -> Content
+    var didChangeSelection: ([Tag]) -> ()
     
     var body: some View {
         CustomClipLayout(spacing: spacing) {
-            ForEach(tags) { tag in
+            ForEach(tags, id: \.self) { tag in
                 content(tag)
             }
         }
@@ -77,6 +78,6 @@ fileprivate struct CustomClipLayout: Layout {
         tag in
         
         TagView(name: tag.name, color: tag.color)
-    })
+    }, didChangeSelection: { _ in })
     .padding()
 }

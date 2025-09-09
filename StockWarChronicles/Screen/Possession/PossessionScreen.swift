@@ -135,7 +135,7 @@ struct PossessionScreen: View {
                 if !record.tags.isEmpty {
                     ChipsView(tags: record.tags) { tag in
                         TagView(name: tag.name, color: tag.color)
-                    }
+                    } didChangeSelection: { _ in }
                 }
                 
                 Divider()

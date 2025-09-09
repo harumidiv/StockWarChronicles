@@ -274,7 +274,7 @@ struct TradeHistoryDetailScreen: View {
                 
                 ChipsView(tags: record.tags) { tag in
                     TagView(name: tag.name, color: tag.color)
-                }
+                } didChangeSelection: { _ in }
                 
                 if !chartData.isEmpty {
                     chartView()
