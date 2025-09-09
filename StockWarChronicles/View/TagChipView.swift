@@ -22,6 +22,7 @@ struct TagChipView: View {
                 TagView(name: tag.name,
                         color: isSelected ? tag.color : Color.gray.opacity(0.2))
             }
+            .buttonStyle(.borderless)
         }
     }
 }

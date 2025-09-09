@@ -49,17 +49,12 @@ struct TagSelectionView: View {
             Spacer()
             
             Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                 showTagEdit.toggle()
             } label: {
                 Text("編集")
-                    .font(.title3)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .foregroundColor(.primary)
-                    .glassEffect()
-                    .shadow(color: Color.black.opacity(0.2), radius: 6, x: 0, y: 4)
             }
-            .buttonStyle(.plain)
+            .glassEditButtonStyle()
         }
     }
     
@@ -153,6 +148,7 @@ struct TagSelectionView: View {
                 allTags.append(newTag)
             }
         }
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         
         newTagName = ""
         selectedNewTagColor = Color.randomPastel()
