@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 
 struct PossessionScreen: View {
-    @Namespace private var animation
     @Environment(\.modelContext) private var context
     @Query private var records: [StockRecord]
     
@@ -32,14 +31,14 @@ struct PossessionScreen: View {
                                 Button(role: .destructive) {
                                     deleteRecord = record
                                 } label: {
-                                    Image(systemName: "trash")
+                                    Label("削除", systemImage: "trash")
                                 }
                                 .tint(.red)
                                 
                                 Button {
                                     editingRecord = record
                                 } label: {
-                                    Image(systemName: "square.and.pencil")
+                                    Label("編集", systemImage: "pencil")
                                 }
                                 .tint(.blue)
                             }
@@ -74,18 +73,16 @@ struct PossessionScreen: View {
                             .padding()
                             .clipShape(Circle())
                     }
-                    .frame(width: 60, height: 60) 
-                    .matchedTransitionSource(id: "add", in: animation)
+                    .frame(width: 60, height: 60)
                 }
             }
-            .sheet(isPresented: $showAddStockView) {
+            .fullScreenCover(isPresented: $showAddStockView) {
                 AddScreen(showAddStockView: $showAddStockView)
-                    .navigationTransition(.zoom(sourceID: "add", in: animation))
             }
             .sheet(item: $editingRecord) { record in
                 EditScreen(record: record)
             }
-            .sheet(item: $sellRecord) { record in
+            .fullScreenCover(item: $sellRecord) { record in
                 ClosingScreen(record: record)
             }
             .fullScreenCover(isPresented: $showStockRecordView) {

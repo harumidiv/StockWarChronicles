@@ -15,13 +15,13 @@ enum StockFormFocusFields: Hashable {
     case shares
     case memo
     
-    func next() -> StockFormFocusFields {
+    func next() -> StockFormFocusFields? {
         switch self {
         case .code: return .name
-        case .name: return .amount
+        case .name: return nil
         case .amount: return .shares
         case .shares: return .memo
-        case .memo: return .code
+        case .memo: return nil
         }
     }
 }
@@ -43,6 +43,18 @@ struct StockFormView: View {
     @FocusState.Binding var focusedField: StockFormFocusFields?
     
     var body: some View {
+        stockInfoSection
+            .id(StockFormFocusFields.name)
+        tradeInfoSection
+            .id(StockFormFocusFields.amount)
+            .id(StockFormFocusFields.shares)
+        Section(header: Text("タグ")) {
+            TagSelectionView(selectedTags: $selectedTags)
+        }
+        
+    }
+    
+    var stockInfoSection: some View {
         Section(header: Text("銘柄情報")) {
             VStack {
                 HStack {
@@ -80,15 +92,14 @@ struct StockFormView: View {
                     TextField("(例)トヨタ自動車", text: $name)
                         .multilineTextAlignment(.trailing)
                         .focused($focusedField, equals: .name)
-                        .onSubmit {
-                            focusedField = .amount
-                        }
                 }
                 Divider().background(.separator)
             }
         }
         .listRowSeparator(.hidden)
-        
+    }
+    
+    var tradeInfoSection: some View {
         Section(header: Text("取引情報")) {
             Picker("ポジション", selection: $position) {
                 ForEach(Position.allCases) { value in
@@ -98,22 +109,6 @@ struct StockFormView: View {
             }
             .pickerStyle(.segmented)
             .sensoryFeedback(.selection, trigger: position)
-            
-            HStack {
-                VStack {
-                    
-                    Picker("感情", selection: $emotion) {
-                        ForEach(PurchaseEmotions.allCases) { emotion in
-                            Text(emotion.rawValue + emotion.name)
-                                .tag(Emotion.purchase(emotion))
-                        }
-                    }
-                    .tint(.primary)
-                    .sensoryFeedback(.selection, trigger: emotion)
-
-                    Divider().background(.separator)
-                }
-            }
             
             HStack {
                 VStack {
@@ -166,7 +161,6 @@ struct StockFormView: View {
                 .padding(.leading)
             }
             
-            
             VStack {
                 HStack {
                     Text("メモ")
@@ -184,12 +178,22 @@ struct StockFormView: View {
                     .focused($focusedField, equals: .memo)
             }
             
+            HStack {
+                VStack {
+                    Picker("感情", selection: $emotion) {
+                        ForEach(PurchaseEmotions.allCases) { emotion in
+                            Text(emotion.rawValue + emotion.name)
+                                .tag(Emotion.purchase(emotion))
+                        }
+                    }
+                    .tint(.primary)
+                    .sensoryFeedback(.selection, trigger: emotion)
+                    
+                    Divider().background(.separator)
+                }
+            }
         }
         .listRowSeparator(.hidden)
-        
-        Section(header: Text("タグ")) {
-            TagSelectionView(selectedTags: $selectedTags)
-        }
     }
 }
 
@@ -199,7 +203,7 @@ struct StockFormView: View {
 
 private struct StockFormViewPreviewWrapper: View {
     @FocusState private var focusedField: StockFormFocusFields?
-
+    
     var body: some View {
         Form {
             StockFormView(

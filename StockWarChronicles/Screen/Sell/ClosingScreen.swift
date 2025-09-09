@@ -37,17 +37,6 @@ struct ClosingScreen: View {
                 Form {
                     Section(header: Text(record.code + " " + record.name)) {
                         VStack {
-                            Picker("感情", selection: $emotion) {
-                                ForEach(SalesEmotions.allCases) { emotion in
-                                    Text(emotion.rawValue + emotion.name)
-                                        .tag(Emotion.sales(emotion))
-                                }
-                            }
-                            .tint(.primary)
-                            Divider().background(.separator)
-                        }
-                        
-                        VStack {
                             DatePicker("日付", selection: $sellDate, displayedComponents: .date)
                                 .id(calendarId)
                                 .onChange(of: sellDate) {oldValue, newValue in
@@ -124,6 +113,17 @@ struct ClosingScreen: View {
                                         .stroke(Color.gray.opacity(0.5))
                                 )
                         }
+                        
+                        VStack {
+                            Picker("感情", selection: $emotion) {
+                                ForEach(SalesEmotions.allCases) { emotion in
+                                    Text(emotion.rawValue + emotion.name)
+                                        .tag(Emotion.sales(emotion))
+                                }
+                            }
+                            .tint(.primary)
+                            Divider().background(.separator)
+                        }
                     }
                     .listRowSeparator(.hidden)
                 }
@@ -161,9 +161,7 @@ struct ClosingScreen: View {
         }
         .onAppear {
             shares = record.remainingShares
-            if shares < 100 {
-                sellUnit = .ones
-            }
+            sellUnit = (shares % 100 == 0) ? .hundreds : .ones
         }
         .alert("売却日が購入日以前に設定されています", isPresented: $showDateAlert) {
             Button("閉じる", role: .cancel) { }

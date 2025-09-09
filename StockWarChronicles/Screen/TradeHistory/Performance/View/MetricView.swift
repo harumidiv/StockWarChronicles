@@ -27,6 +27,8 @@ struct MetricView: View {
                 HStack(spacing: 0) {
                     Text(value)
                         .font(.headline)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                         .fontWeight(.semibold)
                         .foregroundStyle(color)
                     Text(unit)

@@ -75,7 +75,7 @@ struct EditScreen: View {
                             let totalSoldDate = sales.map(\.date)
                             let calendar = Calendar.current
                             let startOfDate = calendar.startOfDay(for: date)
-
+                            
                             let isInvalidDate = totalSoldDate.first(where: {
                                 let startOfSoldDate = calendar.startOfDay(for: $0)
                                 return startOfSoldDate < startOfDate
@@ -173,100 +173,121 @@ struct EditScreen: View {
 
 struct StockSellEditView: View {
     @Binding var sales: [StockTradeInfo]
-    @State var calendarId: UUID = UUID()
+    @State private var calendarId: UUID = UUID()
     
     var body: some View {
-        Section(header: Text("売却")) {
-            ForEach($sales) { $sale in
+        ForEach($sales) { $sale in
+            Section(header: Text("売却: \(sale.date.formatted(as: .yyyyMMdd))")) {
                 VStack {
-                    HStack(alignment: .top) {
-                        Button(action: {
-                            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                            if let index = $sales.wrappedValue.firstIndex(where: { $0.id == sale.id }) {
-                                $sales.wrappedValue.remove(at: index)
-                            }
-                        }, label: {
-                            Image(systemName: "xmark.app")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.red)
-                        })
-                        .buttonStyle(.plain)
-                        Spacer()
-                    }
-                    
-                    Picker("感情", selection: $sale.emotion) {
-                        ForEach(SalesEmotions.allCases) { emotion in
-                            Text(emotion.rawValue + emotion.name)
-                                .tag(Emotion.sales(emotion))
-                        }
-                    }
-                    .sensoryFeedback(.selection, trigger: sale.emotion)
-                    Divider()
-                        .background(.separator)
+                    datePickerView(for: $sale)
                         .padding(.bottom)
-                    
-                    DatePicker("日付", selection: $sale.date, displayedComponents: .date)
-                        .id(calendarId)
-                        .onChange(of: sale.date) { oldValue, newValue in
-                            let calendar = Calendar.current
-                            let oldDateWithoutTime = calendar.component(.day, from: oldValue)
-                            let newDateWithoutTime = calendar.component(.day, from: newValue)
-                            
-                            if oldDateWithoutTime != newDateWithoutTime {
-                                let generator = UISelectionFeedbackGenerator()
-                                generator.selectionChanged()
-                                calendarId = UUID()
-                            }
-                        }
-                    
-                    Divider()
-                        .background(.separator)
+                    amountAndSharesView(for: $sale)
+                    memoView(for: $sale)
                         .padding(.bottom)
-                    
-                    HStack {
-                        VStack {
-                            HStack {
-                                TextField("購入額", value: $sale.amount, format: .number)
-                                    .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.trailing)
-                                Text("円")
-                            }
-                            Divider()
-                                .background(.separator)
-                                .padding(.bottom)
-                        }
-                        VStack {
-                            HStack {
-                        TextField("株数", value: $sale.shares, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                        Text("株")
-                            }
-                            Divider()
-                                .background(.separator)
-                                .padding(.bottom)
-                        }
-                        .padding(.leading)
-                    }
-                    
-                    VStack {
-                        HStack {
-                            Text("メモ")
-                                .font(.caption2)
-                                .foregroundColor(.gray)
-                            Spacer()
-                        }
-                        TextEditor(text: $sale.reason)
-                            .frame(height: 100)
-                            .padding(4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.5))
-                            )
-                    }
+                    emotionPicker(for: $sale)
+                        .padding(.bottom)
+                    deleteButton(for: $sale)
                 }
             }
+        }
+    }
+}
+
+private extension StockSellEditView {
+    
+    func deleteButton(for sale: Binding<StockTradeInfo>) -> some View {
+        Button(action: {
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+            if let index = sales.firstIndex(where: { $0.id == sale.id }) {
+                sales.remove(at: index)
+            }
+        }) {
+            Text("削除")
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                
+        }
+        .frame(width: 240, height: 44)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.red)
+        )
+        .buttonStyle(.plain)
+    }
+    
+    // 日付選択
+    func datePickerView(for sale: Binding<StockTradeInfo>) -> some View {
+        DatePicker("日付", selection: sale.date, displayedComponents: .date)
+            .id(calendarId)
+            .onChange(of: sale.date.wrappedValue) { oldValue, newValue in
+                let calendar = Calendar.current
+                let oldDay = calendar.component(.day, from: oldValue)
+                let newDay = calendar.component(.day, from: newValue)
+                
+                if oldDay != newDay {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    calendarId = UUID()
+                }
+            }
+    }
+    
+    // 購入額と株数
+    func amountAndSharesView(for sale: Binding<StockTradeInfo>) -> some View {
+        HStack {
+            VStack {
+                HStack {
+                    TextField("購入額", value: sale.amount, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                    Text("円")
+                }
+                Divider().background(.separator).padding(.bottom)
+            }
+            VStack {
+                HStack {
+                    TextField("株数", value: sale.shares, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                    Text("株")
+                }
+                Divider().background(.separator).padding(.bottom)
+            }
+            .padding(.leading)
+        }
+    }
+    
+    // メモ入力欄
+    func memoView(for sale: Binding<StockTradeInfo>) -> some View {
+        VStack {
+            HStack {
+                Text("メモ")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                Spacer()
+            }
+            TextEditor(text: sale.reason)
+                .frame(height: 100)
+                .padding(4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.5))
+                )
+        }
+    }
+    
+    // 感情 Picker
+    func emotionPicker(for sale: Binding<StockTradeInfo>) -> some View {
+        VStack {
+            Picker("感情", selection: sale.emotion) {
+                ForEach(SalesEmotions.allCases) { emotion in
+                    Text(emotion.rawValue + emotion.name)
+                        .tag(Emotion.sales(emotion))
+                }
+            }
+            .sensoryFeedback(.selection, trigger: sale.emotion.wrappedValue)
+            Divider()
+                .background(.separator)
+                .padding(.bottom)
         }
     }
 }

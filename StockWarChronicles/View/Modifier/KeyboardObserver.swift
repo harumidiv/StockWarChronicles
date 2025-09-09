@@ -10,13 +10,13 @@ import UIKit
 
 struct KeyboardObserver: ViewModifier {
     @Binding var keyboardIsPresented: Bool
-    let isNeedNextBotton: Bool
+    @Binding var isNeedNextBotton: Bool
     let onNext: () -> Void
 
     // イニシャライザでハンドラを受け取る
-    init(keyboardIsPresented: Binding<Bool>, isNeedNextBotton: Bool, onNext: @escaping () -> Void,) {
+    init(keyboardIsPresented: Binding<Bool>, isNeedNextBotton: Binding<Bool>, onNext: @escaping () -> Void) {
         self._keyboardIsPresented = keyboardIsPresented
-        self.isNeedNextBotton = isNeedNextBotton
+        self._isNeedNextBotton = isNeedNextBotton
         self.onNext = onNext
     }
     
@@ -65,15 +65,16 @@ struct KeyboardObserver: ViewModifier {
 extension View {
     func withKeyboardToolbar(
         keyboardIsPresented: Binding<Bool>,
-        isNeedNextBotton: Bool = false,
+        isNeedNextBotton: Binding<Bool> = .constant(false),
         onNext: @escaping () -> Void
     ) -> some View {
         self.modifier(
             KeyboardObserver(
                 keyboardIsPresented: keyboardIsPresented,
                 isNeedNextBotton: isNeedNextBotton,
-                onNext: onNext,
+                onNext: onNext
             )
         )
     }
 }
+

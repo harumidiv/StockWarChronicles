@@ -82,6 +82,7 @@ struct TagEditView: View {
                             : Color.gray.opacity(0.2)
                         )
                     } onTap: { tag in
+                        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                         if selectedTag == tag {
                             setup()
                         } else {
@@ -157,7 +158,7 @@ struct TagEditView: View {
         guard let tag = selectedTag else { return }
         
         tag.name = name
-        tag.setColor(color: color)
+        tag.setColor(color)
         try? context.save()
         
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
