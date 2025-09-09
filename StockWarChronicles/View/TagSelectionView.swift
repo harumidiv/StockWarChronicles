@@ -86,6 +86,7 @@ struct TagSelectionView: View {
                             // 含まれていない場合は追加
                             selectedTags.append(tag)
                         }
+                            
                     } label: {
                         TagView(
                             name: tag.name,
@@ -129,7 +130,13 @@ struct TagSelectionView: View {
                 selectedTags.append(tag)
             }
         } else {
-            selectedTags.append(Tag(name: tagName, color: selectedNewTagColor))
+            let newTag = Tag(name: tagName, color: selectedNewTagColor)
+            selectedTags.append(newTag)
+            
+            // 既存タグ一覧も整合性を合わせるために追加
+            if !allTags.contains(where: { $0.name == newTag.name }) {
+                allTags.append(newTag)
+            }
         }
         
         newTagName = ""
