@@ -32,14 +32,14 @@ struct PossessionScreen: View {
                                 Button(role: .destructive) {
                                     deleteRecord = record
                                 } label: {
-                                    Image(systemName: "trash")
+                                    Label("削除", systemImage: "trash")
                                 }
                                 .tint(.red)
                                 
                                 Button {
                                     editingRecord = record
                                 } label: {
-                                    Image(systemName: "square.and.pencil")
+                                    Label("編集", systemImage: "pencil")
                                 }
                                 .tint(.blue)
                             }

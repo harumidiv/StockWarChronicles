@@ -42,7 +42,7 @@ struct TradeHistoryDetailScreen: View {
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("record", systemImage: "square.and.pencil") {
+                            Button("編集") {
                                 showEditScreen = true
                             }
                         }
