@@ -25,6 +25,7 @@ struct AddScreen: View {
     
     @State private var keyboardIsPresented: Bool = false
     @FocusState private var focusedField: StockFormFocusFields?
+    @State private var isNeedNextBotton: Bool = false
     
     var amount: Double {
         Double(amountText) ?? 0
@@ -72,8 +73,18 @@ struct AddScreen: View {
                 }
             }
         }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented, isNeedNextBotton: true) {
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented, isNeedNextBotton: $isNeedNextBotton) {
             focusedField = focusedField?.next()
+        }
+        .onChange(of: focusedField) {
+            switch focusedField {
+            case .code, .amount, .shares:
+                isNeedNextBotton = true
+            case .name, .memo:
+                isNeedNextBotton = false
+            case nil:
+                isNeedNextBotton = false
+            }
         }
     }
     

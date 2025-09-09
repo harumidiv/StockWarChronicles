@@ -15,13 +15,13 @@ enum StockFormFocusFields: Hashable {
     case shares
     case memo
     
-    func next() -> StockFormFocusFields {
+    func next() -> StockFormFocusFields? {
         switch self {
         case .code: return .name
-        case .name: return .amount
+        case .name: return nil
         case .amount: return .shares
         case .shares: return .memo
-        case .memo: return .code
+        case .memo: return nil
         }
     }
 }
