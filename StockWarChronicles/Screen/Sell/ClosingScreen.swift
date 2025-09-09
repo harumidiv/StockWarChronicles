@@ -161,9 +161,7 @@ struct ClosingScreen: View {
         }
         .onAppear {
             shares = record.remainingShares
-            if shares < 100 {
-                sellUnit = .ones
-            }
+            sellUnit = (shares % 100 == 0) ? .hundreds : .ones
         }
         .alert("売却日が購入日以前に設定されています", isPresented: $showDateAlert) {
             Button("閉じる", role: .cancel) { }
