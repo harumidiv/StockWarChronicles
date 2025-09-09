@@ -81,7 +81,6 @@ struct TagSelectionView: View {
             } onTap: { tag in
                 // onTapを使うと全てのタグが返却されてしまうので使わない
             }
-            .frame(minHeight: 28)
             .padding(4)
             .background(.thinMaterial)
         }
