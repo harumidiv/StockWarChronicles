@@ -94,7 +94,9 @@ struct EditScreen: View {
                                 Text("保存")
                             }
                             .padding(.horizontal)
+                            
                         })
+                    
                 }
                 
                 if !keyboardIsPresented {

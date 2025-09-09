@@ -19,7 +19,7 @@ struct TagEditView: View {
     @State private var selectedTag: Tag?
     @State private var originalName: String = ""
     @State private var name: String = ""
-    @State private var color: Color = .blue
+    @State private var color: Color = .primary
     
     var body: some View {
         NavigationView {
@@ -35,10 +35,18 @@ struct TagEditView: View {
                         .labelsHidden()
                     
                     Button(action: delete) {
-                        Label("削除", systemImage: "trash")
-                            .padding()
-                            .border(.red)
+                        Image(systemName: "trash.fill")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(.red)
+                            )
+                            .shadow(color: Color.black.opacity(0.2), radius: 6, x: 0, y: 4)
+                            .opacity(selectedTag == nil ? 0.2 : 1.0)
                     }
+                    .disabled(selectedTag == nil)
                 }
                 .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -85,7 +93,9 @@ struct TagEditView: View {
                                 Text("保存")
                             }
                             .padding(.horizontal)
+                            .opacity(name.isEmpty || selectedTag == nil ? 0.5 : 1.0)
                         })
+                    .disabled(name.isEmpty || selectedTag == nil)
                 }
             }
             .onAppear {
@@ -96,18 +106,13 @@ struct TagEditView: View {
     
     // TOOD: 全てのRecordに登録されているタグが消えるのでアラートをつける
     func delete() {
-        guard let deleteTagName = selectedTag?.name else {
-            return
-        }
         for record in records {
-            record.tags.removeAll { $0.name == deleteTagName }
+            record.tags.removeAll { $0.name == originalName }
         }
         
         try? context.save()
         
-        selectedTag = nil
-        name = ""
-        color = .blue
+        setup()
     }
     
     func save() {
@@ -117,9 +122,14 @@ struct TagEditView: View {
         tag.setColor(color: color)
         try? context.save()
         
+        setup()
+    }
+    
+    func setup() {
         selectedTag = nil
         name = ""
-        color = .blue
+        originalName = ""
+        color = .primary
     }
 }
 
@@ -127,3 +137,5 @@ struct TagEditView: View {
     TagEditView()
 }
 
+// アラートをつける
+// 保存ボタンのdisable
