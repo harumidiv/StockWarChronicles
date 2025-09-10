@@ -56,6 +56,7 @@ struct TagSelectionView: View {
                 showTagEdit.toggle()
             } label: {
                 Text("編集")
+                    .font(.caption)
             }
             .glassEditButtonStyle()
             .contentShape(Rectangle())
