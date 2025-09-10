@@ -104,7 +104,7 @@ struct TagSelectionView: View {
     
     var existingTagView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("既存タグ")
+            Text("登録済みタグ")
                 .foregroundColor(.secondary)
                 .font(.caption)
 
