@@ -48,9 +48,9 @@ struct StockFormView: View {
         tradeInfoSection
             .id(StockFormFocusFields.amount)
             .id(StockFormFocusFields.shares)
-        Section(header: Text("タグ")) {
-            TagSelectionView(selectedTags: $selectedTags)
-        }
+        
+        TagSelectionView(selectedTags: $selectedTags)
+        
         
     }
     

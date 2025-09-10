@@ -24,28 +24,31 @@ struct TagSelectionView: View {
     @State private var showTagEdit: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            selectedTagView
-            addTagView
-            existingTagView
-        }
-        .onAppear {
-            allTags = Array(records.flatMap { $0.tags }.uniqueByName())
-        }
-        .onChange(of: showTagEdit) {
-            if showTagEdit == false {
+        Section(header: header) {
+            VStack(alignment: .leading, spacing: 24) {
+                selectedTagView
+                addTagView
+                existingTagView
+            }
+            .onAppear {
                 allTags = Array(records.flatMap { $0.tags }.uniqueByName())
             }
-        }
-        .sheet(isPresented: $showTagEdit) {
-            TagEditView(bindingSelectedTags: $selectedTags)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
+            .onChange(of: showTagEdit) {
+                if showTagEdit == false {
+                    allTags = Array(records.flatMap { $0.tags }.uniqueByName())
+                }
+            }
+            .sheet(isPresented: $showTagEdit) {
+                TagEditView(bindingSelectedTags: $selectedTags)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
         }
     }
     
-    var editTagButton: some View {
+    var header: some View {
         HStack {
+            Text("タグ")
             Spacer()
             
             Button {
@@ -55,6 +58,7 @@ struct TagSelectionView: View {
                 Text("編集")
             }
             .glassEditButtonStyle()
+            .contentShape(Rectangle())
         }
     }
     
@@ -66,7 +70,6 @@ struct TagSelectionView: View {
                     .foregroundColor(.secondary)
                     .font(.caption)
                 Spacer()
-                editTagButton
             }
             
             ChipsView(tags: selectedTags) { tag in
