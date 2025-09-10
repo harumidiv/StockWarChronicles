@@ -10,7 +10,7 @@ import SwiftUI
 import SwiftData
 import SwiftUI
 
-enum SortType: CaseIterable, Identifiable {
+enum TradeHistorySortType: CaseIterable, Identifiable {
     var id: Self { self }
     
     case date
@@ -60,7 +60,7 @@ struct TradeHistoryListScreen: View {
     
     // Sort & Filter
     @State private var selectedTag: String = "すべてのタグ"
-    @State private var currentSortType: SortType = .date
+    @State private var currentSortType: TradeHistorySortType = .date
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
     
     private var sortedRecords: [StockRecord] {
@@ -103,7 +103,7 @@ struct TradeHistoryListScreen: View {
             Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
         }.filter { $0.isTradeFinish }
         let uniqueTagNamesSet = Set(filteredRecords.flatMap { $0.tags }.map { $0.name })
-        var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }
+        var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }.sorted()
         uniqueTagNames.insert("すべてのタグ", at: 0)
         return uniqueTagNames
     }
@@ -247,7 +247,7 @@ struct TradeHistoryListScreen: View {
             }
             
             Menu {
-                ForEach(SortType.allCases) { type in
+                ForEach(TradeHistorySortType.allCases) { type in
                     Button(action: {
                         withAnimation {
                             currentSortType = type

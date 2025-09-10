@@ -8,6 +8,15 @@
 import SwiftUI
 import SwiftData
 
+enum PossessionSortType: String, CaseIterable, Identifiable {
+    case holdingPeriodAscending = "保有期間の短い順"
+    case holdingPeriodDescending = "保有期間の長い順"
+    case amountAscending = "ポジションの小さい順"
+    case amountDescending = "ポジションの大きい順"
+    
+    var id: Self { self }
+}
+
 struct PossessionScreen: View {
     @Environment(\.modelContext) private var context
     @Query private var records: [StockRecord]
@@ -19,87 +28,129 @@ struct PossessionScreen: View {
     @State private var sellRecord: StockRecord?
     @State private var deleteRecord: StockRecord?
     
-    var body: some View {
-        NavigationView {
-            List {
-                ForEach(records) { record in
-                    if !record.isTradeFinish {
-                        stockCell(record: record)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    deleteRecord = record
-                                } label: {
-                                    Label("削除", systemImage: "trash")
-                                }
-                                .tint(.red)
-                                
-                                Button {
-                                    editingRecord = record
-                                } label: {
-                                    Label("編集", systemImage: "pencil")
-                                }
-                                .tint(.blue)
-                            }
-                    }
+    // Sort & Filter
+    @State private var selectedTag: String = "すべてのタグ"
+    @State private var currentSortType: PossessionSortType = .holdingPeriodAscending
+
+    private var sortedRecords: [StockRecord] {
+        var filteredRecords: [StockRecord] = records.filter {
+            !$0.isTradeFinish
+        }
+        
+        if selectedTag != "すべてのタグ" {
+            filteredRecords = filteredRecords.filter { record in
+                record.tags.contains { tag in
+                    tag.name == selectedTag
                 }
             }
-            .sensoryFeedback(.selection, trigger: showStockRecordView)
-            .sensoryFeedback(.selection, trigger: showAddStockView)
-            .sensoryFeedback(.selection, trigger: sellRecord)
-            .sensoryFeedback(.selection, trigger: editingRecord)
-            .listStyle(.plain)
-            .navigationTitle("保有リスト")
-            .toolbar {
-                // 取引の完了しているデータがある場合履歴を表示
-                if records.contains(where: { $0.isTradeFinish }) {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showStockRecordView.toggle()
-                        } label: {
-                            Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                .foregroundColor(.blue)
+        }
+        
+        switch currentSortType {
+        case .holdingPeriodAscending:
+            return filteredRecords.sorted { $0.purchase.date > $1.purchase.date }
+        case .holdingPeriodDescending:
+            return filteredRecords.sorted { $0.purchase.date < $1.purchase.date }
+        case .amountAscending:
+            return filteredRecords.sorted { (Double($0.purchase.shares) * $0.purchase.amount) < (Double($1.purchase.shares) * $1.purchase.amount) }
+        case .amountDescending:
+            return filteredRecords.sorted { (Double($0.purchase.shares) * $0.purchase.amount) > (Double($1.purchase.shares) * $1.purchase.amount) }
+        }
+    }
+    
+    private var allTags: [String] {
+        let filteredRecords: [StockRecord] = records.filter {
+            !$0.isTradeFinish
+        }
+        let uniqueTagNamesSet = Set(filteredRecords.flatMap { $0.tags }.map { $0.name })
+        var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }.sorted()
+        uniqueTagNames.insert("すべてのタグ", at: 0)
+        return uniqueTagNames
+    }
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                sortAndFilterView()
+                List {
+                    ForEach(sortedRecords) { record in
+                        if !record.isTradeFinish {
+                            stockCell(record: record)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        deleteRecord = record
+                                    } label: {
+                                        Label("削除", systemImage: "trash")
+                                    }
+                                    .tint(.red)
+                                    
+                                    Button {
+                                        editingRecord = record
+                                    } label: {
+                                        Label("編集", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
                         }
                     }
                 }
-                
-                ToolbarItem(placement: .bottomBar) {
-                    Button {
-                        showAddStockView.toggle()
-                    } label: {
-                        Image(systemName: "plus")
-                            .foregroundColor(.primary)
-                            .padding()
-                            .clipShape(Circle())
+                .sensoryFeedback(.selection, trigger: showStockRecordView)
+                .sensoryFeedback(.selection, trigger: showAddStockView)
+                .sensoryFeedback(.selection, trigger: sellRecord)
+                .sensoryFeedback(.selection, trigger: editingRecord)
+                .listStyle(.plain)
+                .navigationTitle("保有リスト")
+                .toolbar {
+                    // 取引の完了しているデータがある場合履歴を表示
+                    if records.contains(where: { $0.isTradeFinish }) {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showStockRecordView.toggle()
+                            } label: {
+                                Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                    .foregroundColor(.blue)
+                            }
+                        }
                     }
-                    .frame(width: 60, height: 60)
+                    
+                    ToolbarItem(placement: .bottomBar) {
+                        Button {
+                            showAddStockView.toggle()
+                        } label: {
+                            Image(systemName: "plus")
+                                .foregroundColor(.primary)
+                                .padding()
+                                .clipShape(Circle())
+                        }
+                        .frame(width: 60, height: 60)
+                    }
                 }
-            }
-            .fullScreenCover(isPresented: $showAddStockView) {
-                AddScreen(showAddStockView: $showAddStockView)
-            }
-            .sheet(item: $editingRecord) { record in
-                EditScreen(record: record)
-            }
-            .fullScreenCover(item: $sellRecord) { record in
-                ClosingScreen(record: record)
-            }
-            .fullScreenCover(isPresented: $showStockRecordView) {
-                TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
-            }
-            .alert(item: $deleteRecord) { record in
-                Alert(
-                    title: Text("本当に削除しますか？"),
-                    message: Text("この株取引データは完全に削除されます。"),
-                    primaryButton: .destructive(Text("削除")) {
-                        context.delete(record)
-                        try? context.save()
-                        deleteRecord = nil
-                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                    },
-                    secondaryButton: .cancel(Text("キャンセル")) { }
-                )
+                .fullScreenCover(isPresented: $showAddStockView) {
+                    AddScreen(showAddStockView: $showAddStockView)
+                }
+                .sheet(item: $editingRecord) { record in
+                    EditScreen(record: record)
+                }
+                .fullScreenCover(item: $sellRecord) { record in
+                    ClosingScreen(record: record)
+                }
+                .fullScreenCover(isPresented: $showStockRecordView) {
+                    TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
+                }
+                .alert(item: $deleteRecord) { record in
+                    Alert(
+                        title: Text("本当に削除しますか？"),
+                        message: Text("この株取引データは完全に削除されます。"),
+                        primaryButton: .destructive(Text("削除")) {
+                            context.delete(record)
+                            try? context.save()
+                            deleteRecord = nil
+                            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                        },
+                        secondaryButton: .cancel(Text("キャンセル")) { }
+                    )
+                }
             }
         }
     }
@@ -180,6 +231,54 @@ struct PossessionScreen: View {
             )
         }
         .buttonStyle(.plain)
+    }
+    
+    private func sortAndFilterView() -> some View {
+        HStack {
+            Spacer()
+            Menu {
+                ForEach(allTags, id: \.self) { tag in
+                    Button(action: {
+                        withAnimation {
+                            self.selectedTag = tag
+                        }
+                    }) {
+                        Text(tag)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selectedTag)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.primary)
+                .sensoryFeedback(.selection, trigger: selectedTag)
+            }
+
+            Menu {
+                ForEach(PossessionSortType.allCases) { type in
+                    Button(action: {
+                        withAnimation {
+                            currentSortType = type
+                        }
+                    }) {
+                        Text(type.rawValue)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(currentSortType.rawValue)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.primary)
+                .sensoryFeedback(.selection, trigger: currentSortType)
+            }
+        }
+        .padding(.horizontal, 16)
     }
 }
 
