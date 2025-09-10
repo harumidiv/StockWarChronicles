@@ -158,11 +158,12 @@ struct TagSelectionView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Tag.self, configurations: config)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
     
-    Tag.mockTags.forEach { tag in
-        container.mainContext.insert(tag)
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
     }
-    return TagSelectionView(selectedTags: .constant([Tag.mockTags.first!]))
+    let tags = StockRecord.mockRecords[0].tags
+    return TagSelectionView(selectedTags: .constant(tags))
         .modelContainer(container)
 }

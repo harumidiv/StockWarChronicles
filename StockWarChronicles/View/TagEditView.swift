@@ -157,12 +157,24 @@ struct TagEditView: View {
     func save() {
         guard let tag = selectedTag else { return }
         
-        tag.name = name
-        tag.setColor(color)
-        try? context.save()
-        
+        do {
+            for record in records {
+                if let index = record.tags.firstIndex(where: { $0.name == tag.name }) {
+                    record.tags[index] = Tag(name: name, color: color)
+                }
+            }
+            
+            // 変更をデータベースに保存
+            try context.save()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            setup()
+            
+        } catch {
+            // エラーハンドリング
+            print("タグの更新中にエラーが発生しました: \(error)")
+        }
+
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        
         setup()
     }
     

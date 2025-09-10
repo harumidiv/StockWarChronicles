@@ -8,15 +8,15 @@
 import SwiftUI
 import SwiftData
 
-@Model
-final class Tag: Hashable, Identifiable {
-    var id = UUID()
+struct Tag: Hashable, Identifiable, Codable {
+    let id: UUID
     var name: String
     private var colorData: Data
 
-    init(name: String, color: Color) {
+    init(name: String, color: Color, id: UUID = UUID()) {
+        self.id = id
         self.name = name
-        self.colorData = try! NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
+        colorData = try! NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
     }
 
     var color: Color {
@@ -26,14 +26,6 @@ final class Tag: Hashable, Identifiable {
         return .gray
     }
 
-    func setColor(_ color: Color) {
-        do {
-            self.colorData = try NSKeyedArchiver.archivedData(withRootObject: UIColor(color), requiringSecureCoding: false)
-        } catch {
-            print("色の保存失敗")
-        }
-    }
-
     // Equatable / Hashable は id 基準で判定
     static func == (lhs: Tag, rhs: Tag) -> Bool {
         lhs.id == rhs.id
@@ -41,6 +33,26 @@ final class Tag: Hashable, Identifiable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case colorData
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        colorData = try container.decode(Data.self, forKey: .colorData)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(colorData, forKey: .colorData)
     }
 }
 
