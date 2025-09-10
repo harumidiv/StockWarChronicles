@@ -32,10 +32,10 @@ extension Color {
         let hue = Double.random(in: 0...1)
         
         // 彩度（Saturation）: 0.4〜0.6 の間で選択（鮮やかさを調整）
-        let saturation = Double.random(in: 0.4...0.7)
+        let saturation = Double.random(in: 0.4...0.8)
         
         // 明度（Brightness）: 0.8〜0.9 の間で選択（薄さを調整）
-        let brightness = Double.random(in: 0.8...0.9)
+        let brightness = Double.random(in: 0.5...0.9)
         
         return Color(hue: hue, saturation: saturation, brightness: brightness)
     }
