@@ -30,11 +30,11 @@ struct TagSelectionView: View {
             existingTagView
         }
         .onAppear {
-            allTags = Array(records.flatMap { $0.tags }.unique())
+            allTags = Array(records.flatMap { $0.tags }.uniqueByName())
         }
         .onChange(of: showTagEdit) {
             if showTagEdit == false {
-                allTags = Array(records.flatMap { $0.tags }.unique())
+                allTags = Array(records.flatMap { $0.tags }.uniqueByName())
             }
         }
         .sheet(isPresented: $showTagEdit) {
