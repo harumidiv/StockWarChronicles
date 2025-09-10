@@ -16,12 +16,17 @@ final class StockRecord {
     var position: Position
     var purchase: StockTradeInfo
     var sales: [StockTradeInfo]
-    var tags: [Tag]
+    @Attribute var tagDatas: [Data] = []
     
     // 計算プロパティで Market に変換
     var market: Market {
         get { Market(rawValue: marketRawValue) ?? .none }
         set { marketRawValue = newValue.rawValue }
+    }
+    
+    var tags: [Tag] {
+        get { tagDatas.compactMap { try? JSONDecoder().decode(Tag.self, from: $0) } }
+        set { tagDatas = newValue.compactMap { try? JSONEncoder().encode($0) } }
     }
     
     init(code: String, market: Market, name: String, position: Position, purchase: StockTradeInfo, sales: [StockTradeInfo] = [], tags: [Tag] = []) {
@@ -31,7 +36,7 @@ final class StockRecord {
         self.position = position
         self.purchase = purchase
         self.sales = sales
-        self.tags = tags
+        self.tagDatas = tags.compactMap { try? JSONEncoder().encode($0) }
     }
     
     /// 購入から売却まで完了しているか
@@ -243,3 +248,4 @@ extension StockRecord {
     }
 }
 #endif
+

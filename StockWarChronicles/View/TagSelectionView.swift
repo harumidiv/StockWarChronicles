@@ -30,15 +30,15 @@ struct TagSelectionView: View {
             existingTagView
         }
         .onAppear {
-            allTags = Array(records.flatMap { $0.tags }.unique())
+            allTags = Array(records.flatMap { $0.tags }.uniqueByName())
         }
         .onChange(of: showTagEdit) {
             if showTagEdit == false {
-                allTags = Array(records.flatMap { $0.tags }.unique())
+                allTags = Array(records.flatMap { $0.tags }.uniqueByName())
             }
         }
         .sheet(isPresented: $showTagEdit) {
-            TagEditView()
+            TagEditView(bindingSelectedTags: $selectedTags)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -158,11 +158,12 @@ struct TagSelectionView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Tag.self, configurations: config)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
     
-    Tag.mockTags.forEach { tag in
-        container.mainContext.insert(tag)
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
     }
-    return TagSelectionView(selectedTags: .constant([Tag.mockTags.first!]))
+    let tags = StockRecord.mockRecords[0].tags
+    return TagSelectionView(selectedTags: .constant(tags))
         .modelContainer(container)
 }

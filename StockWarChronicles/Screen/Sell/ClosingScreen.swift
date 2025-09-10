@@ -99,6 +99,17 @@ struct ClosingScreen: View {
                         }
                         
                         VStack {
+                            Picker("感情", selection: $emotion) {
+                                ForEach(SalesEmotions.allCases) { emotion in
+                                    Text(emotion.rawValue + emotion.name)
+                                        .tag(Emotion.sales(emotion))
+                                }
+                            }
+                            .tint(.primary)
+                            Divider().background(.separator)
+                        }
+                        
+                        VStack {
                             HStack {
                                 Text("メモ")
                                     .font(.caption)
@@ -112,17 +123,6 @@ struct ClosingScreen: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.gray.opacity(0.5))
                                 )
-                        }
-                        
-                        VStack {
-                            Picker("感情", selection: $emotion) {
-                                ForEach(SalesEmotions.allCases) { emotion in
-                                    Text(emotion.rawValue + emotion.name)
-                                        .tag(Emotion.sales(emotion))
-                                }
-                            }
-                            .tint(.primary)
-                            Divider().background(.separator)
                         }
                     }
                     .listRowSeparator(.hidden)

@@ -14,10 +14,11 @@ struct TagEditView: View {
     @Environment(\.modelContext) private var context
     @Query private var records: [StockRecord]
     
+    @Binding var bindingSelectedTags: [Tag]
+    
     @State private var editTags: [Tag] = []
     
     @State private var selectedTag: Tag?
-    @State private var originalName: String = ""
     @State private var name: String = ""
     @State private var color: Color = .primary
     
@@ -87,7 +88,6 @@ struct TagEditView: View {
                             setup()
                         } else {
                             selectedTag = tag
-                            originalName = tag.name
                             name = tag.name
                             color = tag.color
                         }
@@ -126,7 +126,7 @@ struct TagEditView: View {
                 }
             }
             .onAppear {
-                editTags = Array(records.flatMap { $0.tags }.unique())
+                editTags = Array(records.flatMap { $0.tags }.uniqueByName())
             }
             .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
                 Button("削除", role: .destructive) {
@@ -140,13 +140,16 @@ struct TagEditView: View {
     }
     
     func delete() {
+        guard let tag = selectedTag else { return }
+        
         for record in records {
-            record.tags.removeAll { $0.name == originalName }
+            record.tags.removeAll { $0.name == tag.name }
         }
         
         // 編集画面に表示しているものも整合性を合わせるために消す
         if let tagToRemove = selectedTag {
             editTags.removeAll { $0.name == tagToRemove.name }
+            bindingSelectedTags.removeAll{ $0.name == tagToRemove.name }
         }
         
         try? context.save()
@@ -157,11 +160,31 @@ struct TagEditView: View {
     func save() {
         guard let tag = selectedTag else { return }
         
-        tag.name = name
-        tag.setColor(color)
-        try? context.save()
+        do {
+            // 前の画面で選択状態を持っている箇所も書き換え
+            if let index = bindingSelectedTags.firstIndex(where: { $0.name == tag.name }) {
+               bindingSelectedTags[index] = Tag(name: name, color: color)
+           }
         
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            // すでに保存されているデータのタグ情報を書き換え
+            for record in records {
+                if let index = record.tags.firstIndex(where: { $0.name == tag.name }) {
+                    record.tags[index] = Tag(name: name, color: color)
+                }
+            }
+            
+            // 画面キャッシュとして持っている一覧も更新
+            editTags = Array(records.flatMap { $0.tags }.uniqueByName())
+            
+            
+            // 変更をデータベースに保存
+            try context.save()
+            
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } catch {
+            // エラーハンドリング
+            print("タグの更新中にエラーが発生しました: \(error)")
+        }
         
         setup()
     }
@@ -169,7 +192,6 @@ struct TagEditView: View {
     func setup() {
         selectedTag = nil
         name = ""
-        originalName = ""
         color = .primary
     }
 }
@@ -182,7 +204,7 @@ struct TagEditView: View {
         container.mainContext.insert(record)
     }
     
-    return TagEditView()
+    return TagEditView(bindingSelectedTags: .constant([]))
         .modelContainer(container)
     
 }
