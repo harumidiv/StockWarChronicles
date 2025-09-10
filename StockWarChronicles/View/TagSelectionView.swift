@@ -38,7 +38,7 @@ struct TagSelectionView: View {
             }
         }
         .sheet(isPresented: $showTagEdit) {
-            TagEditView()
+            TagEditView(bindingSelectedTags: $selectedTags)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
