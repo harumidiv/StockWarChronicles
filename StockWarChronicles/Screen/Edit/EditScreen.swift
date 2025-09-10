@@ -182,9 +182,8 @@ struct StockSellEditView: View {
                     datePickerView(for: $sale)
                         .padding(.bottom)
                     amountAndSharesView(for: $sale)
-                    memoView(for: $sale)
-                        .padding(.bottom)
                     emotionPicker(for: $sale)
+                    memoView(for: $sale)
                         .padding(.bottom)
                     deleteButton(for: $sale)
                 }
