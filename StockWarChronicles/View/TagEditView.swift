@@ -126,7 +126,7 @@ struct TagEditView: View {
                 }
             }
             .onAppear {
-                editTags = Array(records.flatMap { $0.tags }.unique())
+                editTags = Array(records.flatMap { $0.tags }.uniqueByName())
             }
             .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
                 Button("削除", role: .destructive) {
