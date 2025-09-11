@@ -68,6 +68,7 @@ struct EditScreen: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button (
                         action: {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                             /// 売り枚数の方が方が大きくなっていないか
                             let totalSold = sales.map(\.shares).reduce(0, +)
                             let isOversold =  totalSold > Int(sharesText) ?? 0
