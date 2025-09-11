@@ -69,7 +69,8 @@ struct OverallPerformanceView: View {
                         
                         let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent() ?? 0.0
                         MetricView(label: "平均%", value: String(format: "%.1f", averageParceht), unit: "%", iconName: "percent", color: averageParceht >= 0 ? .red : .blue)
-                        Spacer()
+                        
+                        MetricView(label: "取引回数", value: records.count.description, unit: "回", iconName: "repeat.circle.fill", color: .primary)
                     }
                 }
                 .padding()
