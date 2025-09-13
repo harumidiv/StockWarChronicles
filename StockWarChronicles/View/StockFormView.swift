@@ -14,6 +14,7 @@ enum StockFormFocusFields: Hashable {
     case amount
     case shares
     case memo
+    case tag
     
     func next() -> StockFormFocusFields? {
         switch self {
@@ -22,6 +23,7 @@ enum StockFormFocusFields: Hashable {
         case .amount: return .shares
         case .shares: return .memo
         case .memo: return nil
+        case .tag: return nil
         }
     }
 }
@@ -45,12 +47,14 @@ struct StockFormView: View {
     var body: some View {
         stockInfoSection
             .id(StockFormFocusFields.name)
-        
-        TagSelectionView(selectedTags: $selectedTags)
-        
+    
         tradeInfoSection
             .id(StockFormFocusFields.amount)
             .id(StockFormFocusFields.shares)
+        
+        TagSelectionView(selectedTags: $selectedTags)
+            .focused($focusedField, equals: .tag)
+            .id(StockFormFocusFields.tag)
         
     }
     
