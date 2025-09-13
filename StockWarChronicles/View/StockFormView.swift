@@ -45,12 +45,12 @@ struct StockFormView: View {
     var body: some View {
         stockInfoSection
             .id(StockFormFocusFields.name)
-        tradeInfoSection
-            .id(StockFormFocusFields.amount)
-            .id(StockFormFocusFields.shares)
         
         TagSelectionView(selectedTags: $selectedTags)
         
+        tradeInfoSection
+            .id(StockFormFocusFields.amount)
+            .id(StockFormFocusFields.shares)
         
     }
     
