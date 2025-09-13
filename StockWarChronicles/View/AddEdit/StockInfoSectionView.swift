@@ -124,7 +124,7 @@ struct StockInfoSectionView: View {
             .buttonStyle(.plain)
             .contentShape(Rectangle())
             .popover(isPresented: $showInfoEdit) {
-              Text("銘柄名・銘柄コードの予測検索は、東京証券取引所に上場する銘柄にのみに対応しています。")
+              Text("銘柄コード・銘柄名の予測検索は、東京証券取引所に上場する銘柄にのみに対応しています。")
                     .padding(.horizontal)
                     .font(.caption)
                 .presentationCompactAdaptation(.popover)
