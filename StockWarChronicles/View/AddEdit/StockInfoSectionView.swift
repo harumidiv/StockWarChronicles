@@ -7,19 +7,52 @@
 
 import SwiftUI
 
+struct CSVStockInfo: Identifiable, Decodable {
+    var id = UUID()
+    let code: String
+    let name: String
+}
+
 struct StockInfoSectionView: View {
+    enum CandidateType {
+        case name
+        case code
+    }
+    
     @Binding var market: Market
     @Binding var code: String
     @Binding var name: String
     
+    @State private var tokyoMarketStockData: [CSVStockInfo] = []
+    @State private var selectedStock: CSVStockInfo?
+    
     @FocusState.Binding var focusedField: StockFormFocusFields?
+    
+    var filteredCode: [CSVStockInfo] {
+        if code.count <= 1 {
+            return []
+        }
+
+        return tokyoMarketStockData.filter { stock in
+            stock.code.hasPrefix(code)
+        }
+    }
+    
+    var filteredName: [CSVStockInfo] {
+        if name.isEmpty {
+            return []
+        }
+
+        return tokyoMarketStockData.filter { stock in
+            stock.name.hasPrefix(name)
+        }
+    }
     
     var body: some View {
         Section(header: Text("銘柄情報")) {
             VStack {
                 HStack {
                     Text("市場")
-                    // Pickerは分離せずにTextの横に配置
                     Picker("", selection: $market) {
                         ForEach(Market.allCases) { market in
                             Text(market.rawValue).tag(market)
@@ -34,44 +67,119 @@ struct StockInfoSectionView: View {
                     .background(.separator)
                     .padding(.bottom)
                 
-                HStack {
-                    Text("銘柄コード")
-                    TextField("(例)7203", text: $code)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .code)
-                        .onSubmit {
-                            focusedField = .name
-                        }
+                VStack {
+                    HStack {
+                        Text("銘柄コード")
+                        TextField("(例)7203", text: $code)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .code)
+                            .onSubmit {
+                                focusedField = .name
+                            }
+                    }
+                    if !filteredCode.isEmpty && code.count < 4  {
+                        candidateView(csvStockInfoList: filteredCode, type: .code)
+                    }
                 }
                 Divider()
                     .background(.separator)
                     .padding(.bottom)
-                
-                HStack {
-                    Text("銘柄名")
-                    TextField("(例)トヨタ自動車", text: $name)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .name)
+
+                VStack {
+                    HStack {
+                        Text("銘柄名")
+                        TextField("(例)トヨタ自動車", text: $name)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .name)
+                    }
+                    if !filteredName.isEmpty && !filteredName.contains(where: { $0.name == name })   {
+                        candidateView(csvStockInfoList: filteredName, type: .name)
+                    }
                 }
                 Divider().background(.separator)
             }
         }
         .listRowSeparator(.hidden)
+        .onAppear {
+            
+            // ここでCSVファイルを読み込み、allStockDataに格納する
+            if let stocks = readCSVFile(filename: "data_j") {
+                self.tokyoMarketStockData = stocks
+            }
+        }
+    }
+    
+    private func candidateView(csvStockInfoList: [CSVStockInfo], type: CandidateType) -> some View {
+        ScrollView(.horizontal) {
+            HStack {
+                ForEach(csvStockInfoList) { item in
+                    Text(type == .code ? item.code : item.name)
+                        .padding(8)
+                        .onTapGesture {
+                            code = item.code
+                            name = item.name
+                            focusedField = nil
+                        }
+                    Divider()
+                }
+            }
+            .background(Color(.systemBackground))
+            .cornerRadius(8)
+            .padding(.top, 4)
+        }
+    }
+    
+    private func readCSVFile(filename: String) -> [CSVStockInfo]? {
+        guard let path = Bundle.main.path(forResource: filename, ofType: "csv") else {
+            print("ファイルが見つかりません: \(filename).csv")
+            return nil
+        }
+        
+        do {
+            let contents = try String(contentsOfFile: path, encoding: .utf8)
+            let lines = contents.components(separatedBy: .newlines)
+            
+            var stockInfos: [CSVStockInfo] = []
+            
+            // ヘッダー行をスキップし、空行を無視する
+            for (index, line) in lines.enumerated() where index > 0 && !line.isEmpty {
+                let columns = line.components(separatedBy: ",")
+                
+                // 少なくとも2つの列があることを確認
+                guard columns.count > 1 else {
+                    continue
+                }
+                
+                // 💡 二重引用符と空白、改行を取り除く
+                let code = columns[1].trimmingCharacters(in: CharacterSet(charactersIn: "\" \n\r"))
+                let name = columns[2].trimmingCharacters(in: CharacterSet(charactersIn: "\" \n\r"))
+                
+                let stockInfo = CSVStockInfo(code: code, name: name)
+                stockInfos.append(stockInfo)
+            }
+            
+            return stockInfos
+        } catch {
+            print("ファイルの読み込みに失敗しました: \(error)")
+            return nil
+        }
     }
 }
 
 private struct StockInfoSectionViewPreviewWrapper: View {
     @State var market: Market = .hukuoka
-    @State var code: String = "1234"
+    @State var code: String = "12"
     @State var name: String = "サンプル"
     @FocusState var focusedField: StockFormFocusFields?
     var body: some View {
-        StockInfoSectionView(
-            market: $market,
-            code: $code,
-            name: $name,
-            focusedField: $focusedField
-        )
+        Form {
+            StockInfoSectionView(
+                market: $market,
+                code: $code,
+                name: $name,
+                focusedField: $focusedField
+            )
+        }
     }
 }
 
