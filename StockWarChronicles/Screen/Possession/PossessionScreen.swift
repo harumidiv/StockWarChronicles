@@ -70,7 +70,9 @@ struct PossessionScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                sortAndFilterView()
+                if !sortedRecords.isEmpty {
+                    sortAndFilterView()
+                }
                 List {
                     ForEach(sortedRecords) { record in
                         if !record.isTradeFinish {
