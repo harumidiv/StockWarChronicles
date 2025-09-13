@@ -32,23 +32,25 @@ enum Emotion: Codable, Hashable {
 
 enum PurchaseEmotions: String, CaseIterable, Identifiable, Codable {
     case excitement = "🤩"
-    case confidence = "😎"
+    case confidence = "😏"
+    case contemplation = "😤"
     case normal = "😐"
-    case frustration = "😞"
     case anguish = "😖"
-    case anxiety = "😨"
+    case anxiety = "🫤"
+    case fear = "😨"
     
     var id: Self { self }
 
     /// 感情に対応する日本語名
     var name: String {
         switch self {
-        case .excitement: return "興奮・期待"
-        case .confidence: return "熟考・自信"
+        case .excitement: return "興奮"
+        case .confidence: return "自信"
+        case .contemplation: return "熟考"
         case .normal: return "無"
-        case .frustration: return "不満・妥協"
+        case .anxiety: return "不安"
         case .anguish: return "苦悩"
-        case .anxiety: return "不安・恐怖"
+        case .fear: return "恐怖"
         }
     }
     
@@ -61,8 +63,8 @@ enum PurchaseEmotions: String, CaseIterable, Identifiable, Codable {
 
 enum SalesEmotions: String, CaseIterable, Identifiable, Codable {
     case satisfaction = "🤑"
-    case relief = "😌"
     case accomplishment = "🥳"
+    case relief = "😌"
     case normal = "😐"
     case doubt = "🤨"
     case regret = "😭"
@@ -74,11 +76,11 @@ enum SalesEmotions: String, CaseIterable, Identifiable, Codable {
     var name: String {
         switch self {
         case .satisfaction: return "満足"
-        case .relief: return "安堵"
         case .accomplishment: return "達成感"
+        case .relief: return "安堵"
         case .normal: return "無"
         case .doubt: return "疑問"
-        case .regret: return "後悔・悲しみ"
+        case .regret: return "悲しみ"
         case .sadness: return "絶望"
         case .angry: return "怒り"
         }
