@@ -77,7 +77,7 @@ struct AddScreen: View {
                             }
                             .padding(.horizontal)
                             .opacity(isDisable ? 0.5 : 1.0)
-                    })
+                        })
                     .disabled(isDisable)
                 }
             }
@@ -89,7 +89,7 @@ struct AddScreen: View {
             switch focusedField {
             case .code, .amount, .shares:
                 isNeedNextBotton = true
-            case .name, .memo:
+            case .name, .memo, .tag:
                 isNeedNextBotton = false
             case nil:
                 isNeedNextBotton = false
