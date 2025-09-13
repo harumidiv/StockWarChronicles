@@ -28,7 +28,10 @@ struct TagSelectionView: View {
             VStack(alignment: .leading, spacing: 24) {
                 selectedTagView
                 addTagView
-                existingTagView
+                
+                if !allTags.isEmpty {
+                    existingTagView
+                }
             }
             .onAppear {
                 allTags = Array(records.flatMap { $0.tags }.uniqueByName())
@@ -51,15 +54,17 @@ struct TagSelectionView: View {
             Text("タグ")
             Spacer()
             
-            Button {
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                showTagEdit.toggle()
-            } label: {
-                Text("編集")
-                    .font(.caption)
+            if !allTags.isEmpty {
+                Button {
+                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                    showTagEdit.toggle()
+                } label: {
+                    Text("編集")
+                        .font(.caption)
+                }
+                .glassEditButtonStyle()
+                .contentShape(Rectangle())
             }
-            .glassEditButtonStyle()
-            .contentShape(Rectangle())
         }
     }
     
@@ -108,7 +113,7 @@ struct TagSelectionView: View {
     
     var existingTagView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("登録済みタグ")
+            Text("保存済みタグ")
                 .foregroundColor(.secondary)
                 .font(.caption)
 
@@ -125,7 +130,6 @@ struct TagSelectionView: View {
             } onTap: { tag in
                 // onTapを使うと全てのタグが返却されてしまうので使わない
             }
-            .frame(minHeight: 28)
             .padding(4)
             .background(.thinMaterial)
         }
@@ -146,11 +150,6 @@ struct TagSelectionView: View {
         } else {
             let newTag = Tag(name: tagName, color: selectedNewTagColor)
             selectedTags.append(newTag)
-            
-            // 既存タグ一覧も整合性を合わせるために追加
-            if !allTags.contains(where: { $0.name == newTag.name }) {
-                allTags.append(newTag)
-            }
         }
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         

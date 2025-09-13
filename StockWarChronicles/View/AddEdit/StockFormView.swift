@@ -45,8 +45,13 @@ struct StockFormView: View {
     @FocusState.Binding var focusedField: StockFormFocusFields?
     
     var body: some View {
-        stockInfoSection
-            .id(StockFormFocusFields.name)
+        StockInfoSectionView(
+            market: $market,
+            code: $code,
+            name: $name,
+            focusedField: $focusedField
+        )
+        .id(StockFormFocusFields.name)
     
         tradeInfoSection
             .id(StockFormFocusFields.amount)
@@ -56,51 +61,6 @@ struct StockFormView: View {
             .focused($focusedField, equals: .tag)
             .id(StockFormFocusFields.tag)
         
-    }
-    
-    var stockInfoSection: some View {
-        Section(header: Text("銘柄情報")) {
-            VStack {
-                HStack {
-                    Text("市場")
-                    // Pickerは分離せずにTextの横に配置
-                    Picker("", selection: $market) {
-                        ForEach(Market.allCases) { market in
-                            Text(market.rawValue).tag(market)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .tint(.primary)
-                    .sensoryFeedback(.selection, trigger: market)
-                }
-                
-                Divider()
-                    .background(.separator)
-                    .padding(.bottom)
-                
-                HStack {
-                    Text("銘柄コード")
-                    TextField("(例)7203", text: $code)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .code)
-                        .onSubmit {
-                            focusedField = .name
-                        }
-                }
-                Divider()
-                    .background(.separator)
-                    .padding(.bottom)
-                
-                HStack {
-                    Text("銘柄名")
-                    TextField("(例)トヨタ自動車", text: $name)
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusedField, equals: .name)
-                }
-                Divider().background(.separator)
-            }
-        }
-        .listRowSeparator(.hidden)
     }
     
     var tradeInfoSection: some View {
