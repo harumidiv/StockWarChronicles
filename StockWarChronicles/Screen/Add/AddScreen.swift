@@ -73,7 +73,7 @@ struct AddScreen: View {
                         label: {
                             HStack {
                                 Image(systemName: "externaldrive")
-                                Text("追加")
+                                Text("保存")
                             }
                             .padding(.horizontal)
                             .opacity(isDisable ? 0.5 : 1.0)
