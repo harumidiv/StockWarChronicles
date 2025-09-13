@@ -32,7 +32,7 @@ struct StockInfoSectionView: View {
         if code.count <= 1 {
             return []
         }
-
+        
         return tokyoMarketStockData.filter { stock in
             stock.code.hasPrefix(code)
         }
@@ -42,14 +42,14 @@ struct StockInfoSectionView: View {
         if name.isEmpty {
             return []
         }
-
+        
         return tokyoMarketStockData.filter { stock in
             stock.name.hasPrefix(name)
         }
     }
     
     var body: some View {
-        Section(header: Text("銘柄情報")) {
+        Section(header: header) {
             VStack {
                 HStack {
                     Text("市場")
@@ -84,7 +84,7 @@ struct StockInfoSectionView: View {
                 Divider()
                     .background(.separator)
                     .padding(.bottom)
-
+                
                 VStack {
                     HStack {
                         Text("銘柄名")
@@ -105,6 +105,29 @@ struct StockInfoSectionView: View {
             // ここでCSVファイルを読み込み、allStockDataに格納する
             if let stocks = readCSVFile(filename: "data_j") {
                 self.tokyoMarketStockData = stocks
+            }
+        }
+    }
+    @State private var showInfoEdit: Bool = false
+    
+    var header: some View {
+        HStack {
+            Text("銘柄情報")
+            Spacer()
+            
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                showInfoEdit.toggle()
+            } label: {
+                Image(systemName: "info.circle")
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .popover(isPresented: $showInfoEdit) {
+              Text("銘柄名・銘柄コードの予測検索は、東京証券取引所に上場する銘柄にのみに対応しています。")
+                    .padding(.horizontal)
+                    .font(.caption)
+                .presentationCompactAdaptation(.popover)
             }
         }
     }
