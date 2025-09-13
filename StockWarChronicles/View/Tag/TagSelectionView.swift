@@ -146,11 +146,6 @@ struct TagSelectionView: View {
         } else {
             let newTag = Tag(name: tagName, color: selectedNewTagColor)
             selectedTags.append(newTag)
-            
-            // 既存タグ一覧も整合性を合わせるために追加
-            if !allTags.contains(where: { $0.name == newTag.name }) {
-                allTags.append(newTag)
-            }
         }
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         
