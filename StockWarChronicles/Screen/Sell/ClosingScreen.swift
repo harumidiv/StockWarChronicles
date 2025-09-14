@@ -176,6 +176,7 @@ struct ClosingScreen: View {
     var header: some View {
         HStack {
             Text(record.code + " " + record.name)
+                .lineLimit(1)
             Spacer()
             
             Button {

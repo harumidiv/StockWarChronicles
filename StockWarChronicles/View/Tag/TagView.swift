@@ -12,7 +12,7 @@ struct TagView: View {
     let color: Color
     var body: some View {
         Text(name)
-            .font(.caption)
+            .font(.callout)
             .fontWeight(.bold)
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
