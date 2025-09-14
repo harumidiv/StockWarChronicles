@@ -147,6 +147,7 @@ struct StockInfoSectionView: View {
                             code = item.code
                             name = item.name
                             focusedField = nil
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                         }
                     Divider()
                 }
