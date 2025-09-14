@@ -84,6 +84,7 @@ struct AddScreen: View {
         }
         .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented, isNeedNextBotton: $isNeedNextBotton) {
             focusedField = focusedField?.next()
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         }
         .onChange(of: focusedField) {
             switch focusedField {

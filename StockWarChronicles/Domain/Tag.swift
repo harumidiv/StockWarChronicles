@@ -57,17 +57,19 @@ struct Tag: Hashable, Identifiable, Codable {
 }
 
 extension Array where Element == Tag {
-    /// nameプロパティを基準にユニークなタグを抽出します。
+    /// nameプロパティを基準にユニークなタグを抽出し、元の配列の順序を保持
     func uniqueByName() -> [Tag] {
-        var uniqueTagsByName = [String: Tag]()
-        for tag in self {
-            // 同じ名前のタグが既にあれば何もしない
-            if uniqueTagsByName[tag.name] == nil {
-                uniqueTagsByName[tag.name] = tag
+            var uniqueTags: [Tag] = []
+            var seenNames: Set<String> = []
+
+            for tag in self {
+                if !seenNames.contains(tag.name) {
+                    uniqueTags.append(tag)
+                    seenNames.insert(tag.name)
+                }
             }
+            return uniqueTags
         }
-        return Array(uniqueTagsByName.values)
-    }
 }
 
 

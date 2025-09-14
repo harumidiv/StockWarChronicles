@@ -34,7 +34,9 @@ struct TagSelectionView: View {
                 }
             }
             .onAppear {
-                allTags = Array(records.flatMap { $0.tags }.uniqueByName())
+                // 直近で使ったタグを先頭に出したいので並び替え
+                let sortedRecords = records.sorted { $0.purchase.date > $1.purchase.date }
+                allTags = Array(sortedRecords.flatMap { $0.tags }.uniqueByName())
             }
             .onChange(of: showTagEdit) {
                 if showTagEdit == false {

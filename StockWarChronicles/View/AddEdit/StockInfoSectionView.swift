@@ -43,8 +43,13 @@ struct StockInfoSectionView: View {
             return []
         }
         
+        // 💡 検索時に両方の文字列を小文字かつ半角に変換
+        let searchTextHalfwidth = name.halfwidth.lowercased()
+        
         return tokyoMarketStockData.filter { stock in
-            stock.name.hasPrefix(name)
+            let stockNameHalfwidth = stock.name.halfwidth.lowercased()
+            
+            return stockNameHalfwidth.hasPrefix(searchTextHalfwidth)
         }
     }
     
@@ -142,6 +147,7 @@ struct StockInfoSectionView: View {
                             code = item.code
                             name = item.name
                             focusedField = nil
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                         }
                     Divider()
                 }
