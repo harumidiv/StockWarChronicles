@@ -77,7 +77,7 @@ struct StockInfoSectionView: View {
                                 focusedField = .name
                             }
                     }
-                    if !filteredCode.isEmpty && code.count < 4  {
+                    if !filteredCode.isEmpty && !tokyoMarketStockData.contains(where: { $0.code == code && $0.name == name })  {
                         candidateView(csvStockInfoList: filteredCode, type: .code)
                     }
                 }
@@ -92,7 +92,7 @@ struct StockInfoSectionView: View {
                             .multilineTextAlignment(.trailing)
                             .focused($focusedField, equals: .name)
                     }
-                    if !filteredName.isEmpty && !filteredName.contains(where: { $0.name == name })   {
+                    if !filteredName.isEmpty && !tokyoMarketStockData.contains(where: { $0.code == code && $0.name == name }) {
                         candidateView(csvStockInfoList: filteredName, type: .name)
                     }
                 }

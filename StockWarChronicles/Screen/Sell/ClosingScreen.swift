@@ -28,27 +28,27 @@ struct ClosingScreen: View {
     
     @State private var keyboardIsPresented: Bool = false
     @State private var showDateAlert: Bool = false
-    
-    @State var calendarId: UUID = UUID()
+    @State private var showEditView: Bool = false
+    @State private  var calendarId: UUID = UUID()
     
     var body: some View {
         NavigationView {
             VStack {
                 Form {
-                    Section(header: Text(record.code + " " + record.name)) {
+                    Section(header: header) {
                         VStack {
                             DatePicker("日付", selection: $sellDate, displayedComponents: .date)
                                 .id(calendarId)
                                 .onChange(of: sellDate) {oldValue, newValue in
-                                let calendar = Calendar.current
+                                    let calendar = Calendar.current
                                     let oldDateWithoutTime = calendar.component(.day, from: oldValue)
                                     let newDateWithoutTime = calendar.component(.day, from: newValue)
-                                
-                                if oldDateWithoutTime != newDateWithoutTime {
-                                     UISelectionFeedbackGenerator().selectionChanged()
-                                    calendarId = UUID()
+                                    
+                                    if oldDateWithoutTime != newDateWithoutTime {
+                                        UISelectionFeedbackGenerator().selectionChanged()
+                                        calendarId = UUID()
+                                    }
                                 }
-                            }
                             Divider().background(.separator)
                         }
                         
@@ -135,7 +135,7 @@ struct ClosingScreen: View {
                         dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button (action: {
                         if Calendar.current.startOfDay(for: record.purchase.date) > Calendar.current.startOfDay(for: sellDate) {
@@ -168,9 +168,28 @@ struct ClosingScreen: View {
         } message: {
             Text("内容を修正してください。")
         }
-        
+        .sheet(isPresented: $showEditView) {
+            EditScreen(record: record)
+        }
     }
- 
+    
+    var header: some View {
+        HStack {
+            Text(record.code + " " + record.name)
+            Spacer()
+            
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                showEditView.toggle()
+            } label: {
+                Text("編集")
+                    .font(.caption)
+            }
+            .glassEditButtonStyle()
+            .contentShape(Rectangle())
+        }
+    }
+    
     private func saveSell() {
         guard let amount = Double(amount) else { return }
         
