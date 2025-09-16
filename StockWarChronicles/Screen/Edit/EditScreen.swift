@@ -292,7 +292,8 @@ private extension StockSellEditView {
     }
 }
 
-
+#if DEBUG
 #Preview {
     EditScreen(record: StockRecord.mockRecords.first!)
 }
+#endif

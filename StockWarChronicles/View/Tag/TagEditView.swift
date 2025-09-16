@@ -195,7 +195,7 @@ struct TagEditView: View {
         color = .primary
     }
 }
-
+#if DEBUG
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: StockRecord.self, configurations: config)
@@ -208,3 +208,4 @@ struct TagEditView: View {
         .modelContainer(container)
     
 }
+#endif

@@ -165,7 +165,8 @@ extension LosingTradesView {
     }
 }
 
-
+#if DEBUG
 #Preview {
     LosingTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0})
 }
+#endif

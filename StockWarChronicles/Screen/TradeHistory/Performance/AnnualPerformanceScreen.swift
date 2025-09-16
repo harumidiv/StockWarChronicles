@@ -173,7 +173,7 @@ struct AnnualPerformanceScreen: View {
         return averageProfit / averageLoss
     }
 }
-
+#if DEBUG
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: StockRecord.self, configurations: config)
@@ -185,3 +185,4 @@ struct AnnualPerformanceScreen: View {
     return AnnualPerformanceScreen(selectedYear: .constant(2024))
         .modelContainer(container)
 }
+#endif

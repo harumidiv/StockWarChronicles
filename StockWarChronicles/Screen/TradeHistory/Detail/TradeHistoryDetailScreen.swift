@@ -311,7 +311,7 @@ extension TradeHistoryDetailScreen {
         screenState = .stable
     }
 }
-
+#if DEBUG
 #Preview {
     let purchase = StockTradeInfo(amount: 5000, shares: 100, date: Date(), emotion: Emotion.purchase(.random), reason: "成長期待")
     let sales = [
@@ -323,3 +323,4 @@ extension TradeHistoryDetailScreen {
         TradeHistoryDetailScreen(record: record)
     }
 }
+#endif

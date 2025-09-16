@@ -152,7 +152,8 @@ extension WinningTradesView {
         }
     }
 }
-
+#if DEBUG
 #Preview {
     WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0})
 }
+#endif

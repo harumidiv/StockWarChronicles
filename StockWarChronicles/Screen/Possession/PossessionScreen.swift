@@ -283,7 +283,7 @@ struct PossessionScreen: View {
         .padding(.horizontal, 16)
     }
 }
-
+#if DEBUG
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: StockRecord.self, configurations: config)
@@ -295,3 +295,4 @@ struct PossessionScreen: View {
     return PossessionScreen()
         .modelContainer(container)
 }
+#endif
