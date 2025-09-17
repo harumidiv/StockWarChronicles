@@ -78,6 +78,7 @@ struct WinningTradesView: View {
                                         
                                         Text(record.name)
                                             .bold()
+                                            .lineLimit(1)
                                         Spacer()
                                         Text("\(Double(record.profitAndLoss).withComma())円")
                                             .fontWeight(.semibold)

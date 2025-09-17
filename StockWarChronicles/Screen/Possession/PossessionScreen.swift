@@ -165,6 +165,7 @@ struct PossessionScreen: View {
                 HStack {
                     Text(record.name)
                         .font(.headline)
+                        .lineLimit(1)
                     Spacer()
                     Text("\(Int(record.purchase.amount))円")
                         .font(.headline)
