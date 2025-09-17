@@ -160,7 +160,7 @@ struct StockFormView: View {
         .listRowSeparator(.hidden)
     }
 }
-
+#if DEBUG
 #Preview {
     StockFormViewPreviewWrapper()
 }
@@ -189,3 +189,4 @@ private struct StockFormViewPreviewWrapper: View {
         }
     }
 }
+#endif

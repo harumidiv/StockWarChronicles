@@ -280,6 +280,7 @@ struct TradeHistoryListScreen: View {
                                 .font(.headline)
                             Text(record.name)
                                 .font(.headline)
+                                .lineLimit(1)
                         }
                         
                         Text("保有日数: \(record.holdingPeriod )日")
@@ -313,6 +314,7 @@ struct TradeHistoryListScreen: View {
     }
 }
 
+#if DEBUG
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: StockRecord.self, configurations: config)
@@ -323,4 +325,4 @@ struct TradeHistoryListScreen: View {
     return TradeHistoryListScreen(showTradeHistoryListScreen: .constant(true))
         .modelContainer(container)
 }
-
+#endif

@@ -160,7 +160,7 @@ struct TagSelectionView: View {
         
     }
 }
-
+#if DEBUG
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: StockRecord.self, configurations: config)
@@ -172,3 +172,4 @@ struct TagSelectionView: View {
     return TagSelectionView(selectedTags: .constant(tags))
         .modelContainer(container)
 }
+#endif

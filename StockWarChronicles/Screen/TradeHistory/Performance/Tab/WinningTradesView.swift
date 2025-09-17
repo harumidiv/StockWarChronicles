@@ -78,6 +78,7 @@ struct WinningTradesView: View {
                                         
                                         Text(record.name)
                                             .bold()
+                                            .lineLimit(1)
                                         Spacer()
                                         Text("\(Double(record.profitAndLoss).withComma())円")
                                             .fontWeight(.semibold)
@@ -152,7 +153,8 @@ extension WinningTradesView {
         }
     }
 }
-
+#if DEBUG
 #Preview {
     WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0})
 }
+#endif

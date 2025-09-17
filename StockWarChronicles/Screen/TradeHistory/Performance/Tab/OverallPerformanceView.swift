@@ -108,7 +108,8 @@ struct OverallPerformanceView: View {
         }
     }
 }
-
+#if DEBUG
 #Preview {
     OverallPerformanceView(records: StockRecord.mockRecords, selectedYear: .constant(2024))
 }
+#endif
