@@ -205,14 +205,14 @@ private extension StockSellEditView {
             Text("削除")
                 .fontWeight(.bold)
                 .foregroundColor(.white)
-                
+                .frame(width: 240, height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.red)
+                )
         }
-        .frame(width: 240, height: 44)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.red)
-        )
         .buttonStyle(.plain)
+        .contentShape(Rectangle())
     }
     
     // 日付選択
