@@ -161,6 +161,9 @@ struct EditScreen: View {
     }
     
     private func deleteHistory() {
+        // 🌾削除前に編集されていると同期が取れずクラッシュするので反映させる
+        saveChanges()
+        
         context.delete(record)
         do {
             try context.save()
