@@ -27,6 +27,7 @@ struct EditScreen: View {
     
     @State private var showOversoldAlert = false
     @State private var showDeleteAlert: Bool = false
+    @State private var showSaveConfirmAlert: Bool = false
     
     @State private var keyboardIsPresented: Bool = false
     @FocusState private var focusedField: StockFormFocusFields?
@@ -59,7 +60,21 @@ struct EditScreen: View {
                 
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismiss()
+                        if code != record.code ||
+                            market != record.market ||
+                            name != record.name ||
+                            date != record.purchase.date ||
+                            position != record.position ||
+                            amountText != String(record.purchase.amount) ||
+                            sharesText != String(record.purchase.shares) ||
+                            emotion != record.purchase.emotion ||
+                            reason != record.purchase.reason ||
+                            Set(selectedTags.map { $0.id }) != Set(record.tags.map { $0.id }) ||
+                            sales != record.sales {
+                            showSaveConfirmAlert.toggle()
+                        } else {
+                            dismiss()
+                        }
                     } label: {
                         Image(systemName: "xmark")
                     }
@@ -123,6 +138,14 @@ struct EditScreen: View {
             } message: {
                 Text("この株取引データは完全に削除されます。")
             }
+            .alert("変更が保存されていません", isPresented: $showSaveConfirmAlert) {
+                Button("破棄", role: .destructive) {
+                    dismiss()
+                }
+                Button("キャンセル", role: .cancel) { }
+            } message: {
+                Text("保存せずに閉じますか？")
+            }
         }
         .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented) {
             focusedField = focusedField?.next()
@@ -161,6 +184,9 @@ struct EditScreen: View {
     }
     
     private func deleteHistory() {
+        // 🌾削除前に編集されていると同期が取れずクラッシュするので反映させる
+        saveChanges()
+        
         context.delete(record)
         do {
             try context.save()
@@ -205,14 +231,14 @@ private extension StockSellEditView {
             Text("削除")
                 .fontWeight(.bold)
                 .foregroundColor(.white)
-                
+                .frame(width: 240, height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.red)
+                )
         }
-        .frame(width: 240, height: 44)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.red)
-        )
         .buttonStyle(.plain)
+        .contentShape(Rectangle())
     }
     
     // 日付選択
