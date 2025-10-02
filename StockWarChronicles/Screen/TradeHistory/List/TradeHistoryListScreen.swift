@@ -58,15 +58,29 @@ struct TradeHistoryListScreen: View {
     @State private var editingRecord: StockRecord?
     @State private var deleteRecord: StockRecord?
     
-    // Sort & Filter
+    // Sort & Filter & Search
     @State private var selectedTag: String = "すべてのタグ"
     @State private var currentSortType: TradeHistorySortType = .date
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
+    @State private var searchText: String = ""
     
     private var sortedRecords: [StockRecord] {
         var filteredRecords: [StockRecord] = records.filter {
             Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
         }
+        
+        if !searchText.isEmpty {
+            filteredRecords = filteredRecords.filter { record in
+                let code = record.code.halfwidth.lowercased()
+                let name = record.name.halfwidth.lowercased()
+                let search = searchText.halfwidth.lowercased()
+                let isCodeMatch = code.hasPrefix(search)
+                let isNameMatch = name.hasPrefix(search)
+
+                return isCodeMatch || isNameMatch
+            }
+        }
+        
         if selectedTag != "すべてのタグ" {
             filteredRecords = filteredRecords.filter { record in
                 record.tags.contains { tag in
@@ -150,6 +164,7 @@ struct TradeHistoryListScreen: View {
                     .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 }
             }
+            .searchable(text: $searchText,placement: .navigationBarDrawer, prompt: "銘柄を検索")
             .sensoryFeedback(.selection, trigger: showAnnualPerformance)
             .listStyle(.plain)
             .scrollContentBackground(.hidden)

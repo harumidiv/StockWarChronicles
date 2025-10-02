@@ -28,9 +28,10 @@ struct PossessionScreen: View {
     @State private var sellRecord: StockRecord?
     @State private var deleteRecord: StockRecord?
     
-    // Sort & Filter
+    // Sort & Filter & Search
     @State private var selectedTag: String = "すべてのタグ"
     @State private var currentSortType: PossessionSortType = .holdingPeriodAscending
+    @State private var searchText: String = ""
 
     private var sortedRecords: [StockRecord] {
         
@@ -38,14 +39,8 @@ struct PossessionScreen: View {
             !$0.isTradeFinish
         }
         
-        if searchText.isEmpty {
-            filteredRecords = records.filter {
-                !$0.isTradeFinish
-            }
-        } else {
-            filteredRecords = records.filter {
-                !$0.isTradeFinish
-            }.filter { record in
+        if !searchText.isEmpty {
+            filteredRecords = filteredRecords.filter { record in
                 let code = record.code.halfwidth.lowercased()
                 let name = record.name.halfwidth.lowercased()
                 let search = searchText.halfwidth.lowercased()
@@ -85,7 +80,6 @@ struct PossessionScreen: View {
         uniqueTagNames.insert("すべてのタグ", at: 0)
         return uniqueTagNames
     }
-    @State private var searchText: String = ""
     
     var body: some View {
         NavigationView {
