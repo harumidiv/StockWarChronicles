@@ -40,8 +40,6 @@ struct StockFormView: View {
     @Binding var reason: String
     @Binding var selectedTags: [Tag]
     
-    @State var calendarId: UUID = UUID()
-    
     @FocusState.Binding var focusedField: StockFormFocusFields?
     
     var body: some View {
@@ -76,19 +74,7 @@ struct StockFormView: View {
             
             HStack {
                 VStack {
-                    DatePicker("日付", selection: $date, displayedComponents: .date)
-                        .id(calendarId)
-                        .onChange(of: date) { oldValue, newValue in
-                            let calendar = Calendar.current
-                            let oldDateWithoutTime = calendar.component(.day, from: oldValue)
-                            let newDateWithoutTime = calendar.component(.day, from: newValue)
-                            
-                            if oldDateWithoutTime != newDateWithoutTime {
-                                let generator = UISelectionFeedbackGenerator()
-                                generator.selectionChanged()
-                                calendarId = UUID()
-                            }
-                        }
+                    DatePickerAccordionView(date: $date)
                     Divider().background(.separator)
                 }
             }

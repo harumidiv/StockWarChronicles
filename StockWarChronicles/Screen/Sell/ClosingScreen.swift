@@ -29,7 +29,6 @@ struct ClosingScreen: View {
     @State private var keyboardIsPresented: Bool = false
     @State private var showDateAlert: Bool = false
     @State private var showEditView: Bool = false
-    @State private  var calendarId: UUID = UUID()
     
     var body: some View {
         NavigationView {
@@ -37,18 +36,7 @@ struct ClosingScreen: View {
                 Form {
                     Section(header: header) {
                         VStack {
-                            DatePicker("日付", selection: $sellDate, displayedComponents: .date)
-                                .id(calendarId)
-                                .onChange(of: sellDate) {oldValue, newValue in
-                                    let calendar = Calendar.current
-                                    let oldDateWithoutTime = calendar.component(.day, from: oldValue)
-                                    let newDateWithoutTime = calendar.component(.day, from: newValue)
-                                    
-                                    if oldDateWithoutTime != newDateWithoutTime {
-                                        UISelectionFeedbackGenerator().selectionChanged()
-                                        calendarId = UUID()
-                                    }
-                                }
+                            DatePickerAccordionView(date: $sellDate)
                             Divider().background(.separator)
                         }
                         
@@ -206,3 +194,5 @@ struct ClosingScreen: View {
     ClosingScreen(record: StockRecord(code: "350A", market: .tokyo, name: "デジタルグリッド", position: .buy, purchase: .init(amount: 5100, shares: 100, date: Date(), emotion: Emotion.sales(.random), reason: "ストック売り上げ")))
 }
 #endif
+
+
