@@ -280,13 +280,7 @@ private extension StockSellEditView {
                     .foregroundColor(.gray)
                 Spacer()
             }
-            TextEditor(text: sale.reason)
-                .frame(height: 100)
-                .padding(4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.5))
-                )
+            VariableHeightTextEditor(text: sale.reason)
         }
     }
     
