@@ -147,6 +147,7 @@ struct TradeHistoryListScreen: View {
                             }
                         }
                     }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 }
             }
             .sensoryFeedback(.selection, trigger: showAnnualPerformance)
