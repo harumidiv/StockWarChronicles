@@ -243,18 +243,7 @@ private extension StockSellEditView {
     
     // 日付選択
     func datePickerView(for sale: Binding<StockTradeInfo>) -> some View {
-        DatePicker("日付", selection: sale.date, displayedComponents: .date)
-            .id(calendarId)
-            .onChange(of: sale.date.wrappedValue) { oldValue, newValue in
-                let calendar = Calendar.current
-                let oldDay = calendar.component(.day, from: oldValue)
-                let newDay = calendar.component(.day, from: newValue)
-                
-                if oldDay != newDay {
-                    UISelectionFeedbackGenerator().selectionChanged()
-                    calendarId = UUID()
-                }
-            }
+        DatePickerAccordionView(date: sale.date)
     }
     
     // 購入額と株数

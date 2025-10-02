@@ -13,14 +13,12 @@ struct DatePickerAccordionView: View {
     @State private var isExpanded: Bool = false
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             HStack {
                 Text("日付")
                 Spacer()
                 Button(action: {
-                    withAnimation {
-                        isExpanded.toggle()
-                    }
+                    isExpanded.toggle()
                 }) {
                     Text(date.formatted(as: .yyyyMMdd))
                             .padding(.horizontal, 8)
