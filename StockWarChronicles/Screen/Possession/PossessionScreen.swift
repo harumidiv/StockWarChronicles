@@ -162,77 +162,82 @@ struct PossessionScreen: View {
         Button {
             sellRecord = record
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(record.name)
-                        .font(.headline)
-                        .lineLimit(1)
-                    Spacer()
-                    Text("\(Int(record.purchase.amount))円")
-                        .font(.headline)
-                }
-                
-                HStack {
-                    Text(record.code)
-                        .font(.subheadline)
-                    
-                    Spacer()
-                    
-                    Text("\(record.remainingShares) / \(record.purchase.shares)株")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                if !record.tags.isEmpty {
-                    ChipsView(tags: record.tags) { tag in
-                        TagView(name: tag.name, color: tag.color)
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(record.position == .sell ? .blue : .red)
+                    .frame(width: 5)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(record.name)
+                            .font(.headline)
+                            .lineLimit(1)
+                        Spacer()
+                        Text("\(Int(record.purchase.amount))円")
+                            .font(.headline)
                     }
-                }
-                
-                Divider()
-                
-                HStack(spacing: 0) {
-                    Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
                     
-                    Text(record.numberOfDaysHeld.description + "日")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Menu {
-                        Button {
-                            sellRecord = record
-                        } label: {
-                            Label("売却", systemImage: "cart")
-                        }
-                        Button {
-                            editingRecord = record
-                        } label: {
-                            Label("編集", systemImage: "pencil")
-                        }
+                    HStack {
+                        Text(record.code)
+                            .font(.subheadline)
                         
-                        Divider()
-                        Button(role: .destructive) {
-                            deleteRecord = record
-                        } label: {
-                            Label("削除", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .frame(width: 32, height: 24)
-                            .foregroundColor(.primary)
+                        Spacer()
+                        
+                        Text("\(record.remainingShares) / \(record.purchase.shares)株")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
-                    .contentShape(Rectangle())
+                    
+                    if !record.tags.isEmpty {
+                        ChipsView(tags: record.tags) { tag in
+                            TagView(name: tag.name, color: tag.color)
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    HStack(spacing: 0) {
+                        Text(record.purchase.date.formatted(as: .yyyyMMdd) + "〜")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Text(record.numberOfDaysHeld.description + "日")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Menu {
+                            Button {
+                                sellRecord = record
+                            } label: {
+                                Label("売却", systemImage: "cart")
+                            }
+                            Button {
+                                editingRecord = record
+                            } label: {
+                                Label("編集", systemImage: "pencil")
+                            }
+                            
+                            Divider()
+                            Button(role: .destructive) {
+                                deleteRecord = record
+                            } label: {
+                                Label("削除", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .frame(width: 32, height: 24)
+                                .foregroundColor(.primary)
+                        }
+                        .contentShape(Rectangle())
+                    }
                 }
+                .padding()
+                .background(
+                    Rectangle()
+                        .fill(Color(.tertiarySystemGroupedBackground))
+                )
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.tertiarySystemGroupedBackground))
-            )
         }
         .buttonStyle(.plain)
     }
