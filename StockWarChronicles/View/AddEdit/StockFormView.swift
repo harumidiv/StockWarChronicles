@@ -133,13 +133,8 @@ struct StockFormView: View {
                         .foregroundColor(.gray)
                     Spacer()
                 }
-                TextEditor(text: $reason)
-                    .frame(height: 80)
-                    .padding(4)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.5))
-                    )
+                
+                VariableHeightTextEditor(text: $reason)
                     .focused($focusedField, equals: .memo)
             }
         }

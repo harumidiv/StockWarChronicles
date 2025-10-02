@@ -158,25 +158,13 @@ struct TradeHistoryDetailScreen: View {
                 }
             }
             Section(header: Text("メモ(編集中)")) {
-                TextEditor(text: $purchaseReason)
-                    .frame(height: 100)
-                    .padding(4)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.5))
-                    )
+                VariableHeightTextEditor(text: $purchaseReason)
             }
 
             Section(header: Text("メモ(編集中)").font(.headline)) {
                 VStack(spacing: 0) {
                     ForEach(saleReasons.indices, id: \.self) { index in
-                        TextEditor(text: $saleReasons[index])
-                            .frame(height: 100)
-                            .padding(4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.5))
-                            )
+                        VariableHeightTextEditor(text: $saleReasons[index])
                     }
                 }
             }
