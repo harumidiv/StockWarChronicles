@@ -28,15 +28,29 @@ struct PossessionScreen: View {
     @State private var sellRecord: StockRecord?
     @State private var deleteRecord: StockRecord?
     
-    // Sort & Filter
+    // Sort & Filter & Search
     @State private var selectedTag: String = "すべてのタグ"
     @State private var currentSortType: PossessionSortType = .holdingPeriodAscending
+    @State private var searchText: String = ""
 
     private var sortedRecords: [StockRecord] {
+        
         var filteredRecords: [StockRecord] = records.filter {
             !$0.isTradeFinish
         }
         
+        if !searchText.isEmpty {
+            filteredRecords = filteredRecords.filter { record in
+                let code = record.code.halfwidth.lowercased()
+                let name = record.name.halfwidth.lowercased()
+                let search = searchText.halfwidth.lowercased()
+                let isCodeMatch = code.hasPrefix(search)
+                let isNameMatch = name.hasPrefix(search)
+
+                return isCodeMatch || isNameMatch
+            }
+        }
+
         if selectedTag != "すべてのタグ" {
             filteredRecords = filteredRecords.filter { record in
                 record.tags.contains { tag in
@@ -155,6 +169,7 @@ struct PossessionScreen: View {
                     )
                 }
             }
+            .searchable(text: $searchText, prompt: "銘柄を検索")
         }
     }
     
