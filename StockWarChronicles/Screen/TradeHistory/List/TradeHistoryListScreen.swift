@@ -130,20 +130,24 @@ struct TradeHistoryListScreen: View {
                 List {
                     ForEach(sortedRecords) { record in
                         if record.isTradeFinish {
-                            Button {
-                                selectedRecord = record
-                                showDetail = true
-                            } label: {
-                                stockRecordInfoCell(record: record)
+                            HStack(spacing: 0) {
+                                Rectangle()
+                                    .fill(record.position == .sell ? .blue : .red)
+                                    .frame(width: 5)
+
+                                Button {
+                                    selectedRecord = record
+                                    showDetail = true
+                                } label: {
+                                    stockRecordInfoCell(record: record)
+                                }
+                                .padding()
+                                .buttonStyle(.plain)
+                                .background(
+                                    Rectangle()
+                                        .fill(Color(.tertiarySystemGroupedBackground))
+                                )
                             }
-                            .padding()
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .buttonStyle(.plain)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(.tertiarySystemGroupedBackground))
-                            )
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     deleteRecord = record
@@ -161,6 +165,8 @@ struct TradeHistoryListScreen: View {
                             }
                         }
                     }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 }
             }
@@ -288,9 +294,6 @@ struct TradeHistoryListScreen: View {
     
     private func stockRecordInfoCell(record: StockRecord) -> some View {
         HStack {
-            Rectangle()
-                .fill(record.position == .sell ? .blue : .red)
-                .frame(width: 5)
             VStack {
                 HStack {
                     VStack(alignment: .leading, spacing: 8) {
