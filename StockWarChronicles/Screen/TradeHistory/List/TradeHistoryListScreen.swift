@@ -273,6 +273,9 @@ struct TradeHistoryListScreen: View {
     
     private func stockRecordInfoCell(record: StockRecord) -> some View {
         HStack {
+            Rectangle()
+                .fill(record.position == .sell ? .blue : .red)
+                .frame(width: 5)
             VStack {
                 HStack {
                     VStack(alignment: .leading, spacing: 8) {

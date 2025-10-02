@@ -96,7 +96,7 @@ struct PossessionScreen: View {
                                 }
                         }
                     }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                 }
                 .sensoryFeedback(.selection, trigger: showStockRecordView)
                 .sensoryFeedback(.selection, trigger: showAddStockView)
