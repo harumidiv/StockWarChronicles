@@ -44,8 +44,8 @@ struct PossessionScreen: View {
                 let code = record.code.halfwidth.lowercased()
                 let name = record.name.halfwidth.lowercased()
                 let search = searchText.halfwidth.lowercased()
-                let isCodeMatch = code.hasPrefix(search)
-                let isNameMatch = name.hasPrefix(search)
+                let isCodeMatch = code.contains(search)
+                let isNameMatch = name.contains(search)
 
                 return isCodeMatch || isNameMatch
             }

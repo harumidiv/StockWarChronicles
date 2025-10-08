@@ -69,8 +69,8 @@ struct EditScreen: View {
                             sharesText != String(record.purchase.shares) ||
                             emotion != record.purchase.emotion ||
                             reason != record.purchase.reason ||
-                            Set(selectedTags.map { $0.id }) != Set(record.tags.map { $0.id }) ||
-                            sales != record.sales {
+                            Set(selectedTags.map { $0.name }) != Set(record.tags.map { $0.name }) ||
+                            sales.count != record.sales.count {
                             showSaveConfirmAlert.toggle()
                         } else {
                             dismiss()
