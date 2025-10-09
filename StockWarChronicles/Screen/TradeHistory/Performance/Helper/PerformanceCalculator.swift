@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct MonthlyPerformance {
+struct MonthlyPerformance: Identifiable {
+    let id = UUID()
     let month: String
     let profitAmount: Double
 }
@@ -121,18 +122,27 @@ struct PerformanceCalculator {
     // 月別損益
     func calculateMonthlyProfit() -> [MonthlyPerformance] {
         guard !records.isEmpty else { return [] }
-        var monthlyProfits: [String: Double] = [:]
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM"
-
+        
+        var monthlyProfits: [Int: Double] = [:]
+        let calendar = Calendar.current
+        
         for record in records.sorted(by: { $0.purchase.date < $1.purchase.date }) {
-            let monthString = dateFormatter.string(from: record.purchase.date)
-            monthlyProfits[monthString, default: 0.0] += Double(record.profitAndLoss)
+            let month = calendar.component(.month, from: record.purchase.date)
+            monthlyProfits[month, default: 0.0] += Double(record.profitAndLoss)
         }
-
-        let sortedKeys = monthlyProfits.keys.sorted()
-        return sortedKeys.map { key in
-            MonthlyPerformance(month: key, profitAmount: monthlyProfits[key] ?? 0.0)
+        
+        let sortedMonths = monthlyProfits.keys.sorted()
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ja_JP")
+        
+        return sortedMonths.map { month in
+            let dateComponents = DateComponents(month: month)
+            let date = calendar.date(from: dateComponents)!
+            dateFormatter.dateFormat = "M月"
+            let monthString = dateFormatter.string(from: date)
+            
+            return MonthlyPerformance(month: monthString, profitAmount: monthlyProfits[month] ?? 0.0)
         }
     }
     

@@ -44,7 +44,7 @@ struct OverallPerformanceView: View {
             }
             .filter { !$0.isEmpty }
     }
-    
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -77,6 +77,8 @@ struct OverallPerformanceView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
                 
+                PerformanceChartView(monthlyData: monthlyPerformance)
+                    .frame(height: 200)
                 
                 AccordionView(isExpanded: $winTradeExpanded, title: "勝ちトレードメモ一覧") {
                     ForEach(filteredWinRecordsMemo, id: \.self) { memo in
