@@ -53,9 +53,6 @@ struct MonthlyPerformanceBarChart: View {
     let monthlyData: [MonthlyPerformance]
     
     var body: some View {
-        let minPerformance = monthlyData.min(by: { $0.profitAmount < $1.profitAmount })?.profitAmount ?? 0
-        let maxPerformance = monthlyData.max(by: { $0.profitAmount < $1.profitAmount })?.profitAmount ?? 0
-
         Chart {
             ForEach(monthlyData) { data in
                 BarMark(
@@ -65,15 +62,31 @@ struct MonthlyPerformanceBarChart: View {
                 .foregroundStyle(data.profitAmount >= 0 ? .green : .red)
             }
         }
-        .chartYScale(domain: minPerformance...maxPerformance)
         .chartYAxis {
-            AxisMarks(position: .leading)
+            AxisMarks(position: .leading) { value in
+                if let profit = value.as(Double.self) {
+                    AxisGridLine()
+                    AxisTick()
+                    AxisValueLabel {
+                        HStack(spacing: 0) {
+                            let valueInManYen = profit / 10000
+                            Text(valueInManYen, format: .number.precision(.fractionLength(0)).grouping(.automatic))
+                                .font(.caption)
+                            Text("万円")
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
+import SwiftUI
+import Charts
 
 struct MonthlyPerformanceLineChart: View {
+    // データモデルと累積計算のコードは省略
     let monthlyData: [MonthlyPerformance]
     
     private var cumulativeData: [CumulativeChartPerformance] {
@@ -95,7 +108,21 @@ struct MonthlyPerformanceLineChart: View {
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading)
+            AxisMarks(position: .leading) { value in
+                if let profit = value.as(Double.self) {
+                    AxisGridLine()
+                    AxisTick()
+                    AxisValueLabel {
+                        HStack(spacing: 0) {
+                            let valueInManYen = profit / 10000
+                            Text(valueInManYen, format: .number.precision(.fractionLength(0)).grouping(.automatic))
+                                .font(.caption)
+                            Text("万円")
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -118,3 +145,4 @@ struct MonthlyPerformanceLineChart: View {
     
     PerformanceChartView(monthlyData: monthlyData)
 }
+
