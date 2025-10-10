@@ -162,7 +162,7 @@ struct EditScreen: View {
             reason = record.purchase.reason
             selectedTags = record.tags.map { .init(name: $0.name, color: $0.color) }
             // 🌾SwiftDataに保存している関係でclassで作っていて参照型なのでcopyする
-            sales = record.sales.map { $0.copy() as! StockTradeInfo }
+            sales = record.sales.map { $0.copy() as! StockTradeInfo }.sorted(by: { $0.date > $1.date })
         }
     }
     
@@ -201,7 +201,6 @@ struct EditScreen: View {
 struct StockSellEditView: View {
     @Binding var sales: [StockTradeInfo]
     @State private var calendarId: UUID = UUID()
-    
     var body: some View {
         ForEach($sales) { $sale in
             Section(header: Text("売却: \(sale.date.formatted(as: .yyyyMMdd))")) {
