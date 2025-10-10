@@ -58,8 +58,10 @@ struct OverallPerformanceView: View {
                 PerformanceChartView(monthlyData: monthlyPerformance)
                     .frame(height: 200)
                 
-                aiWinAdviceView
-                aiLoseAdviceView
+                if SystemLanguageModel.default.isAvailable {
+                    aiWinAdviceView
+                    aiLoseAdviceView
+                }
             }
             .padding()
         }

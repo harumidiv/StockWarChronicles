@@ -57,7 +57,7 @@ struct AdviceView: View {
             isLoading = true
             do {
                 let session = LanguageModelSession(instructions: instructions)
-                let response = try await session.respond(to: prompt)
+                let response = try await session.respond(to: prompt, options: GenerationOptions(temperature: 2.0))
                 adviceText = response.content
             } catch {
                 adviceText = "AIとのコミュニケーションに失敗しました。"
