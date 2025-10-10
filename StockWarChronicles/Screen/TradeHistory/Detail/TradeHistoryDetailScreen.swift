@@ -104,74 +104,6 @@ struct TradeHistoryDetailScreen: View {
         .chartYScale(domain: [min ?? 0 * 0.95, max ?? 0 * 1.05])
     }
     
-    private func editView() -> some View {
-        Form {
-            
-            Section {
-                HStack {
-                    TextField("コード", text: $code)
-                    Picker("", selection: $market) {
-                        ForEach(Market.allCases) { market in
-                            Text(market.rawValue)
-                                .tag(market)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-                TextField("名前", text: $name)
-            }
-            
-            summarySection()
-            
-            Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
-                .font(.headline)) {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(record.sales) { sale in
-                        HStack {
-                            HStack(spacing: 0) {
-                                Text(record.purchase.date.formatted(as: .md))
-                                    .foregroundColor(.secondary)
-                                Text("~")
-                                    .foregroundColor(.secondary)
-                                Text(sale.date.formatted(as: .md))
-                                    .foregroundColor(.secondary)
-                            }
-                            .font(.callout)
-                            
-                            Text(sale.shares.description + "株")
-                                .foregroundColor(.secondary)
-                                .font(.callout)
-                            
-                            Spacer()
-                            
-                            let purchaseAmount = record.purchase.amount * Double(sale.shares)
-                            let salesAmount = sale.amount * Double(sale.shares)
-                            let totalProfitAndLoss = salesAmount - purchaseAmount
-                            let profitAndLossPercentage = (totalProfitAndLoss / purchaseAmount) * 100
-                            
-                            Text(String(format: "%.1f", profitAndLossPercentage) + "％")
-                                .font(.subheadline)
-                                .foregroundColor(profitAndLossPercentage >= 0 ? .red : .blue)
-                        }
-                        .padding(.vertical, 2)
-                    }
-                }
-            }
-            Section(header: Text("メモ(編集中)")) {
-                VariableHeightTextEditor(text: $purchaseReason)
-            }
-
-            Section(header: Text("メモ(編集中)").font(.headline)) {
-                VStack(spacing: 0) {
-                    ForEach(saleReasons.indices, id: \.self) { index in
-                        VariableHeightTextEditor(text: $saleReasons[index])
-                    }
-                }
-            }
-            .listRowSeparator(.hidden)
-        }
-    }
-    
     private func stableView() -> some View {
         Form {
             summarySection()
@@ -179,7 +111,7 @@ struct TradeHistoryDetailScreen: View {
             Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
                 .font(.headline)) {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(record.sales) { sale in
+                    ForEach(record.sales.sorted(by: { $0.date > $1.date })) { sale in
                         HStack {
                             HStack(spacing: 0) {
                                 Text(record.purchase.date.formatted(as: .md))
