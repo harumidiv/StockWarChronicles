@@ -42,3 +42,10 @@
   <img src="https://github.com/user-attachments/assets/53ed0eb9-0af2-4828-8261-6c4d66d8ba88" width="30%" />
   <img src="https://github.com/user-attachments/assets/6b130923-64bd-42e5-9e16-1c297186aa42" width="30%" />
 </p>
+
+## 🚀 ダウンロード
+
+<!-- Add links to the App Store and Google Play badges -->
+[![App Storeでダウンロード](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/jp/app/id6752121856)  
+---
+
