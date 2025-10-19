@@ -30,17 +30,18 @@ struct PossessionTreeMap: View {
     
     var body: some View {
         GeometryReader { proxy in
+            // 値が大きい順にソートしてからレイアウト
+            let sortedData = data.sorted { $0.value > $1.value }
+            
             let ld = calculateLayout(
                 w: proxy.size.width,
                 h: proxy.size.height,
-                data: data.map({ stock in
-                    stock.value
-                }),
+                data: sortedData.map { $0.value },
                 from: 0
             )
             
-            TreeMapView(treeMapData: data, ld: ld)
-                .border(.primary, width: 1) // 内側で隣接する辺が倍の太さになるので調整
+            TreeMapView(treeMapData: sortedData, ld: ld)
+                .border(.primary, width: 1)
         }
     }
     
