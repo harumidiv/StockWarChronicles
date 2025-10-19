@@ -24,6 +24,7 @@ struct TreeMapView: View {
                             .border(.primary, width: 0.5)
                             .overlay {
                                 Text(treeMapData[ld.content[i].index].name)
+                                    .padding(2)
                                     .minimumScaleFactor(0.3)
                             }
                     }
@@ -43,6 +44,7 @@ struct TreeMapView: View {
                             .border(.primary, width: 0.5)
                             .overlay {
                                 Text(treeMapData[ld.content[i].index].name)
+                                    .padding(2)
                                     .minimumScaleFactor(0.3)
                             }
                     }

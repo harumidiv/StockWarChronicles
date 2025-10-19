@@ -23,6 +23,7 @@ struct PossessionScreen: View {
     
     @State private var showAddStockView: Bool = false
     @State private var showStockRecordView: Bool = false
+    @State private var showTreeMapView: Bool = false
     
     @State private var editingRecord: StockRecord?
     @State private var sellRecord: StockRecord?
@@ -113,12 +114,25 @@ struct PossessionScreen: View {
                     .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                 }
                 .sensoryFeedback(.selection, trigger: showStockRecordView)
+                .sensoryFeedback(.selection, trigger: showTreeMapView)
                 .sensoryFeedback(.selection, trigger: showAddStockView)
                 .sensoryFeedback(.selection, trigger: sellRecord)
                 .sensoryFeedback(.selection, trigger: editingRecord)
                 .listStyle(.plain)
                 .navigationTitle("保有リスト")
                 .toolbar {
+                    // トレード完了していないポジションを持っている時だけ表示
+                    if !sortedRecords.isEmpty {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showTreeMapView.toggle()
+                            } label: {
+                                Label("ツリーマップ", systemImage: "square.grid.3x3.topleft.filled")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                    
                     // 取引の完了しているデータがある場合履歴を表示
                     if records.contains(where: { $0.isTradeFinish }) {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -154,6 +168,11 @@ struct PossessionScreen: View {
                 }
                 .fullScreenCover(isPresented: $showStockRecordView) {
                     TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
+                }
+                .fullScreenCover(isPresented: $showTreeMapView) {
+                    PossessionMapScreen(record: records.filter {
+                        !$0.isTradeFinish
+                    })
                 }
                 .alert(item: $deleteRecord) { record in
                     Alert(
