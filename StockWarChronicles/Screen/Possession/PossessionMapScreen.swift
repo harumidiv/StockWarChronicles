@@ -14,106 +14,59 @@ struct PossessionMapScreen: View {
         case treeMap
     }
     
-    enum DisplayUnit: String, CaseIterable, Identifiable {
-        case manYen
-        case percent
-        
-        var id: String { rawValue }
-        
-        var label: String {
-            switch self {
-            case .manYen:
-                return "万円"
-            case .percent:
-                return "%"
-            }
-        }
-        
-        /// 値の変換処理（元の値を単位に応じて変換）
-        func convert(_ value: Double, total: Double? = nil) -> Double {
-            switch self {
-            case .manYen:
-                return value
-            case .percent:
-                guard let total, total != 0 else { return 0 }
-                return (value / total) * 100
-            }
-        }
-    }
-    
     let record: [StockRecord]
     @Binding var showPossessionMapScreen: Bool
     
     @State private var chartType: ChartType = .donatus
-    @State private var displayUnit: DisplayUnit = .manYen
-    @State private var showTitalValue: Bool = true
+    @State private var showAmount: Bool = true
     
     var body: some View {
         NavigationView {
             VStack {
                 Button (
                     action: {
-                        showTitalValue.toggle()
+                        showAmount.toggle()
                     },
                     label: {
                         HStack {
                             Text("ポジション合計")
                                 .foregroundColor(.primary)
-                            Image(systemName: showTitalValue ? "eye" : "eye.slash")
+                            Image(systemName: showAmount ? "eye" : "eye.slash")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 20)
                                 .foregroundColor(.primary)
                         }
-                    })
+                    }
+                )
+                .sensoryFeedback(.selection, trigger: showAmount)
                 
-                let text = showTitalValue ? record.totalPurchaseValue().withComma() : "--------"
+                let text = showAmount ? record.totalPurchaseValue().withComma() : "--------"
                 Text(text + "円")
                     .font(.title)
                 
-                
-                HStack {
-                    Picker("Chart", selection: $chartType) {
-                        ForEach(ChartType.allCases, id: \.self) { type in
-                            switch type {
-                            case .donatus:
-                                Text("🍩ドーナッツ").tag(type)
-                            case .treeMap:
-                                Text("🌲ツリー").tag(type)
-                            }
+                Picker("Chart", selection: $chartType) {
+                    ForEach(ChartType.allCases, id: \.self) { type in
+                        switch type {
+                        case .donatus:
+                            Text("🍩ドーナッツ").tag(type)
+                        case .treeMap:
+                            Text("🌲ツリー").tag(type)
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    
-                    Button (
-                        action: {
-                            switch displayUnit {
-                            case .manYen:
-                                displayUnit = .percent
-                            case .percent:
-                                displayUnit = .manYen
-                            }
-                        },
-                        label: {
-                            Image(systemName: displayUnit == .percent ? "percent" : "yensign")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 12)
-                                .foregroundColor(.primary)
-                        })
-                        .glassEditButtonStyle()
                 }
-                .padding(.horizontal)
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                .sensoryFeedback(.selection, trigger: chartType)
                 
                 switch chartType {
                 case .donatus:
-                    DonutChartView(chartData: convertToChartData(from: record), displayUnit: $displayUnit)
+                    DonutChartView(chartData: convertToChartData(from: record))
                 case .treeMap:
                     PossessionTreeMap(data: convertToChartData(from: record))
                 }
             }
-            .navigationTitle("資産構成")
+            .navigationTitle("保有資産構成")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
