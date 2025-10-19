@@ -8,20 +8,46 @@
 import SwiftUI
 import Charts
 
-// TODO: ツリーマップで左上にでかいのを配置するように修正する
-// TODO: ドーナッツチャートを追加
-
 struct PossessionMapScreen: View {
     enum ChartType: CaseIterable {
         case donatus
         case treeMap
     }
     
+    enum DisplayUnit: String, CaseIterable, Identifiable {
+        case manYen
+        case percent
+        
+        var id: String { rawValue }
+        
+        var label: String {
+            switch self {
+            case .manYen:
+                return "万円"
+            case .percent:
+                return "%"
+            }
+        }
+        
+        /// 値の変換処理（元の値を単位に応じて変換）
+        func convert(_ value: Double, total: Double? = nil) -> Double {
+            switch self {
+            case .manYen:
+                return value
+            case .percent:
+                guard let total, total != 0 else { return 0 }
+                return (value / total) * 100
+            }
+        }
+    }
+    
     let record: [StockRecord]
     @Binding var showPossessionMapScreen: Bool
+    
     @State private var chartType: ChartType = .donatus
+    @State private var displayUnit: DisplayUnit = .manYen
     @State private var showTitalValue: Bool = true
-        
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -41,28 +67,48 @@ struct PossessionMapScreen: View {
                         }
                     })
                 
-                    let text = showTitalValue ? record.totalPurchaseValue().withComma() : "--------"
-                    Text(text + "円")
-                        .font(.title)
+                let text = showTitalValue ? record.totalPurchaseValue().withComma() : "--------"
+                Text(text + "円")
+                    .font(.title)
                 
-                Picker("Chart", selection: $chartType) {
-                    ForEach(ChartType.allCases, id: \.self) { type in
-                        switch type {
-                        case .donatus:
-                            Text("🍩ドーナッツ").tag(type)
-                        case .treeMap:
-                            Text("🌲ツリー").tag(type)
+                
+                HStack {
+                    Picker("Chart", selection: $chartType) {
+                        ForEach(ChartType.allCases, id: \.self) { type in
+                            switch type {
+                            case .donatus:
+                                Text("🍩ドーナッツ").tag(type)
+                            case .treeMap:
+                                Text("🌲ツリー").tag(type)
+                            }
                         }
                     }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding()
+                    
+                    Button (
+                        action: {
+                            switch displayUnit {
+                            case .manYen:
+                                displayUnit = .percent
+                            case .percent:
+                                displayUnit = .manYen
+                            }
+                        },
+                        label: {
+                            Image(systemName: displayUnit == .percent ? "percent" : "yensign")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 12)
+                                .foregroundColor(.primary)
+                        })
+                        .glassEditButtonStyle()
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
+                .padding(.horizontal)
                 
                 switch chartType {
                 case .donatus:
-                    Spacer()
-                    
-                    DonutChartView(chartData: convertToChartData(from: record))
+                    DonutChartView(chartData: convertToChartData(from: record), displayUnit: $displayUnit)
                 case .treeMap:
                     PossessionTreeMap(data: convertToChartData(from: record))
                 }
@@ -113,37 +159,4 @@ private extension Array where Element == StockRecord {
 
 #Preview {
     PossessionMapScreen(record: StockRecord.mockRecords, showPossessionMapScreen: .constant(true))
-}
-
-
-struct DonutChartView: View {
-    let chartData: [PossesionChartData]
-    
-    private var totalValue: Double {
-        chartData.reduce(0) { $0 + $1.value }
-    }
-    
-    var body: some View {
-        Chart(chartData) { data in
-            SectorMark(
-                angle: .value("Value", data.value),
-                innerRadius: .ratio(0.6),
-                angularInset: 1.0
-            )
-            .foregroundStyle(data.color)
-            .annotation(position: .overlay) {
-                VStack {
-                    Text(data.name)
-                        .foregroundStyle(.primary)
-                        .font(.caption)
-                    
-                    let percentage = (data.value / totalValue) * 100
-                    Text("\(Int(percentage))%")
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                        .bold()
-                }
-            }
-        }
-    }
 }
