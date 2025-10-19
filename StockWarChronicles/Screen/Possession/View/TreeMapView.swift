@@ -18,7 +18,7 @@ struct TreeMapView: View {
                 VStack(spacing: 0.0) {
                     ForEach(0..<ld.content.count, id: \.self) { i in
                         Rectangle()
-                            .foregroundColor(Color(hue: 0.33, saturation: 0.5, brightness: 0.7))
+                            .foregroundColor(treeMapData[ld.content[i].index].color)
                             .frame(width: ld.content[i].w,
                                    height: ld.content[i].h)
                             .border(.primary, width: 0.5)
@@ -38,7 +38,7 @@ struct TreeMapView: View {
                 HStack(spacing: 0.0) {
                     ForEach(0..<ld.content.count, id: \.self) { i in
                         Rectangle()
-                            .foregroundColor(Color(hue: 0.33, saturation: 0.5, brightness: 0.7))
+                            .foregroundColor(treeMapData[ld.content[i].index].color)
                             .frame(width: ld.content[i].w,
                                    height: ld.content[i].h)
                             .border(.primary, width: 0.5)

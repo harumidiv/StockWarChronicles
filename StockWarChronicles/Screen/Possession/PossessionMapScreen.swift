@@ -92,7 +92,8 @@ struct PossessionMapScreen: View {
             
             // 名前は最初のレコードから取る（code は同じなので名前も同じ前提）
             if let firstRecord = records.first {
-                let data = PossesionChartData(code: code, name: firstRecord.name, value: totalValue)
+                let color = firstRecord.tags.isEmpty ? Color.randomPastel() : firstRecord.tags[0].color
+                let data = PossesionChartData(code: code, name: firstRecord.name, color: color, value: totalValue)
                 result.append(data)
             }
         }
@@ -125,11 +126,11 @@ struct DonutChartView: View {
     var body: some View {
         Chart(chartData) { data in
             SectorMark(
-                angle: .value("Value", data.value), // 値
-                innerRadius: .ratio(0.6), // 内側の半径 (0.6 = 60%)
-                angularInset: 1.0 // セグメント間の隙間
+                angle: .value("Value", data.value),
+                innerRadius: .ratio(0.6),
+                angularInset: 1.0
             )
-//            .foregroundStyle(data.color) // 色を指定
+            .foregroundStyle(data.color)
             .annotation(position: .overlay) {
                 VStack {
                     Text(data.name)

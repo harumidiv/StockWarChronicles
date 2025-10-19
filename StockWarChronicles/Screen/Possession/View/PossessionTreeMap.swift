@@ -11,6 +11,7 @@ struct PossesionChartData: Identifiable {
     let id = UUID()
     let code: String
     let name: String
+    let color: Color
     let value: Double
 }
 
@@ -151,16 +152,16 @@ struct PossessionTreeMap: View {
 
 #Preview {
     let mockData: [PossesionChartData] = [
-        PossesionChartData(code: "7203", name: "トヨタ自動車", value: 580000),
-        PossesionChartData(code: "6758", name: "ソニーグループ", value: 420000),
-        PossesionChartData(code: "9984", name: "ソフトバンクグループ", value: 350000),
-        PossesionChartData(code: "9432", name: "日本電信電話 (NTT)", value: 260000),
-        PossesionChartData(code: "8058", name: "三菱商事", value: 300000),
-        PossesionChartData(code: "8306", name: "三菱UFJフィナンシャル・グループ", value: 180000),
-        PossesionChartData(code: "6752", name: "パナソニックホールディングス", value: 150000),
-        PossesionChartData(code: "6954", name: "ファナック", value: 200000),
-        PossesionChartData(code: "9983", name: "ファーストリテイリング", value: 400000),
-        PossesionChartData(code: "7974", name: "任天堂", value: 500000)
+        PossesionChartData(code: "7203", name: "トヨタ自動車", color: Color.randomPastel(), value: 580000),
+        PossesionChartData(code: "6758", name: "ソニーグループ", color: Color.randomPastel(), value: 420000),
+        PossesionChartData(code: "9984", name: "ソフトバンクグループ", color: Color.randomPastel(), value: 350000),
+        PossesionChartData(code: "9432", name: "日本電信電話 (NTT)", color: Color.randomPastel(), value: 260000),
+        PossesionChartData(code: "8058", name: "三菱商事", color: Color.randomPastel(), value: 300000),
+        PossesionChartData(code: "8306", name: "三菱UFJフィナンシャル・グループ", color: Color.randomPastel(), value: 180000),
+        PossesionChartData(code: "6752", name: "パナソニックホールディングス", color: Color.randomPastel(), value: 150000),
+        PossesionChartData(code: "6954", name: "ファナック", color: Color.randomPastel(), value: 200000),
+        PossesionChartData(code: "9983", name: "ファーストリテイリング", color: Color.randomPastel(), value: 400000),
+        PossesionChartData(code: "7974", name: "任天堂", color: Color.randomPastel(), value: 500000)
     ]
     PossessionTreeMap(data: mockData)
 }
