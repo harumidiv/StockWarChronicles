@@ -172,7 +172,7 @@ struct PossessionScreen: View {
                 .fullScreenCover(isPresented: $showTreeMapView) {
                     PossessionMapScreen(record: records.filter {
                         !$0.isTradeFinish
-                    })
+                    }, showPossessionMapScreen: $showTreeMapView)
                 }
                 .alert(item: $deleteRecord) { record in
                     Alert(

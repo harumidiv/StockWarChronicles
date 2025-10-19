@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TreeMapView: View {
-    let treeMapData: [TreeMapData]
+    let treeMapData: [PossesionChartData]
 
     let ld: LayoutData
     
