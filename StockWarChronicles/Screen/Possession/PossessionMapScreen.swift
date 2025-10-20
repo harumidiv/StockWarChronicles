@@ -73,6 +73,12 @@ struct PossessionMapScreen: View {
                         showPossessionMapScreen.toggle()
                     }
                 }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("share", systemImage: "square.and.arrow.up") {
+                        shareScreenshot()
+                    }
+                }
             }
         }
         .padding()
@@ -98,6 +104,25 @@ struct PossessionMapScreen: View {
         }
         
         return result
+    }
+    
+    private func shareScreenshot() {
+        let image = self.snapshot()
+        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+
+            // 最前面のViewControllerを取得
+            var topVC = rootVC
+            while let presented = topVC.presentedViewController {
+                topVC = presented
+            }
+
+            // iPad対応（クラッシュ防止）
+            activityVC.popoverPresentationController?.sourceView = topVC.view
+            topVC.present(activityVC, animated: true)
+        }
     }
 }
 
