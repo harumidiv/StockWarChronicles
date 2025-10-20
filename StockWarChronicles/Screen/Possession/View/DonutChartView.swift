@@ -79,7 +79,7 @@ struct DonutChartView: View {
                      .font(.largeTitle)
                      .padding(12)
              }
-             .glassEditButtonStyle()
+             .glassButtonStyle()
         }
         .sensoryFeedback(.selection, trigger: displayUnit)
     }

@@ -33,7 +33,7 @@ struct PossessionScreen: View {
     @State private var selectedTag: String = "すべてのタグ"
     @State private var currentSortType: PossessionSortType = .holdingPeriodAscending
     @State private var searchText: String = ""
-
+    
     private var sortedRecords: [StockRecord] {
         
         var filteredRecords: [StockRecord] = records.filter {
@@ -47,11 +47,11 @@ struct PossessionScreen: View {
                 let search = searchText.halfwidth.lowercased()
                 let isCodeMatch = code.contains(search)
                 let isNameMatch = name.contains(search)
-
+                
                 return isCodeMatch || isNameMatch
             }
         }
-
+        
         if selectedTag != "すべてのタグ" {
             filteredRecords = filteredRecords.filter { record in
                 record.tags.contains { tag in
@@ -120,15 +120,14 @@ struct PossessionScreen: View {
                 .sensoryFeedback(.selection, trigger: editingRecord)
                 .listStyle(.plain)
                 .navigationTitle("保有リスト")
+                .toolbarTitleDisplayMode(.inline)
                 .toolbar {
-                    // トレード完了していないポジションを持っている時だけ表示
                     if !sortedRecords.isEmpty {
-                        ToolbarItem(placement: .topBarTrailing) {
+                        ToolbarItem(placement: .topBarLeading) {
                             Button {
                                 showTreeMapView.toggle()
                             } label: {
-                                Label("ツリーマップ", systemImage: "square.grid.3x3.topleft.filled")
-                                    .foregroundColor(.blue)
+                                Image(systemName: "chart.pie")
                             }
                         }
                     }
@@ -299,7 +298,7 @@ struct PossessionScreen: View {
                 .foregroundColor(.primary)
                 .sensoryFeedback(.selection, trigger: selectedTag)
             }
-
+            
             Menu {
                 ForEach(PossessionSortType.allCases) { type in
                     Button(action: {

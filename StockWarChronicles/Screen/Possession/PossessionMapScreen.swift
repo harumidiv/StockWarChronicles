@@ -66,7 +66,7 @@ struct PossessionMapScreen: View {
                     PossessionTreeMap(data: convertToChartData(from: record))
                 }
             }
-            .navigationTitle("保有資産構成")
+            .navigationTitle("保有株構成")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {

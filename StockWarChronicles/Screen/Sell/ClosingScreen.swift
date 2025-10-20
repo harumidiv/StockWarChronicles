@@ -168,7 +168,7 @@ struct ClosingScreen: View {
                 Text("編集")
                     .font(.caption)
             }
-            .glassEditButtonStyle()
+            .glassButtonStyle()
             .contentShape(Rectangle())
         }
     }
