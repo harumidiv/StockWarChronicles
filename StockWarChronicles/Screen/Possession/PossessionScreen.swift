@@ -8,11 +8,14 @@
 import SwiftUI
 import SwiftData
 
+
 enum PossessionSortType: String, CaseIterable, Identifiable {
     case holdingPeriodAscending = "保有期間の短い順"
     case holdingPeriodDescending = "保有期間の長い順"
-    case amountAscending = "ポジションの小さい順"
-    case amountDescending = "ポジションの大きい順"
+    case amountAscending = "投資額の小さい順"
+    case amountDescending = "投資額の大きい順"
+    case unitPriceAscending = "取得単価の小さい順"
+    case unitPriceDescending = "取得単価の大きい順"
     
     var id: Self { self }
 }
@@ -69,6 +72,10 @@ struct PossessionScreen: View {
             return filteredRecords.sorted { (Double($0.purchase.shares) * $0.purchase.amount) < (Double($1.purchase.shares) * $1.purchase.amount) }
         case .amountDescending:
             return filteredRecords.sorted { (Double($0.purchase.shares) * $0.purchase.amount) > (Double($1.purchase.shares) * $1.purchase.amount) }
+        case .unitPriceAscending:
+            return filteredRecords.sorted { $0.purchase.amount < $1.purchase.amount }
+        case .unitPriceDescending:
+            return filteredRecords.sorted { $0.purchase.amount > $1.purchase.amount }
         }
     }
     
