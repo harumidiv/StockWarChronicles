@@ -1,5 +1,5 @@
 //
-//  GlassyEditButtonStyle.swift
+//  GlassyButtonStyle.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/09/10.
@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct GlassyEditButtonStyle: ButtonStyle {
+struct GlassyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.title3)
@@ -24,7 +24,7 @@ struct GlassyEditButtonStyle: ButtonStyle {
     }
 }
 extension View {
-    func glassEditButtonStyle() -> some View {
-        self.buttonStyle(GlassyEditButtonStyle())
+    func glassButtonStyle() -> some View {
+        self.buttonStyle(GlassyButtonStyle())
     }
 }

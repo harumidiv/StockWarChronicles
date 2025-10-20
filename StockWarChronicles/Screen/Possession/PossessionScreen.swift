@@ -8,11 +8,14 @@
 import SwiftUI
 import SwiftData
 
+
 enum PossessionSortType: String, CaseIterable, Identifiable {
     case holdingPeriodAscending = "保有期間の短い順"
     case holdingPeriodDescending = "保有期間の長い順"
-    case amountAscending = "ポジションの小さい順"
-    case amountDescending = "ポジションの大きい順"
+    case amountAscending = "投資額の小さい順"
+    case amountDescending = "投資額の大きい順"
+    case unitPriceAscending = "取得単価の小さい順"
+    case unitPriceDescending = "取得単価の大きい順"
     
     var id: Self { self }
 }
@@ -23,6 +26,7 @@ struct PossessionScreen: View {
     
     @State private var showAddStockView: Bool = false
     @State private var showStockRecordView: Bool = false
+    @State private var showTreeMapView: Bool = false
     
     @State private var editingRecord: StockRecord?
     @State private var sellRecord: StockRecord?
@@ -32,7 +36,7 @@ struct PossessionScreen: View {
     @State private var selectedTag: String = "すべてのタグ"
     @State private var currentSortType: PossessionSortType = .holdingPeriodAscending
     @State private var searchText: String = ""
-
+    
     private var sortedRecords: [StockRecord] {
         
         var filteredRecords: [StockRecord] = records.filter {
@@ -46,11 +50,11 @@ struct PossessionScreen: View {
                 let search = searchText.halfwidth.lowercased()
                 let isCodeMatch = code.contains(search)
                 let isNameMatch = name.contains(search)
-
+                
                 return isCodeMatch || isNameMatch
             }
         }
-
+        
         if selectedTag != "すべてのタグ" {
             filteredRecords = filteredRecords.filter { record in
                 record.tags.contains { tag in
@@ -68,6 +72,10 @@ struct PossessionScreen: View {
             return filteredRecords.sorted { (Double($0.purchase.shares) * $0.purchase.amount) < (Double($1.purchase.shares) * $1.purchase.amount) }
         case .amountDescending:
             return filteredRecords.sorted { (Double($0.purchase.shares) * $0.purchase.amount) > (Double($1.purchase.shares) * $1.purchase.amount) }
+        case .unitPriceAscending:
+            return filteredRecords.sorted { $0.purchase.amount < $1.purchase.amount }
+        case .unitPriceDescending:
+            return filteredRecords.sorted { $0.purchase.amount > $1.purchase.amount }
         }
     }
     
@@ -113,12 +121,24 @@ struct PossessionScreen: View {
                     .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                 }
                 .sensoryFeedback(.selection, trigger: showStockRecordView)
+                .sensoryFeedback(.selection, trigger: showTreeMapView)
                 .sensoryFeedback(.selection, trigger: showAddStockView)
                 .sensoryFeedback(.selection, trigger: sellRecord)
                 .sensoryFeedback(.selection, trigger: editingRecord)
                 .listStyle(.plain)
                 .navigationTitle("保有リスト")
+                .toolbarTitleDisplayMode(.inline)
                 .toolbar {
+                    if !sortedRecords.isEmpty {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                showTreeMapView.toggle()
+                            } label: {
+                                Image(systemName: "chart.pie")
+                            }
+                        }
+                    }
+                    
                     // 取引の完了しているデータがある場合履歴を表示
                     if records.contains(where: { $0.isTradeFinish }) {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -154,6 +174,11 @@ struct PossessionScreen: View {
                 }
                 .fullScreenCover(isPresented: $showStockRecordView) {
                     TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
+                }
+                .fullScreenCover(isPresented: $showTreeMapView) {
+                    PossessionMapScreen(record: records.filter {
+                        !$0.isTradeFinish
+                    }, showPossessionMapScreen: $showTreeMapView)
                 }
                 .alert(item: $deleteRecord) { record in
                     Alert(
@@ -280,7 +305,7 @@ struct PossessionScreen: View {
                 .foregroundColor(.primary)
                 .sensoryFeedback(.selection, trigger: selectedTag)
             }
-
+            
             Menu {
                 ForEach(PossessionSortType.allCases) { type in
                     Button(action: {
