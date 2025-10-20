@@ -55,7 +55,7 @@ struct LosingTradesView: View {
                     }
                     Spacer()
                     VStack(alignment: .leading) {
-                        MetricView(label: "平均損益額", value: summary.profitAmount.withComma(), unit: "円", iconName: "banknote.fill", color: .blue)
+                        MetricView(label: "平均損益額", value: Int(summary.profitAmount).withComma(), unit: "円", iconName: "banknote.fill", color: .blue)
                         MetricView(label: "平均%", value: String(format: "%.1f", summary.profitPercentage), unit: "%", iconName: "percent", color: .blue)
                     }
                 }
