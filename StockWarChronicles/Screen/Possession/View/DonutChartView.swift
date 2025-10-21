@@ -58,7 +58,6 @@ struct DonutChartView: View {
                         .foregroundStyle(.primary)
                         .font(.caption)
                     
-                    
                     Text(String(Int(displayUnit.convert(data.value, total: totalValue))) + displayUnit.label)
                         .font(.caption)
                         .foregroundStyle(.primary)

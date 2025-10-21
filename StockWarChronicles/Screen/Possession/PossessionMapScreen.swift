@@ -23,40 +23,23 @@ struct PossessionMapScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                Button (
-                    action: {
-                        showAmount.toggle()
-                    },
-                    label: {
-                        HStack {
-                            Text("ポジション合計")
-                                .foregroundColor(.primary)
-                            Image(systemName: showAmount ? "eye" : "eye.slash")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                )
-                .sensoryFeedback(.selection, trigger: showAmount)
                 
-                let text = showAmount ? record.totalPurchaseValue().withComma() : "--------"
-                Text(text + "円")
-                    .font(.title)
+                dateView
+                
+                possessionTitalView
                 
                 Picker("Chart", selection: $chartType) {
                     ForEach(ChartType.allCases, id: \.self) { type in
                         switch type {
                         case .donatus:
-                            Text("🍩ドーナッツ").tag(type)
+                            Text("🍩ドーナツ").tag(type)
                         case .treeMap:
                             Text("🌲ツリー").tag(type)
                         }
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .padding()
+                .padding([.horizontal, .bottom])
                 .sensoryFeedback(.selection, trigger: chartType)
                 
                 switch chartType {
@@ -67,6 +50,7 @@ struct PossessionMapScreen: View {
                 }
             }
             .navigationTitle("保有株構成")
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
@@ -82,6 +66,51 @@ struct PossessionMapScreen: View {
             }
         }
         .padding()
+    }
+    
+    var dateView: some View {
+        VStack {
+            HStack(alignment: .center) {
+                Spacer()
+                Text("保有株式")
+                    .foregroundStyle(.primary)
+                    .frame(width: 110)
+                    .background(.secondary)
+            }
+            
+            HStack {
+                Spacer()
+                Text(Date().formatted(as: .yy年MM月dd日))
+            }
+        }
+        .padding()
+    }
+    
+    var possessionTitalView: some View {
+        VStack(spacing: 0) {
+            Button (
+                action: {
+                    showAmount.toggle()
+                },
+                label: {
+                    HStack {
+                        Text("運用総額")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Image(systemName: showAmount ? "eye" : "eye.slash")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20)
+                            .foregroundColor(.primary)
+                    }
+                }
+            )
+            .sensoryFeedback(.selection, trigger: showAmount)
+            
+            let text = showAmount ? record.totalPurchaseValue().withComma() : "--------"
+            Text(text + "円")
+                .font(.largeTitle)
+        }
     }
     
     private func convertToChartData(from records: [StockRecord]) -> [PossesionChartData] {

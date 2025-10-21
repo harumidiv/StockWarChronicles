@@ -10,6 +10,7 @@ import Foundation
 enum DateFormatType: String {
     case md = "M/d"
     case yyyyMMdd = "YYYY/MM/dd"
+    case yy年MM月dd日 = "YY年MM月dd日"
 }
 
 extension Date {
