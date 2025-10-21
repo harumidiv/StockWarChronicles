@@ -20,6 +20,8 @@ struct PossessionMapScreen: View {
     @State private var chartType: ChartType = .donatus
     @State private var showAmount: Bool = true
     
+    @State var screenshotMaker: ScreenshotMaker?
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -48,6 +50,9 @@ struct PossessionMapScreen: View {
                 case .treeMap:
                     PossessionTreeMap(data: convertToChartData(from: record))
                 }
+            }
+            .screenshotView { screenshotMaker in
+               self.screenshotMaker = screenshotMaker
             }
             .navigationTitle("保有株構成")
             .toolbarTitleDisplayMode(.inline)
@@ -136,11 +141,10 @@ struct PossessionMapScreen: View {
     }
     
     private func shareScreenshot() {
-        let image = self.snapshot()
-        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
+           let rootVC = windowScene.windows.first?.rootViewController, let shareImage = screenshotMaker?.screenshot() {
+            
+            let activityVC = UIActivityViewController(activityItems: [shareImage], applicationActivities: nil)
 
             // 最前面のViewControllerを取得
             var topVC = rootVC
@@ -154,6 +158,7 @@ struct PossessionMapScreen: View {
         }
     }
 }
+
 
 private extension Array where Element == StockRecord {
     /// 保有ポジションの建値合計
