@@ -180,6 +180,8 @@ private extension Array where Element == StockRecord {
     }
 }
 
+#if DEBUG
 #Preview {
     PossessionMapScreen(record: StockRecord.mockRecords, showPossessionMapScreen: .constant(true))
 }
+#endif
