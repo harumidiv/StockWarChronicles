@@ -9,9 +9,9 @@ import SwiftUI
 import Charts
 
 struct PossessionMapScreen: View {
-    enum ChartType: CaseIterable {
-        case donatus
-        case treeMap
+    enum ChartType: String, CaseIterable {
+        case donatus = "🍩ドーナッツ"
+        case treeMap = "🌲ツリー"
     }
     
     let record: [StockRecord]
@@ -20,53 +20,43 @@ struct PossessionMapScreen: View {
     @State private var chartType: ChartType = .donatus
     @State private var showAmount: Bool = true
     
+    @State var screenshotMaker: ScreenshotMaker?
+    
     var body: some View {
         NavigationView {
             VStack {
-                Button (
-                    action: {
-                        showAmount.toggle()
-                    },
-                    label: {
-                        HStack {
-                            Text("ポジション合計")
-                                .foregroundColor(.primary)
-                            Image(systemName: showAmount ? "eye" : "eye.slash")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                )
-                .sensoryFeedback(.selection, trigger: showAmount)
+                dateView
+                possessionTitalView
                 
-                let text = showAmount ? record.totalPurchaseValue().withComma() : "--------"
-                Text(text + "円")
-                    .font(.title)
-                
-                Picker("Chart", selection: $chartType) {
-                    ForEach(ChartType.allCases, id: \.self) { type in
-                        switch type {
-                        case .donatus:
-                            Text("🍩ドーナッツ").tag(type)
-                        case .treeMap:
-                            Text("🌲ツリー").tag(type)
-                        }
+                Group {
+                    switch chartType {
+                    case .donatus:
+                        DonutChartView(chartData: convertToChartData(from: record))
+                    case .treeMap:
+                        PossessionTreeMap(data: convertToChartData(from: record))
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
-                .sensoryFeedback(.selection, trigger: chartType)
-                
-                switch chartType {
-                case .donatus:
-                    DonutChartView(chartData: convertToChartData(from: record))
-                case .treeMap:
-                    PossessionTreeMap(data: convertToChartData(from: record))
+                .padding(8)
+            }
+            .screenshotView { screenshotMaker in
+               self.screenshotMaker = screenshotMaker
+            }
+            .toolbarTitleMenu {
+                ForEach(ChartType.allCases, id: \.self) { chart in
+                    switch chart {
+                    case .donatus:
+                        Button("🍩ドーナッツ") {
+                            chartType = .donatus
+                        }
+                    case .treeMap:
+                        Button("🌲ツリー") {
+                            chartType = .treeMap
+                        }
+                    }
                 }
             }
-            .navigationTitle("保有株構成")
+            .navigationTitle(chartType.rawValue)
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
@@ -82,6 +72,61 @@ struct PossessionMapScreen: View {
             }
         }
         .padding()
+    }
+    
+    var dateView: some View {
+        HStack(spacing: 0) {
+            Image("icon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40)
+                .padding(.leading, 4)
+            Text("かぶ戦記")
+                .font(.title)
+                .bold()
+            VStack {
+                HStack(alignment: .center) {
+                    Spacer()
+                    Text("保有株式")
+                        .foregroundStyle(.primary)
+                        .frame(width: 110)
+                        .background(.secondary)
+                }
+                
+                HStack {
+                    Spacer()
+                    Text(Date().formatted(as: .yy年MM月dd日))
+                }
+            }
+            .padding()
+        }
+    }
+    
+    var possessionTitalView: some View {
+        VStack(spacing: 0) {
+            Button (
+                action: {
+                    showAmount.toggle()
+                },
+                label: {
+                    HStack {
+                        Text("運用総額")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Image(systemName: showAmount ? "eye" : "eye.slash")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20)
+                            .foregroundColor(.primary)
+                    }
+                }
+            )
+            .sensoryFeedback(.selection, trigger: showAmount)
+            
+            let text = showAmount ? record.totalPurchaseValue().withComma() : "--------"
+            Text(text + "円")
+                .font(.largeTitle)
+        }
     }
     
     private func convertToChartData(from records: [StockRecord]) -> [PossesionChartData] {
@@ -107,11 +152,10 @@ struct PossessionMapScreen: View {
     }
     
     private func shareScreenshot() {
-        let image = self.snapshot()
-        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
+           let rootVC = windowScene.windows.first?.rootViewController, let shareImage = screenshotMaker?.screenshot() {
+            
+            let activityVC = UIActivityViewController(activityItems: [shareImage], applicationActivities: nil)
 
             // 最前面のViewControllerを取得
             var topVC = rootVC
@@ -125,6 +169,7 @@ struct PossessionMapScreen: View {
         }
     }
 }
+
 
 private extension Array where Element == StockRecord {
     /// 保有ポジションの建値合計

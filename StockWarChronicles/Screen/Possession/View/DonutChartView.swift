@@ -53,11 +53,10 @@ struct DonutChartView: View {
             )
             .foregroundStyle(data.color)
             .annotation(position: .overlay) {
-                VStack {
+                VStack(spacing: 0) {
                     Text(data.name)
                         .foregroundStyle(.primary)
-                        .font(.caption)
-                    
+                        .font(.subheadline)
                     
                     Text(String(Int(displayUnit.convert(data.value, total: totalValue))) + displayUnit.label)
                         .font(.caption)
