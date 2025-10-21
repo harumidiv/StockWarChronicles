@@ -75,21 +75,30 @@ struct PossessionMapScreen: View {
     }
     
     var dateView: some View {
-        VStack {
-            HStack(alignment: .center) {
-                Spacer()
-                Text("保有株式")
-                    .foregroundStyle(.primary)
-                    .frame(width: 110)
-                    .background(.secondary)
+        HStack(spacing: 0) {
+            Image("icon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40)
+            Text("かぶ戦記")
+                .font(.title)
+                .bold()
+            VStack {
+                HStack(alignment: .center) {
+                    Spacer()
+                    Text("保有株式")
+                        .foregroundStyle(.primary)
+                        .frame(width: 110)
+                        .background(.secondary)
+                }
+                
+                HStack {
+                    Spacer()
+                    Text(Date().formatted(as: .yy年MM月dd日))
+                }
             }
-            
-            HStack {
-                Spacer()
-                Text(Date().formatted(as: .yy年MM月dd日))
-            }
+            .padding()
         }
-        .padding()
     }
     
     var possessionTitalView: some View {
