@@ -9,9 +9,9 @@ import SwiftUI
 import Charts
 
 struct PossessionMapScreen: View {
-    enum ChartType: CaseIterable {
-        case donatus
-        case treeMap
+    enum ChartType: String, CaseIterable {
+        case donatus = "🍩ドーナッツ"
+        case treeMap = "🌲ツリー"
     }
     
     let record: [StockRecord]
@@ -25,36 +25,37 @@ struct PossessionMapScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                
                 dateView
-                
                 possessionTitalView
                 
-                Picker("Chart", selection: $chartType) {
-                    ForEach(ChartType.allCases, id: \.self) { type in
-                        switch type {
-                        case .donatus:
-                            Text("🍩ドーナツ").tag(type)
-                        case .treeMap:
-                            Text("🌲ツリー").tag(type)
-                        }
+                Group {
+                    switch chartType {
+                    case .donatus:
+                        DonutChartView(chartData: convertToChartData(from: record))
+                    case .treeMap:
+                        PossessionTreeMap(data: convertToChartData(from: record))
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding([.horizontal, .bottom])
-                .sensoryFeedback(.selection, trigger: chartType)
-                
-                switch chartType {
-                case .donatus:
-                    DonutChartView(chartData: convertToChartData(from: record))
-                case .treeMap:
-                    PossessionTreeMap(data: convertToChartData(from: record))
-                }
+                .padding(8)
             }
             .screenshotView { screenshotMaker in
                self.screenshotMaker = screenshotMaker
             }
-            .navigationTitle("保有株構成")
+            .toolbarTitleMenu {
+                ForEach(ChartType.allCases, id: \.self) { chart in
+                    switch chart {
+                    case .donatus:
+                        Button("🍩ドーナッツ") {
+                            chartType = .donatus
+                        }
+                    case .treeMap:
+                        Button("🌲ツリー") {
+                            chartType = .treeMap
+                        }
+                    }
+                }
+            }
+            .navigationTitle(chartType.rawValue)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
