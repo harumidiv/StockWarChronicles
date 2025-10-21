@@ -23,9 +23,7 @@ struct TreeMapView: View {
                                    height: ld.content[i].h)
                             .border(.primary, width: 0.5)
                             .overlay {
-                                Text(treeMapData[ld.content[i].index].name)
-                                    .padding(2)
-                                    .minimumScaleFactor(0.3)
+                                overlayText(text: treeMapData[ld.content[i].index].name)
                             }
                     }
                 }
@@ -43,9 +41,7 @@ struct TreeMapView: View {
                                    height: ld.content[i].h)
                             .border(.primary, width: 0.5)
                             .overlay {
-                                Text(treeMapData[ld.content[i].index].name)
-                                    .padding(2)
-                                    .minimumScaleFactor(0.3)
+                                overlayText(text: treeMapData[ld.content[i].index].name)
                             }
                     }
                 }
@@ -54,5 +50,12 @@ struct TreeMapView: View {
                 }
             }
         }
+    }
+    
+    func overlayText(text: String) -> some View {
+        Text(text)
+            .font(.system(size: 100, weight: .regular, design: .default))
+            .padding(2)
+            .minimumScaleFactor(0.1)
     }
 }
