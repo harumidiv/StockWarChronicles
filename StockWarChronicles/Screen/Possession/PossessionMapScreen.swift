@@ -80,6 +80,7 @@ struct PossessionMapScreen: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 40)
+                .padding(.leading, 4)
             Text("かぶ戦記")
                 .font(.title)
                 .bold()
