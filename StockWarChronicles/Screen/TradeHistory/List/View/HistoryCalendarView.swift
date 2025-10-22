@@ -108,6 +108,7 @@ struct HistoryCalendarView: View {
             }
             .padding(.horizontal)
             .padding(.top, 10)
+            .padding(.bottom, 4)
             
             List {
                 ForEach(monthAmountList(for: selectedDate)) { item in
