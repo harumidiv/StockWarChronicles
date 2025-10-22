@@ -140,7 +140,7 @@ struct PossessionScreen: View {
                             Button {
                                 showTreeMapView.toggle()
                             } label: {
-                                Image(systemName: "chart.pie")
+                                Image(systemName: "square.grid.3x3.topleft.filled")
                             }
                         }
                     }
