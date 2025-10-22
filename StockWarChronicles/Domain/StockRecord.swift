@@ -78,19 +78,19 @@ final class StockRecord {
     
     /// 損益の金額
     var profitAndLoss: Int {
-        let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
+        let totalSoldShares = sales.map(\.shares).reduce(0, +)
+        let correspondingEntryAmount = Double(totalSoldShares) * purchase.amount
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
-        
+            
         var totalProfitAndLoss: Double
         switch position {
         case .buy:
-            // For a buy position, profit is from selling higher than the purchase price
-            totalProfitAndLoss = totalSalesAmount - totalPurchaseAmount
+            totalProfitAndLoss = totalSalesAmount - correspondingEntryAmount
+            
         case .sell:
-            // For a sell position, profit is from buying back lower than the sales price
-            totalProfitAndLoss = totalPurchaseAmount - totalSalesAmount
+            totalProfitAndLoss = correspondingEntryAmount - totalSalesAmount
         }
-        
+            
         return Int(totalProfitAndLoss)
     }
     
