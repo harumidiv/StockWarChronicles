@@ -14,9 +14,22 @@
 		49FE00C22E54915300B0CE5B /* StockWarChronicles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StockWarChronicles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4954265B2EA9174B003B754D /* Exceptions for "StockWarChronicles" folder in "StockWarChronicles" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 49FE00C12E54915300B0CE5B /* StockWarChronicles */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		49FE00C42E54915300B0CE5B /* StockWarChronicles */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4954265B2EA9174B003B754D /* Exceptions for "StockWarChronicles" folder in "StockWarChronicles" target */,
+			);
 			path = StockWarChronicles;
 			sourceTree = "<group>";
 		};
@@ -263,7 +276,9 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = StockWarChronicles/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "かぶ戦記";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -309,7 +324,9 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = StockWarChronicles/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "かぶ戦記";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
