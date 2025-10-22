@@ -297,12 +297,9 @@ struct DayCell: View {
         return Calendar.current.isDateInToday(date)
     }
     
-    // TODO: extensionに移動させる
     private var dayString: String {
         guard let date = date else { return "" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-        return formatter.string(from: date)
+        return date.formatted(as: .d)
     }
     
     var body: some View {
