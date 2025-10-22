@@ -31,7 +31,7 @@ struct HistoryCalendarView: View {
     
     private var totalExpense: Int {
         let calendar = Calendar.current
-
+        
         // 1. 表示月に行われたすべての「売却」を、
         //    元のStockRecord（購入情報）と一緒にタプルとして抽出します。
         let salesInMonth = records.flatMap { record -> [(record: StockRecord, saleInfo: StockTradeInfo)] in
@@ -44,10 +44,10 @@ struct HistoryCalendarView: View {
             // (record, saleInfo) のタプルの配列にして返す
             return matchedSales.map { (record: record, saleInfo: $0) }
         }
-
+        
         // 2. その月に売却が一件もなければ 0 を返します。
         guard !salesInMonth.isEmpty else { return 0 }
-
+        
         // 3. 抽出した売却情報タプルをループし、損益を計算して合計します（Double型で）。
         let totalProfitAndLoss = salesInMonth.reduce(0.0) { (currentTotal, tuple) in
             
@@ -69,14 +69,14 @@ struct HistoryCalendarView: View {
             // (1株あたり損益 * 売却株数) を現在の合計に加算します。
             return currentTotal + (profitPerShare * Double(saleInfo.shares))
         }
-
+        
         // 4. 合計損益を Int として返します。
         return Int(totalProfitAndLoss)
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            MonthHeaderView(displayDate: $displayDate, total: totalExpense)
+            MonthHeaderView(selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
                 .padding()
             
             HStack(spacing: 0) {
@@ -151,23 +151,13 @@ struct HistoryCalendarView: View {
     
     private func monthAmountList(for date: Date?) -> [StockRecord] {
         guard let date = date else { return [] }
-
-        // expenses が [StockRecord] の配列であると仮定します。
+        
+        // records が [StockRecord] の配列であると仮定します。
         return records.filter { record in
             
-            // 1. 購入日が指定日と一致するかチェック
-            if Calendar.current.isDate(record.purchase.date, inSameDayAs: date) {
-                return true
-            }
-            
-            // 2. 売却日のいずれかが指定日と一致するかチェック
+            // 売却日のいずれかが指定日と一致するかチェック
             // .contains(where:) を使い、sales配列内に一致する日付が1つでもあればtrueを返す
-            if record.sales.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-                return true
-            }
-            
-            // どちらも一致しなければフィルタリング対象外
-            return false
+            return record.sales.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
         }
     }
     
@@ -179,7 +169,7 @@ struct HistoryCalendarView: View {
      */
     private func dayTotalAmount(for date: Date?) -> Int? {
         guard let date = date else { return nil }
-
+        
         // 1. 指定された日付に行われたすべての売却（sales）を、
         //    元のStockRecord（購入情報など）と一緒にタプルとして抽出します。
         let salesOnDate = records.flatMap { record -> [(record: StockRecord, saleInfo: StockTradeInfo)] in
@@ -193,10 +183,10 @@ struct HistoryCalendarView: View {
             // これにより、どの売却がどの購入に対応するかがわかります。
             return matchedSales.map { (record: record, saleInfo: $0) }
         }
-
+        
         // 2. その日に売却が一件もなければ nil を返します。
         guard !salesOnDate.isEmpty else { return nil }
-
+        
         // 3. 抽出した売却情報タプルをループし、損益を計算して合計します（Double型で）。
         let totalProfitAndLoss = salesOnDate.reduce(0.0) { (currentTotal, tuple) in
             
@@ -218,13 +208,14 @@ struct HistoryCalendarView: View {
             // (1株あたり損益 * 売却株数) を現在の合計に加算します。
             return currentTotal + (profitPerShare * Double(saleInfo.shares))
         }
-
+        
         // 4. 合計損益を Int として返します。
         return Int(totalProfitAndLoss)
     }
 }
 
 struct MonthHeaderView: View {
+    @Binding var selectedDate: Date?
     @Binding var displayDate: Date
     var total: Int
     
@@ -239,7 +230,6 @@ struct MonthHeaderView: View {
         VStack {
             
             HStack(alignment: .bottom) {
-                // TODO: 10月損益のような形にしたい
                 Text("合計損益:")
                     .font(.title)
                 Spacer()
@@ -252,7 +242,10 @@ struct MonthHeaderView: View {
                 
             }
             HStack {
-                Button(action: { changeMonth(by: -1) }) {
+                Button(action: {
+                    changeMonth(by: -1)
+                    selectedDate = nil
+                }) {
                     Image(systemName: "chevron.left")
                         .font(.title3)
                         .padding()
@@ -266,7 +259,10 @@ struct MonthHeaderView: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                 
-                Button(action: { changeMonth(by: 1) }) {
+                Button(action: {
+                    changeMonth(by: 1)
+                    selectedDate = nil
+                }) {
                     Image(systemName: "chevron.right")
                         .font(.title3)
                         .padding()
