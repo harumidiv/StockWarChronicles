@@ -6,12 +6,21 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct TradeHistoryListScreen: View {
     enum HistoryType: String, CaseIterable {
         case calender = "カレンダー"
         case list = "リスト"
+        
+        var imageName: String {
+            switch self {
+                
+            case .calender:
+                return "calendar"
+            case .list:
+                return "list.bullet"
+            }
+        }
     }
     
     @Binding var showTradeHistoryListScreen: Bool
@@ -23,18 +32,28 @@ struct TradeHistoryListScreen: View {
     var body: some View {
         NavigationStack {
             Group {
-                HistoryListView(showTradeHistoryListScreen: $showTradeHistoryListScreen, selectedYear: $selectedYear)
+                switch historyType {
+                case .calender:
+                    HistoryCalendarView()
+                case .list:
+                    HistoryListView(showTradeHistoryListScreen: $showTradeHistoryListScreen, selectedYear: $selectedYear)
+                }
             }
             .toolbarTitleMenu {
                 ForEach(HistoryType.allCases, id: \.self) { type in
-                    switch historyType {
+                    switch type {
                     case .calender:
-                        Button(type.rawValue) {
+                        Button(action: {
                             historyType = .calender
+                        }) {
+                            Label(type.rawValue, systemImage: type.imageName)
                         }
+
                     case .list:
-                        Button(type.rawValue) {
+                        Button(action: {
                             historyType = .list
+                        }) {
+                            Label(type.rawValue, systemImage: type.imageName)
                         }
                     }
                 }
@@ -54,7 +73,7 @@ struct TradeHistoryListScreen: View {
                     }) {
                         HStack {
                             Image(systemName: "chart.pie")
-                            Text("年間実績")
+                            Text("実績")
                         }
                     }
                 }
