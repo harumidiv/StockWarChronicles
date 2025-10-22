@@ -6,8 +6,8 @@
 //
 
 import SwiftUI
+import SwiftData
 
-// --- データモデル ---
 struct ExpenseItem: Identifiable {
     let id = UUID()
     let date: Date
@@ -16,29 +16,11 @@ struct ExpenseItem: Identifiable {
 }
 
 struct HistoryCalendarView: View {
+    @Query private var records: [StockRecord]
+    @Environment(\.modelContext) private var context
+    
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date?
-    
-    // スクリーンショットに基づくモックデータ
-    private let expenses: [ExpenseItem] = [
-        ExpenseItem(
-            date: Calendar.current.date(from: DateComponents(year: 2025, month: 10, day: 15))!,
-            amount: -10000,
-            name: "サンプル支出"
-        ),
-        // --- 追加データ（テスト用） ---
-        // 15日に複数の項目がある場合
-        ExpenseItem(
-            date: Calendar.current.date(from: DateComponents(year: 2025, month: 10, day: 15))!,
-            amount: -800,
-            name: "ランチ"
-        ),
-        ExpenseItem(
-            date: Calendar.current.date(from: DateComponents(year: 2025, month: 10, day: 22))!,
-            amount: -10000,
-            name: "qwっs" // スクリーンショット下部の項目
-        )
-    ]
     
     private var days: [Date?] {
         generateDays(for: displayDate)
@@ -49,10 +31,47 @@ struct HistoryCalendarView: View {
     
     private var totalExpense: Int {
         let calendar = Calendar.current
-        let monthlyExpenses = expenses.filter {
-            calendar.isDate($0.date, equalTo: displayDate, toGranularity: .month)
+
+        // 1. 表示月に行われたすべての「売却」を、
+        //    元のStockRecord（購入情報）と一緒にタプルとして抽出します。
+        let salesInMonth = records.flatMap { record -> [(record: StockRecord, saleInfo: StockTradeInfo)] in
+            
+            // record.sales の中から表示月と一致するものをフィルタリング
+            let matchedSales = record.sales.filter { saleInfo in
+                calendar.isDate(saleInfo.date, equalTo: displayDate, toGranularity: .month)
+            }
+            
+            // (record, saleInfo) のタプルの配列にして返す
+            return matchedSales.map { (record: record, saleInfo: $0) }
         }
-        return monthlyExpenses.reduce(0) { $0 + $1.amount }
+
+        // 2. その月に売却が一件もなければ 0 を返します。
+        guard !salesInMonth.isEmpty else { return 0 }
+
+        // 3. 抽出した売却情報タプルをループし、損益を計算して合計します（Double型で）。
+        let totalProfitAndLoss = salesInMonth.reduce(0.0) { (currentTotal, tuple) in
+            
+            let record = tuple.record
+            let saleInfo = tuple.saleInfo
+            
+            let profitPerShare: Double
+            
+            // ポジションに応じて1株あたりの損益を計算
+            switch record.position {
+            case .buy:
+                // 買いポジション: (売却単価 - 購入単価)
+                profitPerShare = saleInfo.amount - record.purchase.amount
+            case .sell:
+                // 売りポジション: (購入単価 - 売却単価)
+                profitPerShare = record.purchase.amount - saleInfo.amount
+            }
+            
+            // (1株あたり損益 * 売却株数) を現在の合計に加算します。
+            return currentTotal + (profitPerShare * Double(saleInfo.shares))
+        }
+
+        // 4. 合計損益を Int として返します。
+        return Int(totalProfitAndLoss)
     }
     
     var body: some View {
@@ -96,9 +115,6 @@ struct HistoryCalendarView: View {
                 }
             }
             .listStyle(.plain)
-            .frame(height: 100)
-            
-            Spacer()
             
         }
     }
@@ -133,17 +149,78 @@ struct HistoryCalendarView: View {
         return allDays
     }
     
-    private func monthAmountList(for date: Date?) -> [ExpenseItem] {
+    private func monthAmountList(for date: Date?) -> [StockRecord] {
         guard let date = date else { return [] }
-        // 同じ日の項目をすべてフィルタリング
-        return expenses.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+
+        // expenses が [StockRecord] の配列であると仮定します。
+        return records.filter { record in
+            
+            // 1. 購入日が指定日と一致するかチェック
+            if Calendar.current.isDate(record.purchase.date, inSameDayAs: date) {
+                return true
+            }
+            
+            // 2. 売却日のいずれかが指定日と一致するかチェック
+            // .contains(where:) を使い、sales配列内に一致する日付が1つでもあればtrueを返す
+            if record.sales.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
+                return true
+            }
+            
+            // どちらも一致しなければフィルタリング対象外
+            return false
+        }
     }
     
+    /**
+     * 指定された日付に発生したすべての売却（sales）による損益の合計金額を計算します。
+     *
+     * @param date 計算対象の日付。
+     * @return その日の合計損益（Int）。取引がなかった場合は nil。
+     */
     private func dayTotalAmount(for date: Date?) -> Int? {
         guard let date = date else { return nil }
-        let sameDayExpenses = expenses.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
-        guard !sameDayExpenses.isEmpty else { return nil }
-        return sameDayExpenses.reduce(0) { $0 + $1.amount }
+
+        // 1. 指定された日付に行われたすべての売却（sales）を、
+        //    元のStockRecord（購入情報など）と一緒にタプルとして抽出します。
+        let salesOnDate = records.flatMap { record -> [(record: StockRecord, saleInfo: StockTradeInfo)] in
+            
+            // record.sales の中から指定日と一致するものをフィルタリング
+            let matchedSales = record.sales.filter { saleInfo in
+                Calendar.current.isDate(saleInfo.date, inSameDayAs: date)
+            }
+            
+            // (record, saleInfo) のタプルの配列にして返します。
+            // これにより、どの売却がどの購入に対応するかがわかります。
+            return matchedSales.map { (record: record, saleInfo: $0) }
+        }
+
+        // 2. その日に売却が一件もなければ nil を返します。
+        guard !salesOnDate.isEmpty else { return nil }
+
+        // 3. 抽出した売却情報タプルをループし、損益を計算して合計します（Double型で）。
+        let totalProfitAndLoss = salesOnDate.reduce(0.0) { (currentTotal, tuple) in
+            
+            let record = tuple.record
+            let saleInfo = tuple.saleInfo
+            
+            let profitPerShare: Double
+            
+            // ポジションに応じて1株あたりの損益を計算
+            switch record.position {
+            case .buy:
+                // 買いポジション: (売却単価 - 購入単価)
+                profitPerShare = saleInfo.amount - record.purchase.amount
+            case .sell:
+                // 売りポジション: (購入単価 - 売却単価)
+                profitPerShare = record.purchase.amount - saleInfo.amount
+            }
+            
+            // (1株あたり損益 * 売却株数) を現在の合計に加算します。
+            return currentTotal + (profitPerShare * Double(saleInfo.shares))
+        }
+
+        // 4. 合計損益を Int として返します。
+        return Int(totalProfitAndLoss)
     }
 }
 
@@ -293,14 +370,14 @@ struct DayCell: View {
 }
 
 struct ExpenseRowView: View {
-    let item: ExpenseItem
+    let item: StockRecord
     
     var body: some View {
         HStack {
             Text(item.name)
             Spacer()
-            Text("¥\(item.amount)")
-                .foregroundColor(item.amount < 0 ? .red : .primary)
+            Text("¥\(item.profitAndLoss)")
+                .foregroundColor(item.profitAndLoss < 0 ? .blue : .red)
         }
         .padding(.horizontal)
     }
