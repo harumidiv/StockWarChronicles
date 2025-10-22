@@ -33,7 +33,7 @@ struct PossessionScreen: View {
     @State private var deleteRecord: StockRecord?
     
     // Sort & Filter & Search
-    @State private var selectedTag: String = "すべてのタグ"
+    @State private var selectedTag: Tag = .init(name: "すべてのタグ", color: .clear)
     @State private var currentSortType: PossessionSortType = .holdingPeriodAscending
     @State private var searchText: String = ""
     
@@ -55,10 +55,10 @@ struct PossessionScreen: View {
             }
         }
         
-        if selectedTag != "すべてのタグ" {
+        if selectedTag.name != "すべてのタグ" {
             filteredRecords = filteredRecords.filter { record in
                 record.tags.contains { tag in
-                    tag.name == selectedTag
+                    tag.name == selectedTag.name
                 }
             }
         }
@@ -79,14 +79,20 @@ struct PossessionScreen: View {
         }
     }
     
-    private var allTags: [String] {
+    private var allTags: [Tag] {
         let filteredRecords: [StockRecord] = records.filter {
             !$0.isTradeFinish
         }
-        let uniqueTagNamesSet = Set(filteredRecords.flatMap { $0.tags }.map { $0.name })
-        var uniqueTagNames = uniqueTagNamesSet.compactMap { $0 }.sorted()
-        uniqueTagNames.insert("すべてのタグ", at: 0)
-        return uniqueTagNames
+        
+        var seenNames = Set<String>()
+        var uniqueTags = filteredRecords
+            .flatMap { $0.tags }
+            .filter { tag in
+            seenNames.insert(tag.name).inserted
+        }
+        
+        uniqueTags.insert(.init(name: "すべてのタグ", color: .clear), at: 0)
+        return uniqueTags
     }
     
     var body: some View {
@@ -292,12 +298,14 @@ struct PossessionScreen: View {
                             self.selectedTag = tag
                         }
                     }) {
-                        Text(tag)
+                        Label(tag.name, systemImage: "circle.fill")
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(tag.color)
                     }
                 }
             } label: {
                 HStack {
-                    Text(selectedTag)
+                    Text(selectedTag.name)
                     Image(systemName: "chevron.down")
                         .font(.caption)
                         .fontWeight(.bold)
