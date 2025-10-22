@@ -366,12 +366,26 @@ struct ExpenseRowView: View {
     let item: StockRecord
     
     var body: some View {
+        Group {
+            if item.isTradeFinish {
+                NavigationLink(destination: TradeHistoryDetailScreen(record: item)){
+                    content
+                }
+            } else {
+                content
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    var content: some View {
         HStack {
             Text(item.name)
+                .lineLimit(1)
             Spacer()
             Text("¥\(item.profitAndLoss)")
                 .foregroundColor(item.profitAndLoss < 0 ? .blue : .red)
         }
-        .padding(.horizontal)
     }
 }
+
