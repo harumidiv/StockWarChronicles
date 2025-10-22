@@ -1,0 +1,331 @@
+//
+//  HistoryListView.swift
+//  StockWarChronicles
+//
+//  Created by 佐川 晴海 on 2025/10/22.
+//
+
+import SwiftUI
+import SwiftData
+
+enum TradeHistorySortType: CaseIterable, Identifiable {
+    var id: Self { self }
+    
+    case date
+    case holdingPeriod
+    case fluctuationRate
+    case profitAndLoss
+    
+    var title: String {
+        switch self {
+        case .date:
+            return "日付順"
+        case .holdingPeriod:
+            return "保有日数順"
+        case .fluctuationRate:
+            return "損益率"
+        case .profitAndLoss:
+            return "損益額"
+        }
+    }
+    
+    var systemName: String {
+        switch self {
+        case .date:
+            return "calendar"
+        case .holdingPeriod:
+            return "timer"
+        case .fluctuationRate:
+            return "chart.bar"
+        case .profitAndLoss:
+            return "yensign.circle"
+        }
+    }
+}
+
+struct HistoryListView: View {
+    @Binding var showTradeHistoryListScreen: Bool
+    
+    @Query private var records: [StockRecord]
+    @Environment(\.modelContext) private var context
+    
+    @State private var selectedRecord: StockRecord? = nil
+    @State private var showDetail = false
+    
+    @State private var editingRecord: StockRecord?
+    @State private var deleteRecord: StockRecord?
+    
+    // Sort & Filter & Search
+    @State private var selectedTag: Tag = .init(name: "すべてのタグ", color: .clear)
+    @State private var currentSortType: TradeHistorySortType = .date
+    @Binding var selectedYear: Int 
+    @State private var searchText: String = ""
+    
+    private var sortedRecords: [StockRecord] {
+        var filteredRecords: [StockRecord] = records.filter {
+            Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        }
+        
+        if !searchText.isEmpty {
+            filteredRecords = filteredRecords.filter { record in
+                let code = record.code.halfwidth.lowercased()
+                let name = record.name.halfwidth.lowercased()
+                let search = searchText.halfwidth.lowercased()
+                let isCodeMatch = code.contains(search)
+                let isNameMatch = name.contains(search)
+                
+                return isCodeMatch || isNameMatch
+            }
+        }
+        
+        if selectedTag.name != "すべてのタグ" {
+            filteredRecords = filteredRecords.filter { record in
+                record.tags.contains { tag in
+                    tag.name == selectedTag.name
+                }
+            }
+        }
+        
+        switch currentSortType {
+        case .date:
+            return filteredRecords.sorted { $0.purchase.date > $1.purchase.date }
+            
+        case .holdingPeriod:
+            return filteredRecords.sorted { $0.holdingPeriod > $1.holdingPeriod }
+            
+        case .fluctuationRate:
+            return filteredRecords.sorted { ($0.profitAndLossParcent ?? 0) > ($1.profitAndLossParcent ?? 0) }
+            
+        case .profitAndLoss:
+            return filteredRecords.sorted { $0.profitAndLoss > $1.profitAndLoss }
+        }
+    }
+    
+    private var availableYears: [Int] {
+        let allDates = records.map { $0.purchase.date }
+        let allYears = Set(allDates.map {
+            Calendar.current.component(.year, from: $0)
+        }).sorted(by: >)
+        return allYears
+    }
+    
+    private var allTags: [Tag] {
+        let filteredRecords: [StockRecord] = records.filter {
+            Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        }.filter { $0.isTradeFinish }
+        
+        var seenNames = Set<String>()
+        var uniqueTags = filteredRecords
+            .flatMap { $0.tags }
+            .filter { tag in
+            seenNames.insert(tag.name).inserted
+        }
+        
+        uniqueTags.insert(.init(name: "すべてのタグ", color: .clear), at: 0)
+        return uniqueTags
+    }
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            sortAndFilterView()
+            
+            List {
+                ForEach(sortedRecords) { record in
+                    if record.isTradeFinish {
+                        HStack(spacing: 0) {
+                            Rectangle()
+                                .fill(record.position == .sell ? .blue : .red)
+                                .frame(width: 5)
+                            
+                            Button {
+                                selectedRecord = record
+                                showDetail = true
+                            } label: {
+                                stockRecordInfoCell(record: record)
+                            }
+                            .padding()
+                            .buttonStyle(.plain)
+                            .background(
+                                Rectangle()
+                                    .fill(Color(.tertiarySystemGroupedBackground))
+                            )
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deleteRecord = record
+                            } label: {
+                                Label("削除", systemImage: "trash")
+                            }
+                            .tint(.red)
+                            
+                            Button {
+                                editingRecord = record
+                            } label: {
+                                Label("編集", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+            }
+        }
+        .searchable(text: $searchText,placement: .navigationBarDrawer, prompt: "銘柄を検索")
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .navigationDestination(isPresented: $showDetail) {
+            if let record = selectedRecord {
+                TradeHistoryDetailScreen(record: record)
+            }
+        }
+        .sheet(item: $editingRecord) { record in
+            EditScreen(record: record)
+        }
+        .alert(item: $deleteRecord) { record in
+            Alert(
+                title: Text("本当に削除しますか？"),
+                message: Text("この株取引データは完全に削除されます。"),
+                primaryButton: .destructive(Text("削除")) {
+                    context.delete(record)
+                    try? context.save()
+                    deleteRecord = nil
+                    UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                },
+                secondaryButton: .cancel(Text("キャンセル")) { }
+            )
+        }
+    }
+    
+    private func sortAndFilterView() -> some View {
+        HStack {
+            Spacer()
+            Menu {
+                ForEach(allTags, id: \.self) { tag in
+                    Button(action: {
+                        withAnimation {
+                            self.selectedTag = tag
+                        }
+                    }) {
+                        
+                        Label(tag.name, systemImage: "circle.fill")
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(tag.color)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selectedTag.name)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.primary)
+                .sensoryFeedback(.selection, trigger: selectedTag)
+            }
+            
+            Menu {
+                ForEach(availableYears, id: \.self) { year in
+                    Button(action: {
+                        withAnimation {
+                            self.selectedTag = .init(name: "すべてのタグ", color: .clear)
+                            self.selectedYear = year
+                        }
+                    }) {
+                        Text("\(year.description)年")
+                    }
+                }
+            } label: {
+                HStack {
+                    Text("\(String(describing: selectedYear))年")
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.primary)
+                .sensoryFeedback(.selection, trigger: selectedYear)
+            }
+            
+            Menu {
+                ForEach(TradeHistorySortType.allCases) { type in
+                    Button(action: {
+                        withAnimation {
+                            currentSortType = type
+                        }
+                    }) {
+                        Label(type.title, systemImage: type.systemName)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(currentSortType.title)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.primary)
+                .sensoryFeedback(.selection, trigger: currentSortType)
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    private func stockRecordInfoCell(record: StockRecord) -> some View {
+        HStack {
+            VStack {
+                HStack {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Text(record.code)
+                                .font(.headline)
+                            Text(record.name)
+                                .font(.headline)
+                                .lineLimit(1)
+                        }
+                        
+                        Text("保有日数: \(record.holdingPeriod )日")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    if let percentage = record.profitAndLossParcent {
+                        VStack(alignment: .trailing, spacing: 8) {
+                            Text(String(format: "%.1f", percentage) + "%")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(percentage >= 0 ? .red : .blue)
+                            
+                            Text("\(record.profitAndLoss.withComma())円")
+                                .fontWeight(.bold)
+                                .foregroundColor(percentage >= 0 ? .red : .blue)
+                        }
+                    }
+                }
+                if !record.tags.isEmpty {
+                    ChipsView(tags: record.tags) { tag in
+                        TagView(name: tag.name, color: tag.color)
+                    }
+                }
+            }
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+#if DEBUG
+#Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: StockRecord.self, configurations: config)
+    
+    StockRecord.mockRecords.forEach { record in
+        container.mainContext.insert(record)
+    }
+    return NavigationStack {
+        HistoryListView(showTradeHistoryListScreen: .constant(true), selectedYear: .constant(2025))
+            .modelContainer(container)
+    }
+}
+#endif
