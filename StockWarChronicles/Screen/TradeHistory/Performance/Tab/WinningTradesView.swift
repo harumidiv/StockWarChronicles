@@ -8,10 +8,36 @@
 
 import SwiftUI
 
+
 struct WinningTradesView: View {
     let records: [StockRecord]
     
     @State private var selectedRecord: StockRecord? = nil
+    @State private var selectedSortType: SortType = .amount
+
+    enum SortType: String, CaseIterable, Identifiable {
+        case amount = "金額"
+        case percent = "％"
+
+        var id: String { rawValue }
+    }
+    
+    var bestTrades: [StockRecord] {
+        switch selectedSortType {
+        case .amount:
+            return records
+                .filter { $0.profitAndLoss >= 0 }
+                .sorted { $0.profitAndLoss > $1.profitAndLoss }
+                .prefix(3)
+                .map { $0 }
+        case .percent:
+            return records
+                .filter { ($0.profitAndLossParcent ?? 0) >= 0 }
+                .sorted { ($0.profitAndLossParcent ?? 0) > ($1.profitAndLossParcent ?? 0) }
+                .prefix(3)
+                .map { $0 }
+        }
+    }
     
     var body: some View {
         let calculator = PerformanceCalculator(records: records)
@@ -25,12 +51,6 @@ struct WinningTradesView: View {
             maxDrawdown: calculator.calculateMaximumDrawdown() ?? 0,
             riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0
         )
-        
-        let bestTrades:[StockRecord] = records
-            .filter { $0.profitAndLoss >= 0 }
-            .sorted { $0.profitAndLoss > $1.profitAndLoss }
-            .prefix(3)
-            .map { $0 }
         
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -54,8 +74,17 @@ struct WinningTradesView: View {
                 .cornerRadius(10)
                 
                 VStack(alignment: .leading) {
-                    Text("ベスト取引トップ3")
-                        .font(.headline)
+                    HStack {
+                        Text("ベスト取引トップ3")
+                            .font(.headline)
+                        Picker("表示形式", selection: $selectedSortType) {
+                            ForEach(SortType.allCases) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.vertical, 8)
+                    }
 
                     ForEach(bestTrades.indices, id: \.self) { index in
                         let record = bestTrades[index]
@@ -70,26 +99,34 @@ struct WinningTradesView: View {
                                             Circle()
                                                 .foregroundColor(Color(.systemBackground))
                                                 .frame(width: 24, height: 24)
-                                            
                                             Image(systemName: "crown.fill")
                                                 .frame(width: 16, height: 16)
                                                 .foregroundColor(crownBackgroundColor(for: index))
                                         }
-                                        
                                         Text(record.name)
                                             .bold()
                                             .lineLimit(1)
                                         Spacer()
-                                        Text("\(Double(record.profitAndLoss).withComma())円")
-                                            .fontWeight(.semibold)
+                                        // 金額 or パーセントを切り替え
+                                        Text(
+                                            selectedSortType == .amount
+                                            ? "\(Double(record.profitAndLoss).withComma())円"
+                                            : String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0)
+                                        )
+                                        .fontWeight(.semibold)
                                     }
                                     .padding(.bottom, 4)
                                     
                                     HStack {
                                         Text("保有日数 \(record.holdingPeriod)日")
                                         Spacer()
-                                        Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
-                                            .fontWeight(.semibold)
+                                        if selectedSortType == .amount {
+                                            Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
+                                                .fontWeight(.semibold)
+                                        } else {
+                                            Text("\(Double(record.profitAndLoss).withComma())円")
+                                                .fontWeight(.semibold)
+                                        }
                                     }
                                 }
                                 Image(systemName: "chevron.right")
@@ -104,6 +141,7 @@ struct WinningTradesView: View {
                             )
                         }
                     }
+
                 }
                 .padding()
                 .background(Color(.systemGray6))
