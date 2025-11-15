@@ -46,6 +46,9 @@ struct TradeHistoryScreen: View {
             }
             .onAppear {
                 reviewCount += 1
+                if reviewCount % 10 == 0 {
+                    requestReview()
+                }
             }
             .toolbarTitleMenu {
                 ForEach(HistoryType.allCases, id: \.self) { type in
