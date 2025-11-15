@@ -13,6 +13,7 @@ struct DonutChartView: View {
     enum DisplayUnit: String, CaseIterable, Identifiable {
         case manYen
         case percent
+        case shares
         
         var id: String { rawValue }
         
@@ -22,17 +23,32 @@ struct DonutChartView: View {
                 return "万円"
             case .percent:
                 return "%"
+            case .shares:
+                return "株"
+            }
+        }
+                
+        var image: String {
+            switch self {
+            case .manYen:
+                return "yensign"
+            case .percent:
+                return "percent"
+            case .shares:
+                return "square.stack.3d.down.right"
             }
         }
         
         /// 値の変換処理（元の値を単位に応じて変換）
-        func convert(_ value: Double, total: Double? = nil) -> Double {
+        func convert(_ data: PossesionChartData, total: Double? = nil) -> Double {
             switch self {
             case .manYen:
-                return value
+                return data.value
             case .percent:
                 guard let total, total != 0 else { return 0 }
-                return (value / total) * 100
+                return (data.value / total) * 100
+            case .shares:
+                return Double(data.shares)
             }
         }
     }
@@ -58,7 +74,7 @@ struct DonutChartView: View {
                         .foregroundStyle(.primary)
                         .font(.subheadline)
                     
-                    Text(String(Int(displayUnit.convert(data.value, total: totalValue))) + displayUnit.label)
+                    Text(String(Int(displayUnit.convert(data, total: totalValue))) + displayUnit.label)
                         .font(.caption)
                         .foregroundStyle(.primary)
                         .bold()
@@ -71,10 +87,12 @@ struct DonutChartView: View {
                  case .manYen:
                      displayUnit = .percent
                  case .percent:
+                     displayUnit = .shares
+                 case .shares:
                      displayUnit = .manYen
                  }
              }) {
-                 Image(systemName: displayUnit == .percent ?  "percent" : "yensign")
+                 Image(systemName: displayUnit.image)
                      .font(.largeTitle)
                      .padding(12)
              }

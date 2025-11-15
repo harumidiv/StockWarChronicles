@@ -140,10 +140,14 @@ struct PossessionMapScreen: View {
                 partialResult + (record.purchase.amount * Double(record.purchase.shares) / 10000)
             }
             
+            let totalSharesValue = records.reduce(0) { partialResult, record in
+                partialResult + record.purchase.shares
+            }
+            
             // 名前は最初のレコードから取る（code は同じなので名前も同じ前提）
             if let firstRecord = records.first {
                 let color = firstRecord.tags.isEmpty ? Color.randomPastel() : firstRecord.tags[0].color
-                let data = PossesionChartData(code: code, name: firstRecord.name, color: color, value: totalValue)
+                let data = PossesionChartData(code: code, name: firstRecord.name, shares: totalSharesValue, color: color, value: totalValue)
                 result.append(data)
             }
         }

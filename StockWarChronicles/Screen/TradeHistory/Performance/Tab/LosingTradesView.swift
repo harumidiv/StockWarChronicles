@@ -12,6 +12,23 @@ struct LosingTradesView: View {
     let records: [StockRecord]
     
     @State private var selectedRecord: StockRecord? = nil
+    @State private var selectedSortType: PerformanceTradeSortType = .amount
+    var worstTrades: [StockRecord] {
+        let losingRecords = records.filter { $0.profitAndLoss < 0 }
+        
+        switch selectedSortType {
+        case .amount:
+            return losingRecords
+                .sorted { $0.profitAndLoss < $1.profitAndLoss } // 金額ベースで損が大きい順
+                .prefix(3)
+                .map { $0 }
+        case .percent:
+            return losingRecords
+                .sorted { ($0.profitAndLossParcent ?? 0) < ($1.profitAndLossParcent ?? 0) } // %ベースで損が大きい順
+                .prefix(3)
+                .map { $0 }
+        }
+    }
     
     // PerformanceCalculatorのインスタンスを作成
     private var calculator: PerformanceCalculator {
@@ -30,14 +47,6 @@ struct LosingTradesView: View {
             maxDrawdown: calculator.calculateMaximumDrawdown() ?? 0,
             riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0
         )
-    }
-    
-    var worstTrades: [StockRecord] {
-        let losingRecords = records.filter { $0.profitAndLoss < 0 }
-        return losingRecords
-            .sorted { $0.profitAndLoss < $1.profitAndLoss }
-            .prefix(3)
-            .map { $0 }
     }
     
     var body: some View {
@@ -65,8 +74,17 @@ struct LosingTradesView: View {
                 
                 
                 VStack(alignment: .leading) {
-                    Text("ワースト取引トップ3")
-                        .font(.headline)
+                    HStack {
+                        Text("ワースト取引トップ3")
+                            .font(.headline)
+                        Picker("表示形式", selection: $selectedSortType) {
+                            ForEach(PerformanceTradeSortType.allCases) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.vertical, 8)
+                    }
                     
                     ForEach(worstTrades.indices, id: \.self) { index in
                         let record = worstTrades[index]
@@ -82,7 +100,6 @@ struct LosingTradesView: View {
                                                 .foregroundColor(Color(.systemBackground))
                                                 .frame(width: 24, height: 24)
                                             
-                                            // 前面のアイコン
                                             Image(systemName: "crown.fill")
                                                 .frame(width: 16, height: 16)
                                                 .foregroundColor(crownBackgroundColor(for: index))
