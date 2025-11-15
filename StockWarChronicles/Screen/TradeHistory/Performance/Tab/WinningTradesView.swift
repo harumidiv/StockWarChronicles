@@ -13,14 +13,7 @@ struct WinningTradesView: View {
     let records: [StockRecord]
     
     @State private var selectedRecord: StockRecord? = nil
-    @State private var selectedSortType: SortType = .amount
-
-    enum SortType: String, CaseIterable, Identifiable {
-        case amount = "金額"
-        case percent = "％"
-
-        var id: String { rawValue }
-    }
+    @State private var selectedSortType: PerformanceTradeSortType = .amount
     
     var bestTrades: [StockRecord] {
         switch selectedSortType {
@@ -78,7 +71,7 @@ struct WinningTradesView: View {
                         Text("ベスト取引トップ3")
                             .font(.headline)
                         Picker("表示形式", selection: $selectedSortType) {
-                            ForEach(SortType.allCases) { type in
+                            ForEach(PerformanceTradeSortType.allCases) { type in
                                 Text(type.rawValue).tag(type)
                             }
                         }
