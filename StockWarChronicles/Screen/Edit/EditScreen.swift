@@ -242,7 +242,10 @@ private extension StockSellEditView {
     
     // 日付選択
     func datePickerView(for sale: Binding<StockTradeInfo>) -> some View {
-        DatePickerAccordionView(date: sale.date)
+        VStack {
+            DatePickerAccordionView(date: sale.date)
+            Divider().background(.separator)
+        }
     }
     
     // 購入額と株数
@@ -292,6 +295,8 @@ private extension StockSellEditView {
                         .tag(Emotion.sales(emotion))
                 }
             }
+            .tint(.primary)
+            .pickerStyle(.menu)
             .sensoryFeedback(.selection, trigger: sale.emotion.wrappedValue)
             Divider()
                 .background(.separator)
