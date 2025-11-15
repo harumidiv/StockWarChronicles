@@ -179,7 +179,7 @@ struct PossessionScreen: View {
                     ClosingScreen(record: record)
                 }
                 .fullScreenCover(isPresented: $showStockRecordView) {
-                    TradeHistoryListScreen(showTradeHistoryListScreen: $showStockRecordView)
+                    TradeHistoryScreen(showTradeHistoryListScreen: $showStockRecordView)
                 }
                 .fullScreenCover(isPresented: $showTreeMapView) {
                     PossessionMapScreen(record: records.filter {

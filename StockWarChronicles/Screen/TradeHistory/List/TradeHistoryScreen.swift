@@ -1,13 +1,14 @@
 //
-//  TradeHistoryListScreen.swift
+//  TradeHistoryScreen.swift
 //  StockWarChronicles
 //
 //  Created by 佐川 晴海 on 2025/08/21.
 //
 
 import SwiftUI
+import StoreKit
 
-struct TradeHistoryListScreen: View {
+struct TradeHistoryScreen: View {
     enum HistoryType: String, CaseIterable {
         case calender = "カレンダー"
         case list = "リスト"
@@ -29,6 +30,10 @@ struct TradeHistoryListScreen: View {
     
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
     
+    // レビューダイアログ
+    @AppStorage("reviewCount") var reviewCount: Int = 0
+    @Environment(\.requestReview) private var requestReview
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -38,6 +43,9 @@ struct TradeHistoryListScreen: View {
                 case .list:
                     HistoryListView(showTradeHistoryListScreen: $showTradeHistoryListScreen, selectedYear: $selectedYear)
                 }
+            }
+            .onAppear {
+                reviewCount += 1
             }
             .toolbarTitleMenu {
                 ForEach(HistoryType.allCases, id: \.self) { type in
@@ -95,6 +103,6 @@ struct TradeHistoryListScreen: View {
 
 #if DEBUG
 #Preview {
-    TradeHistoryListScreen(showTradeHistoryListScreen: .constant(true))
+    TradeHistoryScreen(showTradeHistoryListScreen: .constant(true))
 }
 #endif
