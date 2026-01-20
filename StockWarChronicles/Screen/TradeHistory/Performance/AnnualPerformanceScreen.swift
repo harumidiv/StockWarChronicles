@@ -13,23 +13,53 @@ struct AnnualPerformanceScreen: View {
     @Binding var selectedYear: Int
     
     @State private var selection = 0
-    
-    var filteredYearRecords: [StockRecord] {
-        records
-            .filter {
-                $0.isTradeFinish
-            }
-            .filter {
-                Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
-            }
-    }
-    
+        
     var filteredWinRecords: [StockRecord] {
-        filteredYearRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0}
+        let calendar = Calendar.current
+        
+        let yearlyRecords = records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == selectedYear }
+        }
+        
+        return yearlyRecords.filter { record in
+            let salesInYear = record.sales.filter {
+                calendar.component(.year, from: $0.date) == selectedYear
+            }
+            
+            let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            let profit = (record.position == .buy)
+                ? (yearlySalesAmount - yearlyCost)
+                : (yearlyCost - yearlySalesAmount)
+            
+            return profit >= 0.0
+        }
     }
     
     var filteredLoseRecords: [StockRecord] {
-        filteredYearRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0}
+        let calendar = Calendar.current
+        
+        let yearlyRecords = records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == selectedYear }
+        }
+        
+        return yearlyRecords.filter { record in
+            let salesInYear = record.sales.filter {
+                calendar.component(.year, from: $0.date) == selectedYear
+            }
+            
+            let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            let profit = (record.position == .buy)
+                ? (yearlySalesAmount - yearlyCost)
+                : (yearlyCost - yearlySalesAmount)
+            
+            return profit <= 0.0
+        }
     }
     
     var body: some View {
