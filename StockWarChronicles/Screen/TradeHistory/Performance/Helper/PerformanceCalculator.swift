@@ -43,13 +43,6 @@ struct PerformanceCalculator {
         return percentages.reduce(0, +) / Double(percentages.count)
     }
 
-    // 勝率
-    func calculateWinRate() -> Double? {
-        guard !records.isEmpty else { return nil }
-        let winningTradesCount = records.filter { ($0.profitAndLossParcent ?? -1) >= 0.0 }.count
-        return (Double(winningTradesCount) / Double(records.count)) * 100
-    }
-
     // プロフィットファクター
     func calculateProfitFactor() -> Double? {
         let totalProfit = records.reduce(0.0) { sum, record in
@@ -207,5 +200,30 @@ extension PerformanceCalculator {
         
         // 4. 平均を算出
         return Double(totalDays) / Double(targetRecords.count)
+    }
+    
+    
+    /// 勝率を計算する
+    /// - Parameter year: 対象年
+    /// - Returns: 勝率
+    func calculateWinRate(from records: [StockRecord], year: Int) -> Double? {
+        let calendar = Calendar.current
+        
+        // 1. その年に売却（一部でも可）が発生したレコードのみを抽出
+        let yearlyRecords = records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == year }
+        }
+        
+        // 2. その年の取引がない場合は nil を返す
+        guard !yearlyRecords.isEmpty else { return nil }
+        
+        // 3. その年の損益を計算し、プラス（またはゼロ）の銘柄をカウント
+        let winningTradesCount = yearlyRecords.filter { record in
+            // record 側のメソッドを呼び出すか、その場で見ている年の損益を計算
+            (record.profitAndLossParcent ?? 0.0) >= 0.0
+        }
+        
+        // 4. 勝率を計算（その年の勝ち数 / その年の取引銘柄数）
+        return (Double(winningTradesCount.count) / Double(yearlyRecords.count)) * 100
     }
 }

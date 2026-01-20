@@ -43,7 +43,7 @@ struct LosingTradesView: View {
             profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
             profitAmount: calculator.calculateAverageProfitAndLossAmount() ?? 0,
             holdingDays: calculator.calculateAverageHoldingPeriod(from: records, year: selectedYear),
-            winRate: calculator.calculateWinRate() ?? 0,
+            winRate: calculator.calculateWinRate(from: records, year: selectedYear) ?? 0,
             profitFactor: calculator.calculateProfitFactor() ?? 0,
             maxDrawdown: calculator.calculateMaximumDrawdown() ?? 0,
             riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0

@@ -82,7 +82,7 @@ struct OverallPerformanceView: View {
                 MetricView(label: "合計損益", value: totalProfitAndLoss.withComma(), unit: "円", iconName: "dollarsign.circle", color: totalProfitAndLoss >= 0 ? .red : .blue)
                 MetricView(label: "平均保有日数", value: Int(calculator.calculateAverageHoldingPeriod(from: records, year: selectedYear)).description, unit: "日", iconName: "calendar", color: .primary)
                 
-                let winRate: Double = calculator.calculateWinRate() ?? 0.0
+                let winRate: Double = calculator.calculateWinRate(from: records, year: selectedYear) ?? 0.0
                 MetricView(label: "勝率", value: String(format: "%.1f",winRate), unit: "", iconName: "chart.pie.fill", color: winRate >= 50 ? .red : .blue)
             }
             Spacer()
