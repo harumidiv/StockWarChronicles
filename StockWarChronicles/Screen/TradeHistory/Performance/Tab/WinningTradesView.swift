@@ -40,9 +40,6 @@ struct WinningTradesView: View {
             profitAmount: calculator.calculateAverageProfitAndLossAmount(from: records, year: selectedYear) ?? 0,
             holdingDays: calculator.calculateAverageHoldingPeriod(from: records, year: selectedYear),
             winRate: calculator.calculateWinRate(from: records, year: selectedYear) ?? 0,
-            profitFactor: calculator.calculateProfitFactor() ?? 0,
-            maxDrawdown: calculator.calculateMaximumDrawdown() ?? 0,
-            riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0
         )
         
         ScrollView {
