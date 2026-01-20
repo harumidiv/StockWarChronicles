@@ -39,7 +39,7 @@ struct TradeHistoryScreen: View {
             Group {
                 switch historyType {
                 case .calender:
-                    HistoryCalendarView()
+                    HistoryCalendarView(selectedYear: $selectedYear)
                 case .list:
                     HistoryListView(showTradeHistoryListScreen: $showTradeHistoryListScreen, selectedYear: $selectedYear)
                 }

@@ -19,6 +19,8 @@ struct HistoryCalendarView: View {
     @Query private var records: [StockRecord]
     @Environment(\.modelContext) private var context
     
+    @Binding var selectedYear: Int
+    
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date?
     
@@ -76,7 +78,7 @@ struct HistoryCalendarView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            MonthHeaderView(selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
+            MonthHeaderView(selectedYear: $selectedYear, selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
                 .padding()
             
             HStack(spacing: 0) {
@@ -216,6 +218,7 @@ struct HistoryCalendarView: View {
 }
 
 struct MonthHeaderView: View {
+    @Binding var selectedYear: Int
     @Binding var selectedDate: Date?
     @Binding var displayDate: Date
     var total: Int
@@ -282,6 +285,7 @@ struct MonthHeaderView: View {
     private func changeMonth(by amount: Int) {
         if let newDate = Calendar.current.date(byAdding: .month, value: amount, to: displayDate) {
             displayDate = newDate
+            selectedYear = Calendar.current.component(.year, from: displayDate)
         }
     }
 }
