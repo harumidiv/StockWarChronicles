@@ -88,7 +88,7 @@ struct OverallPerformanceView: View {
             Spacer()
             
             VStack(alignment: .leading) {
-                let totalAmount = calculator.calculateAverageProfitAndLossAmount() ?? 0.0
+                let totalAmount = calculator.calculateAverageProfitAndLossAmount(from: records, year: selectedYear) ?? 0.0
                 MetricView(label: "平均損益額", value: Int(totalAmount).withComma(), unit: "円", iconName: "banknote.fill", color: totalAmount >= 0 ? .red : .blue)
                 
                 let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent() ?? 0.0

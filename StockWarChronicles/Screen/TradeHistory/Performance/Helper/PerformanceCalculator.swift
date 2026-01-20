@@ -80,14 +80,14 @@ struct PerformanceCalculator {
         return maxDrawdown
     }
 
-    // 平均損益額
-    func calculateAverageProfitAndLossAmount() -> Double? {
-        guard !records.isEmpty else { return nil }
-        let totalAmount = records.reduce(0.0) { sum, record in
-            sum + Double(record.profitAndLoss)
-        }
-        return totalAmount / Double(records.count)
-    }
+//    // 平均損益額
+//    func calculateAverageProfitAndLossAmount() -> Double? {
+//        guard !records.isEmpty else { return nil }
+//        let totalAmount = records.reduce(0.0) { sum, record in
+//            sum + Double(record.profitAndLoss)
+//        }
+//        return totalAmount / Double(records.count)
+//    }
     
     // 平均リスクリワードレシオ
     func calculateAverageRiskRewardRatio() -> Double? {
@@ -225,5 +225,41 @@ extension PerformanceCalculator {
         
         // 4. 勝率を計算（その年の勝ち数 / その年の取引銘柄数）
         return (Double(winningTradesCount.count) / Double(yearlyRecords.count)) * 100
+    }
+    
+    
+    /// 平均損益額を計算する
+    /// - Parameters:
+    ///   - records: 全ての取引履歴
+    ///   - year: 対象年
+    /// - Returns: 平均損益額
+    func calculateAverageProfitAndLossAmount(from records: [StockRecord], year: Int) -> Double? {
+        let calendar = Calendar.current
+        
+        // 1. その年に売却が発生したレコードのみを抽出
+        let yearlyRecords = records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == year }
+        }
+        
+        // 取引がない場合は nil
+        guard !yearlyRecords.isEmpty else { return nil }
+        
+        // 2. その年の損益額の合計を計算
+        let totalProfitInYear = yearlyRecords.reduce(0.0) { sum, record in
+            // その年の売却データのみを抽出して損益計算
+            let salesInYear = record.sales.filter { calendar.component(.year, from: $0.date) == year }
+            let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            let profit = (record.position == .buy)
+                ? (yearlySalesAmount - yearlyCost)
+                : (yearlyCost - yearlySalesAmount)
+            
+            return sum + profit
+        }
+        
+        // 3. その年の合計損益を、取引のあった銘柄数で割って平均を出す
+        return totalProfitInYear / Double(yearlyRecords.count)
     }
 }
