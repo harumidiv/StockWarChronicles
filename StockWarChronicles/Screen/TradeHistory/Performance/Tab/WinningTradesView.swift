@@ -33,7 +33,7 @@ struct WinningTradesView: View {
     }
     
     var body: some View {
-        let calculator = PerformanceCalculator(records: records)
+        let calculator = PerformanceCalculator(records: records, year: selectedYear)
         
         let summary = TradeSummary(
             profitPercentage: calculator.calculateAverageProfitAndLossPercent(from: records, year: selectedYear) ?? 0,

@@ -35,7 +35,7 @@ struct LosingTradesView: View {
     private var calculator: PerformanceCalculator {
         // 負け取引のみをフィルタリングして渡す
         let losingRecords = records.filter { $0.profitAndLoss < 0 }
-        return PerformanceCalculator(records: losingRecords)
+        return PerformanceCalculator(records: losingRecords, year: selectedYear)
     }
     
     var summary: TradeSummary {

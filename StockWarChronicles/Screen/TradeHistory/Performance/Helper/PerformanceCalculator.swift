@@ -18,9 +18,6 @@ struct TradeSummary {
     let profitAmount: Double
     let holdingDays: Double
     let winRate: Double // 勝率
-//    let profitFactor: Double // プロフィットファクター
-//    let maxDrawdown: Double // 最大ドローダウン
-//    let riskRewardRatio: Double // リスクリワードレシオ
 }
 
 struct Trade {
@@ -30,41 +27,65 @@ struct Trade {
 
 struct PerformanceCalculator {
     private let records: [StockRecord]
+    private let year: Int
 
-    init(records: [StockRecord]) {
-        // 取引完了レコードのみを保持することで、以降の計算を効率化
-        self.records = records.filter { $0.isTradeFinish }
+    init(records: [StockRecord], year: Int) {
+        self.records = records
+        self.year = year
     }
+}
 
-    // 月別損益
-    func calculateMonthlyProfit() -> [MonthlyPerformance] {
-        guard !records.isEmpty else { return [] }
-        
-        var monthlyProfits: [Int: Double] = [:]
+// 総合サマリーのチャート計算
+extension PerformanceCalculator {
+    /// 月別のパフォーマンスを計算
+    /// - Parameters:
+    ///   - record: すべてのRecord
+    ///   - year: 対象年
+    /// - Returns: 月別パフォーマンス
+    func calculateMonthlyProfit(from record: [StockRecord], year: Int) -> [MonthlyPerformance] {
         let calendar = Calendar.current
+        var monthlyProfits: [Int: Double] = [:]
         
-        for record in records.sorted(by: { $0.purchase.date < $1.purchase.date }) {
-            let month = calendar.component(.month, from: record.purchase.date)
-            monthlyProfits[month, default: 0.0] += Double(record.profitAndLoss)
+        let yearlyRecords = calculateTradeRecord(from: records, year: year)
+        
+        // 1. その年に売却が発生したレコードをループ
+        for record in yearlyRecords {
+            // その年の売却データのみ抽出
+            let salesInYear = record.sales.filter { calendar.component(.year, from: $0.date) == year }
+            
+            for sale in salesInYear {
+                let month = calendar.component(.month, from: sale.date)
+                
+                // この売却単体での損益を計算
+                let saleAmount = Double(sale.shares) * sale.amount
+                let cost = Double(sale.shares) * record.purchase.amount
+                
+                let profit = (record.position == .buy) ? (saleAmount - cost) : (cost - saleAmount)
+                
+                // 月ごとに加算
+                monthlyProfits[month, default: 0.0] += profit
+            }
         }
         
-        let sortedMonths = monthlyProfits.keys.sorted()
-        
+        // 2. 1月から12月までのデータを生成（取引がない月も0円として表示したい場合）
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "ja_JP")
+        dateFormatter.dateFormat = "M月"
         
-        return sortedMonths.map { month in
-            let dateComponents = DateComponents(month: month)
+        return (1...12).map { month in
+            let dateComponents = DateComponents(year: year, month: month)
             let date = calendar.date(from: dateComponents)!
-            dateFormatter.dateFormat = "M月"
             let monthString = dateFormatter.string(from: date)
             
-            return MonthlyPerformance(month: monthString, profitAmount: monthlyProfits[month] ?? 0.0)
+            return MonthlyPerformance(
+                month: monthString,
+                profitAmount: monthlyProfits[month] ?? 0.0
+            )
         }
     }
 }
 
-
+// 総合サマリーのボード上にある６つの表記の計算メソッド
 extension PerformanceCalculator {
     /// その年に確定した損益の合計を返す
     /// - Parameters:

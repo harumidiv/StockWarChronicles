@@ -17,7 +17,7 @@ struct OverallPerformanceView: View {
     @State private var loseTradeExpand: Bool = false
     
     private var calculator: PerformanceCalculator {
-        return PerformanceCalculator(records: records)
+        return PerformanceCalculator(records: records, year: selectedYear)
     }
     
     var filteredWinRecordsMemo: [String] {
@@ -67,10 +67,10 @@ struct OverallPerformanceView: View {
         }
         .navigationTitle("全体パフォーマンス")
         .onAppear {
-            monthlyPerformance = calculator.calculateMonthlyProfit()
+            monthlyPerformance = calculator.calculateMonthlyProfit(from: records, year: selectedYear)
         }
         .onChange(of: records) { _, _ in
-            monthlyPerformance = calculator.calculateMonthlyProfit()
+            monthlyPerformance = calculator.calculateMonthlyProfit(from: records, year: selectedYear)
         }
     }
     
