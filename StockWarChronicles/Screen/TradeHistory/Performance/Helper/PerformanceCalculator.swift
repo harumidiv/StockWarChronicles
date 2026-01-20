@@ -96,14 +96,6 @@ struct PerformanceCalculator {
         return totalAmount / Double(records.count)
     }
     
-    // 平均保有日数
-    func calculateAverageHoldingPeriod() -> Double {
-        let totalDays = records.reduce(0) { sum, record in
-            sum + record.holdingPeriod
-        }
-        return Double(totalDays) / Double(records.count)
-    }
-    
     // 平均リスクリワードレシオ
     func calculateAverageRiskRewardRatio() -> Double? {
         let winningTrades = records.filter { $0.profitAndLoss >= 0 }
@@ -145,12 +137,13 @@ struct PerformanceCalculator {
             return MonthlyPerformance(month: monthString, profitAmount: monthlyProfits[month] ?? 0.0)
         }
     }
-    
-    
-    
+}
+
+
+extension PerformanceCalculator {
     /// その年に確定した損益の合計を返す
     /// - Parameters:
-    ///   - records: 取引履歴
+    ///   - records: すべての取引履歴
     ///   - year: 対象年
     /// - Returns: 損益
     func calculateTotalProfitAndLoss(from records: [StockRecord], year: Int) -> Double {
@@ -184,5 +177,35 @@ struct PerformanceCalculator {
             
             return totalSum + recordProfitAndLoss
         }
+    }
+    
+    
+    /// 平均保有日数の取得
+    /// - Parameters:
+    ///   - records: すべての取引履歴
+    ///   - year: 対象年
+    /// - Returns: 平均保有日数
+    func calculateAverageHoldingPeriod(from records: [StockRecord], year: Int) -> Double {
+        let calendar = Calendar.current
+        
+        // 1. その年に「最後の売却」が行われたレコードのみを抽出
+        let targetRecords = records.filter { record in
+            guard let lastSaleDate = record.sales.last?.date else { return false }
+            return calendar.component(.year, from: lastSaleDate) == year
+        }
+        
+        // 2. 対象レコードが空なら 0 を返す（ゼロ除算防止）
+        guard !targetRecords.isEmpty else { return 0.0 }
+        
+        // 3. 対象レコードの保有日数を合計
+        let totalDays = targetRecords.reduce(0) { sum, record in
+            // すでに定義済みの holdingPeriod プロパティを利用
+            // もし holdingPeriod が -1 を返す仕様なら、max(0, ...) で安全策をとる
+            let period = record.holdingPeriod
+            return sum + (period >= 0 ? period : 0)
+        }
+        
+        // 4. 平均を算出
+        return Double(totalDays) / Double(targetRecords.count)
     }
 }
