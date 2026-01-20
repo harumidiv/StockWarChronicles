@@ -91,10 +91,10 @@ struct OverallPerformanceView: View {
                 let totalAmount = calculator.calculateAverageProfitAndLossAmount(from: records, year: selectedYear) ?? 0.0
                 MetricView(label: "平均損益額", value: Int(totalAmount).withComma(), unit: "円", iconName: "banknote.fill", color: totalAmount >= 0 ? .red : .blue)
                 
-                let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent() ?? 0.0
+                let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent(from: records, year: selectedYear) ?? 0.0
                 MetricView(label: "平均%", value: String(format: "%.1f", averageParceht), unit: "%", iconName: "percent", color: averageParceht >= 0 ? .red : .blue)
                 
-                MetricView(label: "取引回数", value: records.count.description, unit: "回", iconName: "repeat.circle.fill", color: .primary)
+                MetricView(label: "取引回数", value: calculator.calculateTradeRecord(from: records, year: selectedYear).count.description, unit: "回", iconName: "repeat.circle.fill", color: .primary)
             }
         }
         .padding()

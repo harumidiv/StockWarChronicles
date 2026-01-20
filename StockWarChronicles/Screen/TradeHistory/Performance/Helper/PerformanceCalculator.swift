@@ -36,13 +36,6 @@ struct PerformanceCalculator {
         self.records = records.filter { $0.isTradeFinish }
     }
 
-    // 平均損益%
-    func calculateAverageProfitAndLossPercent() -> Double? {
-        let percentages = records.compactMap { $0.profitAndLossParcent }
-        guard !percentages.isEmpty else { return nil }
-        return percentages.reduce(0, +) / Double(percentages.count)
-    }
-
     // プロフィットファクター
     func calculateProfitFactor() -> Double? {
         let totalProfit = records.reduce(0.0) { sum, record in
@@ -79,15 +72,6 @@ struct PerformanceCalculator {
         }
         return maxDrawdown
     }
-
-//    // 平均損益額
-//    func calculateAverageProfitAndLossAmount() -> Double? {
-//        guard !records.isEmpty else { return nil }
-//        let totalAmount = records.reduce(0.0) { sum, record in
-//            sum + Double(record.profitAndLoss)
-//        }
-//        return totalAmount / Double(records.count)
-//    }
     
     // 平均リスクリワードレシオ
     func calculateAverageRiskRewardRatio() -> Double? {
@@ -207,12 +191,8 @@ extension PerformanceCalculator {
     /// - Parameter year: 対象年
     /// - Returns: 勝率
     func calculateWinRate(from records: [StockRecord], year: Int) -> Double? {
-        let calendar = Calendar.current
-        
-        // 1. その年に売却（一部でも可）が発生したレコードのみを抽出
-        let yearlyRecords = records.filter { record in
-            record.sales.contains { calendar.component(.year, from: $0.date) == year }
-        }
+        // 1. その年に売却が発生したレコードのみを抽出
+        let yearlyRecords = calculateTradeRecord(from: records, year: year)
         
         // 2. その年の取引がない場合は nil を返す
         guard !yearlyRecords.isEmpty else { return nil }
@@ -228,18 +208,28 @@ extension PerformanceCalculator {
     }
     
     
+    /// 対象年のトレードを含むStockRecordを返す
+    /// - Parameters:
+    ///   - records: 全ての取引履歴
+    ///   - year: 対象年
+    /// - Returns: 取引のあったStockRecord
+    func calculateTradeRecord(from records: [StockRecord], year: Int) -> [StockRecord] {
+        let calendar = Calendar.current
+        
+        return records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == year }
+        }
+    }
+    
+    
     /// 平均損益額を計算する
     /// - Parameters:
     ///   - records: 全ての取引履歴
     ///   - year: 対象年
     /// - Returns: 平均損益額
     func calculateAverageProfitAndLossAmount(from records: [StockRecord], year: Int) -> Double? {
-        let calendar = Calendar.current
-        
         // 1. その年に売却が発生したレコードのみを抽出
-        let yearlyRecords = records.filter { record in
-            record.sales.contains { calendar.component(.year, from: $0.date) == year }
-        }
+        let yearlyRecords = calculateTradeRecord(from: records, year: year)
         
         // 取引がない場合は nil
         guard !yearlyRecords.isEmpty else { return nil }
@@ -247,6 +237,7 @@ extension PerformanceCalculator {
         // 2. その年の損益額の合計を計算
         let totalProfitInYear = yearlyRecords.reduce(0.0) { sum, record in
             // その年の売却データのみを抽出して損益計算
+            let calendar = Calendar.current
             let salesInYear = record.sales.filter { calendar.component(.year, from: $0.date) == year }
             let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
             let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
@@ -261,5 +252,45 @@ extension PerformanceCalculator {
         
         // 3. その年の合計損益を、取引のあった銘柄数で割って平均を出す
         return totalProfitInYear / Double(yearlyRecords.count)
+    }
+    
+    /// 平均損益%を計算する
+    /// - Parameters:
+    ///   - records: 全ての取引履歴
+    ///   - year: 対象年
+    /// - Returns: 平均損益率
+    func calculateAverageProfitAndLossPercent(from records: [StockRecord], year: Int) -> Double? {
+        // 1. その年に売却が発生したレコードのみを抽出
+        let yearlyRecords = calculateTradeRecord(from: records, year: year)
+        
+        // 2. 取引がない場合は nil を返す
+        guard !yearlyRecords.isEmpty else { return nil }
+        
+        // 3. 各レコードの「その年における損益率」を計算してリスト化
+        let calendar = Calendar.current
+        let percentages: [Double] = yearlyRecords.compactMap { record in
+            let salesInYear = record.sales.filter { calendar.component(.year, from: $0.date) == year }
+            
+            // その年の売却額合計
+            let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
+            // その年の売却株数に対する取得原価
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            // 取得原価が0（異常データ）の場合はスキップ
+            guard yearlyCost > 0 else { return nil }
+            
+            // 損益額の計算
+            let profit = (record.position == .buy)
+                ? (yearlySalesAmount - yearlyCost)
+                : (yearlyCost - yearlySalesAmount)
+            
+            // その年だけの損益率(%)を算出
+            return (profit / yearlyCost) * 100
+        }
+        
+        // 4. パーセントの平均を算出
+        guard !percentages.isEmpty else { return nil }
+        return percentages.reduce(0.0, +) / Double(percentages.count)
     }
 }

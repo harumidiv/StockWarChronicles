@@ -36,7 +36,7 @@ struct WinningTradesView: View {
         let calculator = PerformanceCalculator(records: records)
         
         let summary = TradeSummary(
-            profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
+            profitPercentage: calculator.calculateAverageProfitAndLossPercent(from: records, year: selectedYear) ?? 0,
             profitAmount: calculator.calculateAverageProfitAndLossAmount(from: records, year: selectedYear) ?? 0,
             holdingDays: calculator.calculateAverageHoldingPeriod(from: records, year: selectedYear),
             winRate: calculator.calculateWinRate(from: records, year: selectedYear) ?? 0,
