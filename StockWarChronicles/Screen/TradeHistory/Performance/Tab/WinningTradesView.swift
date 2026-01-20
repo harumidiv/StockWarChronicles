@@ -11,7 +11,7 @@ import SwiftUI
 
 struct WinningTradesView: View {
     let records: [StockRecord]
-    
+    @Binding var selectedYear: Int
     @State private var selectedRecord: StockRecord? = nil
     @State private var selectedSortType: PerformanceTradeSortType = .amount
     
@@ -33,16 +33,13 @@ struct WinningTradesView: View {
     }
     
     var body: some View {
-        let calculator = PerformanceCalculator(records: records)
+        let calculator = PerformanceCalculator(records: records, year: $selectedYear)
         
         let summary = TradeSummary(
             profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
             profitAmount: calculator.calculateAverageProfitAndLossAmount() ?? 0,
             holdingDays: calculator.calculateAverageHoldingPeriod(),
             winRate: calculator.calculateWinRate() ?? 0,
-            profitFactor: calculator.calculateProfitFactor() ?? 0,
-            maxDrawdown: calculator.calculateMaximumDrawdown() ?? 0,
-            riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0
         )
         
         ScrollView {
@@ -53,7 +50,7 @@ struct WinningTradesView: View {
                 
                 HStack {
                     VStack(alignment: .leading) {
-                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma(), unit: "円", iconName: "dollarsign.circle", color: .red)
+                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss().withComma(), unit: "円", iconName: "dollarsign.circle", color: .red)
                         MetricView(label: "平均保有日数", value: Int(summary.holdingDays).description, unit: "日", iconName: "calendar", color: .primary)
                     }
                     Spacer()
@@ -186,6 +183,6 @@ extension WinningTradesView {
 }
 #if DEBUG
 #Preview {
-    WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0})
+    WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0}, selectedYear: .constant(2026))
 }
 #endif

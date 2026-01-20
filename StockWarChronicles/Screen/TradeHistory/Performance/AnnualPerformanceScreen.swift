@@ -13,29 +13,59 @@ struct AnnualPerformanceScreen: View {
     @Binding var selectedYear: Int
     
     @State private var selection = 0
-    
-    var filteredYearRecords: [StockRecord] {
-        records
-            .filter {
-                $0.isTradeFinish
-            }
-            .filter {
-                Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
-            }
-    }
-    
+        
     var filteredWinRecords: [StockRecord] {
-        filteredYearRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0}
+        let calendar = Calendar.current
+        
+        let yearlyRecords = records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == selectedYear }
+        }
+        
+        return yearlyRecords.filter { record in
+            let salesInYear = record.sales.filter {
+                calendar.component(.year, from: $0.date) == selectedYear
+            }
+            
+            let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            let profit = (record.position == .buy)
+                ? (yearlySalesAmount - yearlyCost)
+                : (yearlyCost - yearlySalesAmount)
+            
+            return profit >= 0.0
+        }
     }
     
     var filteredLoseRecords: [StockRecord] {
-        filteredYearRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0}
+        let calendar = Calendar.current
+        
+        let yearlyRecords = records.filter { record in
+            record.sales.contains { calendar.component(.year, from: $0.date) == selectedYear }
+        }
+        
+        return yearlyRecords.filter { record in
+            let salesInYear = record.sales.filter {
+                calendar.component(.year, from: $0.date) == selectedYear
+            }
+            
+            let yearlySalesAmount = salesInYear.reduce(0.0) { $0 + (Double($1.shares) * $1.amount) }
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            let profit = (record.position == .buy)
+                ? (yearlySalesAmount - yearlyCost)
+                : (yearlyCost - yearlySalesAmount)
+            
+            return profit <= 0.0
+        }
     }
     
     var body: some View {
         TabView(selection: $selection) {
             // MARK: - 全体タブ
-            OverallPerformanceView(records: filteredYearRecords, selectedYear: $selectedYear)
+            OverallPerformanceView(records: records, selectedYear: $selectedYear)
                 .tabItem {
                     Label("全体", systemImage: "chart.bar.fill")
                 }
@@ -43,7 +73,7 @@ struct AnnualPerformanceScreen: View {
             
             if !filteredWinRecords.isEmpty {
                 // MARK: - 勝ち取引タブ
-                WinningTradesView(records: filteredWinRecords)
+                WinningTradesView(records: filteredWinRecords, selectedYear: $selectedYear)
                     .tabItem {
                         Label("勝ち", systemImage: "arrow.up.right.circle.fill")
                     }
@@ -52,7 +82,7 @@ struct AnnualPerformanceScreen: View {
             
             if !filteredLoseRecords.isEmpty {
                 // MARK: - 負け取引タブ
-                LosingTradesView(records: filteredLoseRecords)
+                LosingTradesView(records: filteredLoseRecords, selectedYear: $selectedYear)
                     .tabItem {
                         Label("負け", systemImage: "arrow.down.right.circle.fill")
                     }
@@ -63,116 +93,8 @@ struct AnnualPerformanceScreen: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
     }
-    
-    func calculateAverageProfitAndLossPercent(from records: [StockRecord]) -> Double {
-        let percentages = records.compactMap { $0.profitAndLossParcent }
-        
-        guard !percentages.isEmpty else {
-            return 0
-        }
-        let totalPercentage = percentages.reduce(0, +)
-        return totalPercentage / Double(percentages.count)
-    }
-    
-    func calculateWinRate(from records: [StockRecord]) -> Double {
-        let winningTrades = records.filter { record in
-            if let percentage = record.profitAndLossParcent {
-                return percentage >= 0.0
-            }
-            return false
-        }
-        
-        let totalTrades = Double(records.count)
-        let numberOfWinningTrades = Double(winningTrades.count)
-        let winRate = (numberOfWinningTrades / totalTrades) * 100
-        
-        return winRate
-    }
-    
-    func calculateProfitFactor(from records: [StockRecord]) -> Double {
-        let totalProfit = records.reduce(0.0) { (sum, record) in
-            let profit = Double(record.profitAndLoss)
-            return sum + (profit > 0 ? profit : 0.0)
-        }
-        
-        let totalLoss = records.reduce(0.0) { (sum, record) in
-            let loss = Double(record.profitAndLoss)
-            return sum + (loss < 0 ? abs(loss) : 0.0)
-        }
-        
-        if totalLoss == 0 {
-            return totalProfit > 0 ? Double.infinity : 0
-        }
-        
-        return totalProfit / totalLoss
-    }
-    
-    func calculateMaximumDrawdown(from records: [StockRecord]) -> Double {
-        var peakValue = 0.0 // 累積損益の最高値
-        var drawdown = 0.0  // 現在のドローダウン
-        var maxDrawdown = 0.0 // 記録された最大ドローダウン
-        var accumulatedProfit = 0.0 // 累積損益
-        
-        // 2. 各レコードをループし、累積損益を計算しながらピークとドローダウンを追跡
-        for record in records {
-            // 累積損益を更新
-            accumulatedProfit += Double(record.profitAndLoss)
-            
-            // 累積損益が新たなピークを更新したかチェック
-            if accumulatedProfit > peakValue {
-                peakValue = accumulatedProfit
-            }
-            
-            // 現在のドローダウンを計算
-            drawdown = (accumulatedProfit - peakValue) / peakValue * 100
-            
-            // 最大ドローダウンを更新
-            if drawdown < maxDrawdown {
-                maxDrawdown = drawdown
-            }
-        }
-        
-        return maxDrawdown
-    }
-    
-    func calculateAverageProfitAndLossAmount(from records: [StockRecord]) -> Double {
-        let totalProfitAndLossAmount = records.reduce(0.0) { (sum, record) in
-            sum + Double(record.profitAndLoss)
-        }
-        
-        let averageAmount = totalProfitAndLossAmount / Double(records.count)
-        
-        return averageAmount
-    }
-    
-    func calculateAverageHoldingPeriod(from records: [StockRecord]) -> Double {
-        let totalHoldingDays = records.reduce(0) { (sum, record) in
-            sum + record.holdingPeriod
-        }
-        
-        let averageDays = Double(totalHoldingDays) / Double(records.count)
-        
-        return averageDays
-    }
-    
-    func calculateAverageRiskRewardRatio(from records: [StockRecord]) -> Double {
-        let winningTrades = records.filter { $0.profitAndLoss >= 0 }
-        let losingTrades = records.filter { $0.profitAndLoss < 0 }
-        
-        let averageProfit = winningTrades.isEmpty ? 0.0 : winningTrades.reduce(0.0) { $0 + Double($1.profitAndLoss) } / Double(winningTrades.count)
-        
-        // 5. 負け取引の平均損失額を計算（損失は正の値に変換）
-        let averageLoss = losingTrades.isEmpty ? 0.0 : losingTrades.reduce(0.0) { $0 + abs(Double($1.profitAndLoss)) } / Double(losingTrades.count)
-        
-        // 6. 平均損失が0の場合は、nilを返す
-        guard averageLoss != 0 else {
-            return 0
-        }
-        
-        // 7. 平均リスクリワードレシオを計算して返す
-        return averageProfit / averageLoss
-    }
 }
+
 #if DEBUG
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)

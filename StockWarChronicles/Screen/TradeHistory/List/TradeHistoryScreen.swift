@@ -39,7 +39,7 @@ struct TradeHistoryScreen: View {
             Group {
                 switch historyType {
                 case .calender:
-                    HistoryCalendarView()
+                    HistoryCalendarView(selectedYear: $selectedYear)
                 case .list:
                     HistoryListView(showTradeHistoryListScreen: $showTradeHistoryListScreen, selectedYear: $selectedYear)
                 }
@@ -91,14 +91,7 @@ struct TradeHistoryScreen: View {
             }
             .sensoryFeedback(.selection, trigger: showAnnualPerformance)
             .navigationDestination(isPresented: $showAnnualPerformance) {
-                switch historyType {
-                case .calender:
-                    // TODO: 日付からとって渡す
-                    AnnualPerformanceScreen(selectedYear: .constant(2025))
-                case .list:
-                    AnnualPerformanceScreen(selectedYear: $selectedYear)
-                }
-               
+                AnnualPerformanceScreen(selectedYear: $selectedYear)
             }
         }
     }

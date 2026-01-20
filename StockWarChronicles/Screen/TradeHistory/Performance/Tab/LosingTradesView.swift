@@ -10,6 +10,7 @@ import SwiftUI
 
 struct LosingTradesView: View {
     let records: [StockRecord]
+    @Binding var selectedYear: Int
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var selectedSortType: PerformanceTradeSortType = .amount
@@ -34,7 +35,7 @@ struct LosingTradesView: View {
     private var calculator: PerformanceCalculator {
         // 負け取引のみをフィルタリングして渡す
         let losingRecords = records.filter { $0.profitAndLoss < 0 }
-        return PerformanceCalculator(records: losingRecords)
+        return PerformanceCalculator(records: losingRecords, year: $selectedYear)
     }
     
     var summary: TradeSummary {
@@ -42,11 +43,8 @@ struct LosingTradesView: View {
             profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
             profitAmount: calculator.calculateAverageProfitAndLossAmount() ?? 0,
             holdingDays: calculator.calculateAverageHoldingPeriod(),
-            winRate: calculator.calculateWinRate() ?? 0,
-            profitFactor: calculator.calculateProfitFactor() ?? 0,
-            maxDrawdown: calculator.calculateMaximumDrawdown() ?? 0,
-            riskRewardRatio: calculator.calculateAverageRiskRewardRatio() ?? 0
-        )
+            winRate: calculator.calculateWinRate() ?? 0
+            )
     }
     
     var body: some View {
@@ -57,7 +55,7 @@ struct LosingTradesView: View {
                     .fontWeight(.bold)
                 HStack {
                     VStack(alignment: .leading) {
-                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma(), unit: "円", iconName: "dollarsign.circle", color: .blue)
+                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss().withComma(), unit: "円", iconName: "dollarsign.circle", color: .blue)
                         
                         MetricView(label: "平均保有日数", value: Int(summary.holdingDays).description, unit: "日", iconName: "calendar", color: .primary)
                         
@@ -185,6 +183,6 @@ extension LosingTradesView {
 
 #if DEBUG
 #Preview {
-    LosingTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0})
+    LosingTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0}, selectedYear: .constant(2026))
 }
 #endif
