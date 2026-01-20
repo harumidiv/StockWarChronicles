@@ -67,10 +67,10 @@ struct OverallPerformanceView: View {
         }
         .navigationTitle("全体パフォーマンス")
         .onAppear {
-            monthlyPerformance = calculator.calculateMonthlyProfit(from: records, year: selectedYear)
+            monthlyPerformance = calculator.calculateMonthlyProfit()
         }
         .onChange(of: records) { _, _ in
-            monthlyPerformance = calculator.calculateMonthlyProfit(from: records, year: selectedYear)
+            monthlyPerformance = calculator.calculateMonthlyProfit()
         }
     }
     
@@ -78,23 +78,23 @@ struct OverallPerformanceView: View {
         HStack {
             VStack(alignment: .leading) {
                 // FIXME: ここの数字がずれている！
-                let totalProfitAndLoss = calculator.calculateTotalProfitAndLoss(from: records, year: selectedYear)
+                let totalProfitAndLoss = calculator.calculateTotalProfitAndLoss()
                 MetricView(label: "合計損益", value: totalProfitAndLoss.withComma(), unit: "円", iconName: "dollarsign.circle", color: totalProfitAndLoss >= 0 ? .red : .blue)
-                MetricView(label: "平均保有日数", value: Int(calculator.calculateAverageHoldingPeriod(from: records, year: selectedYear)).description, unit: "日", iconName: "calendar", color: .primary)
+                MetricView(label: "平均保有日数", value: Int(calculator.calculateAverageHoldingPeriod()).description, unit: "日", iconName: "calendar", color: .primary)
                 
-                let winRate: Double = calculator.calculateWinRate(from: records, year: selectedYear) ?? 0.0
+                let winRate: Double = calculator.calculateWinRate() ?? 0.0
                 MetricView(label: "勝率", value: String(format: "%.1f",winRate), unit: "", iconName: "chart.pie.fill", color: winRate >= 50 ? .red : .blue)
             }
             Spacer()
             
             VStack(alignment: .leading) {
-                let totalAmount = calculator.calculateAverageProfitAndLossAmount(from: records, year: selectedYear) ?? 0.0
+                let totalAmount = calculator.calculateAverageProfitAndLossAmount() ?? 0.0
                 MetricView(label: "平均損益額", value: Int(totalAmount).withComma(), unit: "円", iconName: "banknote.fill", color: totalAmount >= 0 ? .red : .blue)
                 
-                let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent(from: records, year: selectedYear) ?? 0.0
+                let averageParceht: Double = calculator.calculateAverageProfitAndLossPercent() ?? 0.0
                 MetricView(label: "平均%", value: String(format: "%.1f", averageParceht), unit: "%", iconName: "percent", color: averageParceht >= 0 ? .red : .blue)
                 
-                MetricView(label: "取引回数", value: calculator.calculateTradeRecord(from: records, year: selectedYear).count.description, unit: "回", iconName: "repeat.circle.fill", color: .primary)
+                MetricView(label: "取引回数", value: calculator.calculateTradeRecord().count.description, unit: "回", iconName: "repeat.circle.fill", color: .primary)
             }
         }
         .padding()

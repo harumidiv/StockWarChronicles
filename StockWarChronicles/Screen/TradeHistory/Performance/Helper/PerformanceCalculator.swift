@@ -38,15 +38,11 @@ struct PerformanceCalculator {
 // 総合サマリーのチャート計算
 extension PerformanceCalculator {
     /// 月別のパフォーマンスを計算
-    /// - Parameters:
-    ///   - record: すべてのRecord
-    ///   - year: 対象年
-    /// - Returns: 月別パフォーマンス
-    func calculateMonthlyProfit(from record: [StockRecord], year: Int) -> [MonthlyPerformance] {
+    func calculateMonthlyProfit() -> [MonthlyPerformance] {
         let calendar = Calendar.current
         var monthlyProfits: [Int: Double] = [:]
         
-        let yearlyRecords = calculateTradeRecord(from: records, year: year)
+        let yearlyRecords = calculateTradeRecord()
         
         // 1. その年に売却が発生したレコードをループ
         for record in yearlyRecords {
@@ -88,11 +84,7 @@ extension PerformanceCalculator {
 // 総合サマリーのボード上にある６つの表記の計算メソッド
 extension PerformanceCalculator {
     /// その年に確定した損益の合計を返す
-    /// - Parameters:
-    ///   - records: すべての取引履歴
-    ///   - year: 対象年
-    /// - Returns: 損益
-    func calculateTotalProfitAndLoss(from records: [StockRecord], year: Int) -> Double {
+    func calculateTotalProfitAndLoss() -> Double {
         let calendar = Calendar.current
         
         return records.reduce(0.0) { totalSum, record in
@@ -127,11 +119,7 @@ extension PerformanceCalculator {
     
     
     /// 平均保有日数の取得
-    /// - Parameters:
-    ///   - records: すべての取引履歴
-    ///   - year: 対象年
-    /// - Returns: 平均保有日数
-    func calculateAverageHoldingPeriod(from records: [StockRecord], year: Int) -> Double {
+    func calculateAverageHoldingPeriod() -> Double {
         let calendar = Calendar.current
         
         // 1. その年に「最後の売却」が行われたレコードのみを抽出
@@ -157,11 +145,9 @@ extension PerformanceCalculator {
     
     
     /// 勝率を計算する
-    /// - Parameter year: 対象年
-    /// - Returns: 勝率
-    func calculateWinRate(from records: [StockRecord], year: Int) -> Double? {
+    func calculateWinRate() -> Double? {
         // 1. その年に売却が発生したレコードのみを抽出
-        let yearlyRecords = calculateTradeRecord(from: records, year: year)
+        let yearlyRecords = calculateTradeRecord()
         
         // 2. その年の取引がない場合は nil を返す
         guard !yearlyRecords.isEmpty else { return nil }
@@ -178,11 +164,7 @@ extension PerformanceCalculator {
     
     
     /// 対象年のトレードを含むStockRecordを返す
-    /// - Parameters:
-    ///   - records: 全ての取引履歴
-    ///   - year: 対象年
-    /// - Returns: 取引のあったStockRecord
-    func calculateTradeRecord(from records: [StockRecord], year: Int) -> [StockRecord] {
+    func calculateTradeRecord() -> [StockRecord] {
         let calendar = Calendar.current
         
         return records.filter { record in
@@ -192,13 +174,9 @@ extension PerformanceCalculator {
     
     
     /// 平均損益額を計算する
-    /// - Parameters:
-    ///   - records: 全ての取引履歴
-    ///   - year: 対象年
-    /// - Returns: 平均損益額
-    func calculateAverageProfitAndLossAmount(from records: [StockRecord], year: Int) -> Double? {
+    func calculateAverageProfitAndLossAmount() -> Double? {
         // 1. その年に売却が発生したレコードのみを抽出
-        let yearlyRecords = calculateTradeRecord(from: records, year: year)
+        let yearlyRecords = calculateTradeRecord()
         
         // 取引がない場合は nil
         guard !yearlyRecords.isEmpty else { return nil }
@@ -224,13 +202,9 @@ extension PerformanceCalculator {
     }
     
     /// 平均損益%を計算する
-    /// - Parameters:
-    ///   - records: 全ての取引履歴
-    ///   - year: 対象年
-    /// - Returns: 平均損益率
-    func calculateAverageProfitAndLossPercent(from records: [StockRecord], year: Int) -> Double? {
+    func calculateAverageProfitAndLossPercent() -> Double? {
         // 1. その年に売却が発生したレコードのみを抽出
-        let yearlyRecords = calculateTradeRecord(from: records, year: year)
+        let yearlyRecords = calculateTradeRecord()
         
         // 2. 取引がない場合は nil を返す
         guard !yearlyRecords.isEmpty else { return nil }

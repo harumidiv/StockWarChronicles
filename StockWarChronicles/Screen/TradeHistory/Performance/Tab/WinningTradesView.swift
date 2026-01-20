@@ -36,10 +36,10 @@ struct WinningTradesView: View {
         let calculator = PerformanceCalculator(records: records, year: selectedYear)
         
         let summary = TradeSummary(
-            profitPercentage: calculator.calculateAverageProfitAndLossPercent(from: records, year: selectedYear) ?? 0,
-            profitAmount: calculator.calculateAverageProfitAndLossAmount(from: records, year: selectedYear) ?? 0,
-            holdingDays: calculator.calculateAverageHoldingPeriod(from: records, year: selectedYear),
-            winRate: calculator.calculateWinRate(from: records, year: selectedYear) ?? 0,
+            profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
+            profitAmount: calculator.calculateAverageProfitAndLossAmount() ?? 0,
+            holdingDays: calculator.calculateAverageHoldingPeriod(),
+            winRate: calculator.calculateWinRate() ?? 0,
         )
         
         ScrollView {
@@ -50,7 +50,7 @@ struct WinningTradesView: View {
                 
                 HStack {
                     VStack(alignment: .leading) {
-                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records, year: selectedYear).withComma(), unit: "円", iconName: "dollarsign.circle", color: .red)
+                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss().withComma(), unit: "円", iconName: "dollarsign.circle", color: .red)
                         MetricView(label: "平均保有日数", value: Int(summary.holdingDays).description, unit: "日", iconName: "calendar", color: .primary)
                     }
                     Spacer()
