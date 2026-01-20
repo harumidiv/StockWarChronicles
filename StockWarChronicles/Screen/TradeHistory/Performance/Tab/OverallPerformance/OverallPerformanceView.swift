@@ -77,7 +77,8 @@ struct OverallPerformanceView: View {
     var summarryView: some View {
         HStack {
             VStack(alignment: .leading) {
-                let totalProfitAndLoss = calculator.calculateTotalProfitAndLoss(from: records)
+                // FIXME: ここの数字がずれている！
+                let totalProfitAndLoss = calculator.calculateTotalProfitAndLoss(from: records, year: selectedYear)
                 MetricView(label: "合計損益", value: totalProfitAndLoss.withComma(), unit: "円", iconName: "dollarsign.circle", color: totalProfitAndLoss >= 0 ? .red : .blue)
                 MetricView(label: "平均保有日数", value: Int(calculator.calculateAverageHoldingPeriod()).description, unit: "日", iconName: "calendar", color: .primary)
                 

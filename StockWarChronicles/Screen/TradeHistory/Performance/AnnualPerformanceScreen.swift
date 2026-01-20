@@ -35,7 +35,7 @@ struct AnnualPerformanceScreen: View {
     var body: some View {
         TabView(selection: $selection) {
             // MARK: - 全体タブ
-            OverallPerformanceView(records: filteredYearRecords, selectedYear: $selectedYear)
+            OverallPerformanceView(records: records, selectedYear: $selectedYear)
                 .tabItem {
                     Label("全体", systemImage: "chart.bar.fill")
                 }
@@ -43,7 +43,7 @@ struct AnnualPerformanceScreen: View {
             
             if !filteredWinRecords.isEmpty {
                 // MARK: - 勝ち取引タブ
-                WinningTradesView(records: filteredWinRecords)
+                WinningTradesView(records: filteredWinRecords, selectedYear: selectedYear)
                     .tabItem {
                         Label("勝ち", systemImage: "arrow.up.right.circle.fill")
                     }
@@ -52,7 +52,7 @@ struct AnnualPerformanceScreen: View {
             
             if !filteredLoseRecords.isEmpty {
                 // MARK: - 負け取引タブ
-                LosingTradesView(records: filteredLoseRecords)
+                LosingTradesView(records: filteredLoseRecords, selectedYear: selectedYear)
                     .tabItem {
                         Label("負け", systemImage: "arrow.down.right.circle.fill")
                     }

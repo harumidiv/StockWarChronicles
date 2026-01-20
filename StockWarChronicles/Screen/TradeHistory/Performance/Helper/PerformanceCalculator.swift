@@ -146,16 +146,43 @@ struct PerformanceCalculator {
         }
     }
     
-    func calculateTotalProfitAndLoss(from records: [StockRecord]) -> Double {
-        // 1. 取引が完了しているレコードのみをフィルタリング
-        let finishedRecords = records.filter { $0.isTradeFinish }
+    
+    
+    /// その年に確定した損益の合計を返す
+    /// - Parameters:
+    ///   - records: 取引履歴
+    ///   - year: 対象年
+    /// - Returns: 損益
+    func calculateTotalProfitAndLoss(from records: [StockRecord], year: Int) -> Double {
+        let calendar = Calendar.current
         
-        // 2. フィルタリングされたレコードの損益額をすべて合計
-        let totalProfitAndLoss = finishedRecords.reduce(0.0) { sum, record in
-            sum + Double(record.profitAndLoss)
+        return records.reduce(0.0) { totalSum, record in
+            // 1. その年に行われた売却(sales)だけを抽出
+            let salesInYear = record.sales.filter { sale in
+                calendar.component(.year, from: sale.date) == year
+            }
+            
+            // 2. その年の売却額の合計を計算
+            let yearlySalesAmount = salesInYear.reduce(0.0) { sum, sale in
+                sum + (Double(sale.shares) * sale.amount)
+            }
+            
+            // 3. その年に売却した株数に対する「購入原価」を計算
+            let yearlySoldShares = salesInYear.reduce(0) { $0 + $1.shares }
+            let yearlyCost = Double(yearlySoldShares) * record.purchase.amount
+            
+            // 4. ポジション（買い・売り）に応じて損益を算出
+            let recordProfitAndLoss: Double
+            switch record.position {
+            case .buy:
+                // 買い：売却額 - 原価
+                recordProfitAndLoss = yearlySalesAmount - yearlyCost
+            case .sell:
+                // 売り：原価 - 売却額
+                recordProfitAndLoss = yearlyCost - yearlySalesAmount
+            }
+            
+            return totalSum + recordProfitAndLoss
         }
-        
-        // 3. 合計損益を返す
-        return totalProfitAndLoss
     }
 }

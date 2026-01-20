@@ -11,7 +11,7 @@ import SwiftUI
 
 struct WinningTradesView: View {
     let records: [StockRecord]
-    
+    let selectedYear: Int
     @State private var selectedRecord: StockRecord? = nil
     @State private var selectedSortType: PerformanceTradeSortType = .amount
     
@@ -53,7 +53,7 @@ struct WinningTradesView: View {
                 
                 HStack {
                     VStack(alignment: .leading) {
-                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records).withComma(), unit: "円", iconName: "dollarsign.circle", color: .red)
+                        MetricView(label: "合計損益", value: calculator.calculateTotalProfitAndLoss(from: records, year: selectedYear).withComma(), unit: "円", iconName: "dollarsign.circle", color: .red)
                         MetricView(label: "平均保有日数", value: Int(summary.holdingDays).description, unit: "日", iconName: "calendar", color: .primary)
                     }
                     Spacer()
@@ -186,6 +186,6 @@ extension WinningTradesView {
 }
 #if DEBUG
 #Preview {
-    WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0})
+    WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0}, selectedYear: 2026)
 }
 #endif
