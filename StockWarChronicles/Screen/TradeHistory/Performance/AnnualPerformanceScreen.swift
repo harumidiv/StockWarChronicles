@@ -43,7 +43,7 @@ struct AnnualPerformanceScreen: View {
             
             if !filteredWinRecords.isEmpty {
                 // MARK: - 勝ち取引タブ
-                WinningTradesView(records: filteredWinRecords, selectedYear: selectedYear)
+                WinningTradesView(records: filteredWinRecords, selectedYear: $selectedYear)
                     .tabItem {
                         Label("勝ち", systemImage: "arrow.up.right.circle.fill")
                     }
@@ -52,7 +52,7 @@ struct AnnualPerformanceScreen: View {
             
             if !filteredLoseRecords.isEmpty {
                 // MARK: - 負け取引タブ
-                LosingTradesView(records: filteredLoseRecords, selectedYear: selectedYear)
+                LosingTradesView(records: filteredLoseRecords, selectedYear: $selectedYear)
                     .tabItem {
                         Label("負け", systemImage: "arrow.down.right.circle.fill")
                     }

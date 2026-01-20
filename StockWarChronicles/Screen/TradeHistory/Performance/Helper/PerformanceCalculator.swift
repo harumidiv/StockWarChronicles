@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct MonthlyPerformance: Identifiable {
     let id = UUID()
@@ -26,13 +27,8 @@ struct Trade {
 }
 
 struct PerformanceCalculator {
-    private let records: [StockRecord]
-    private let year: Int
-
-    init(records: [StockRecord], year: Int) {
-        self.records = records
-        self.year = year
-    }
+    let records: [StockRecord]
+    @Binding var year: Int
 }
 
 // 総合サマリーのチャート計算
@@ -42,33 +38,32 @@ extension PerformanceCalculator {
         let calendar = Calendar.current
         var monthlyProfits: [Int: Double] = [:]
         
+        // calculateTradeRecord() が全レコードを返す想定で進めます
         let yearlyRecords = calculateTradeRecord()
         
-        // 1. その年に売却が発生したレコードをループ
+        // 1. 売却が発生したレコードから月ごとの損益を集計
         for record in yearlyRecords {
-            // その年の売却データのみ抽出
             let salesInYear = record.sales.filter { calendar.component(.year, from: $0.date) == year }
             
             for sale in salesInYear {
                 let month = calendar.component(.month, from: sale.date)
-                
-                // この売却単体での損益を計算
                 let saleAmount = Double(sale.shares) * sale.amount
                 let cost = Double(sale.shares) * record.purchase.amount
-                
                 let profit = (record.position == .buy) ? (saleAmount - cost) : (cost - saleAmount)
                 
-                // 月ごとに加算
                 monthlyProfits[month, default: 0.0] += profit
             }
         }
         
-        // 2. 1月から12月までのデータを生成（取引がない月も0円として表示したい場合）
+        // 2. 辞書のキー（取引があった月）だけを取り出してソート
+        let activeMonths = monthlyProfits.keys.sorted()
+        
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "M月"
         
-        return (1...12).map { month in
+        // 3. 取引があった月のみ MonthlyPerformance を生成
+        return activeMonths.map { month in
             let dateComponents = DateComponents(year: year, month: month)
             let date = calendar.date(from: dateComponents)!
             let monthString = dateFormatter.string(from: date)

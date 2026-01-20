@@ -10,7 +10,7 @@ import SwiftUI
 
 struct LosingTradesView: View {
     let records: [StockRecord]
-    let selectedYear: Int
+    @Binding var selectedYear: Int
     
     @State private var selectedRecord: StockRecord? = nil
     @State private var selectedSortType: PerformanceTradeSortType = .amount
@@ -35,7 +35,7 @@ struct LosingTradesView: View {
     private var calculator: PerformanceCalculator {
         // 負け取引のみをフィルタリングして渡す
         let losingRecords = records.filter { $0.profitAndLoss < 0 }
-        return PerformanceCalculator(records: losingRecords, year: selectedYear)
+        return PerformanceCalculator(records: losingRecords, year: $selectedYear)
     }
     
     var summary: TradeSummary {
@@ -183,6 +183,6 @@ extension LosingTradesView {
 
 #if DEBUG
 #Preview {
-    LosingTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0}, selectedYear: 2026)
+    LosingTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 < 0.0}, selectedYear: .constant(2026))
 }
 #endif

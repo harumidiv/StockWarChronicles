@@ -17,7 +17,7 @@ struct OverallPerformanceView: View {
     @State private var loseTradeExpand: Bool = false
     
     private var calculator: PerformanceCalculator {
-        return PerformanceCalculator(records: records, year: selectedYear)
+        return PerformanceCalculator(records: records, year: $selectedYear)
     }
     
     var filteredWinRecordsMemo: [String] {
@@ -77,7 +77,6 @@ struct OverallPerformanceView: View {
     var summarryView: some View {
         HStack {
             VStack(alignment: .leading) {
-                // FIXME: ここの数字がずれている！
                 let totalProfitAndLoss = calculator.calculateTotalProfitAndLoss()
                 MetricView(label: "合計損益", value: totalProfitAndLoss.withComma(), unit: "円", iconName: "dollarsign.circle", color: totalProfitAndLoss >= 0 ? .red : .blue)
                 MetricView(label: "平均保有日数", value: Int(calculator.calculateAverageHoldingPeriod()).description, unit: "日", iconName: "calendar", color: .primary)

@@ -11,7 +11,7 @@ import SwiftUI
 
 struct WinningTradesView: View {
     let records: [StockRecord]
-    let selectedYear: Int
+    @Binding var selectedYear: Int
     @State private var selectedRecord: StockRecord? = nil
     @State private var selectedSortType: PerformanceTradeSortType = .amount
     
@@ -33,7 +33,7 @@ struct WinningTradesView: View {
     }
     
     var body: some View {
-        let calculator = PerformanceCalculator(records: records, year: selectedYear)
+        let calculator = PerformanceCalculator(records: records, year: $selectedYear)
         
         let summary = TradeSummary(
             profitPercentage: calculator.calculateAverageProfitAndLossPercent() ?? 0,
@@ -183,6 +183,6 @@ extension WinningTradesView {
 }
 #if DEBUG
 #Preview {
-    WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0}, selectedYear: 2026)
+    WinningTradesView(records: StockRecord.mockRecords.filter{ $0.profitAndLossParcent ?? 0.0 > 0.0}, selectedYear: .constant(2026))
 }
 #endif
