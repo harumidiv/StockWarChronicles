@@ -12,7 +12,7 @@ import SwiftData
 final class TSEStockInfo {
     var name: String
     var code: String
-
+    
     init(name: String, code: String) {
         self.name = name
         self.code = code
@@ -34,7 +34,7 @@ struct StockWarChroniclesApp: App {
     }
 }
 
-/// ルートにぶら下げて、modelContext にアクセスしつつ .task で初期同期を行う薄いラッパー。
+/// JQuantsの無料版に制限があるので最終読み込みから１ヶ月以上経っている場合銘柄コードので読み込みを行う
 private struct BootstrapperView<Content: View>: View {
     @Environment(\.modelContext) private var context
     let apiClient: APIClient
@@ -43,13 +43,42 @@ private struct BootstrapperView<Content: View>: View {
     // 一度だけ実行するためのフラグ（再描画時の多重実行を防止）
     @State private var bootstrapped = false
     
+    // 前回通信日時（UserDefaultsに保存）
+    @AppStorage("lastListedInfoFetchDate") private var lastFetchISO8601: String = ""
+    
+    private var lastFetchDate: Date? {
+        ISO8601DateFormatter().date(from: lastFetchISO8601)
+    }
+    
+    private func shouldFetchNow(now: Date = Date()) -> Bool {
+        // 初回（未保存）の場合は取得
+        guard let last = lastFetchDate else { return true }
+        // 1ヶ月以上経過しているか（カレンダーの月差で判定）
+        let comps = Calendar.current.dateComponents([.month], from: last, to: now)
+        if let months = comps.month, months >= 1 {
+            return true
+        }
+
+        return false
+    }
+    
+    private func updateLastFetchDate(to date: Date = Date()) {
+        lastFetchISO8601 = ISO8601DateFormatter().string(from: date)
+    }
+    
     var body: some View {
         content()
             .task {
                 guard !bootstrapped else { return }
                 bootstrapped = true
                 
-                // TODO: 最後に取得した日付を保存しておいてそれからの経過期間で取得するかを決める
+                // 1ヶ月未満なら何もしない
+                guard shouldFetchNow() else {
+                    return
+                }
+                
+                
+                
                 let email = "harumi.hobby@gmail.com"
                 let password = "A7kL9mQ2R8sT"
                 
@@ -82,13 +111,14 @@ private struct BootstrapperView<Content: View>: View {
                     // まとめて保存
                     do {
                         try context.save()
-                        print("insert save success")
+                        // 成功したら最終取得日時を更新
+                        updateLastFetchDate()
                     } catch {
                         print("TSEStockInfo save failed: \(error)")
                     }
                     
                 } catch {
-                    // NOP（必要ならリトライやエラーハンドリングを実装）
+                    // 通信や認証で失敗した場合は日時更新しない
                 }
             }
     }
