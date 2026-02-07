@@ -6,8 +6,9 @@
 //
 
 import SwiftUI
+import SwiftData
 
-struct CSVStockInfo: Identifiable, Decodable {
+struct CSVStockInfo: Identifiable, Decodable, Hashable {
     var id = UUID()
     let code: String
     let name: String
@@ -22,6 +23,9 @@ struct StockInfoSectionView: View {
     @Binding var market: Market
     @Binding var code: String
     @Binding var name: String
+    
+    @Environment(\.modelContext) private var context
+    @Query private var tseStocks: [TSEStockInfo]
     
     @State private var tokyoMarketStockData: [CSVStockInfo] = []
     @State private var selectedStock: CSVStockInfo?
@@ -106,10 +110,17 @@ struct StockInfoSectionView: View {
         }
         .listRowSeparator(.hidden)
         .onAppear {
-            
-            // ここでCSVファイルを読み込み、allStockDataに格納する
-            if let stocks = readCSVFile(filename: "data_j") {
+            if !tseStocks.isEmpty {
+                // SwiftData のデータを優先して使用
+                self.tokyoMarketStockData = tseStocks.map { CSVStockInfo(code: $0.code, name: $0.name) }
+            } else if let stocks = readCSVFile(filename: "data_j") {
                 self.tokyoMarketStockData = stocks
+            }
+        }
+        // ここを復活: 保存完了後に自動で候補を更新
+        .onChange(of: tseStocks) { _, newValue in
+            if !newValue.isEmpty {
+                self.tokyoMarketStockData = newValue.map { CSVStockInfo(code: $0.code, name: $0.name) }
             }
         }
     }
