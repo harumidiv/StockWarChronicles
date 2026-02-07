@@ -25,64 +25,71 @@ struct StockWarChroniclesApp: App {
     
     var body: some Scene {
         WindowGroup {
-            PossessionScreen()
-                .modelContainer(for: [StockRecord.self, TSEStockInfo.self])
-                .environment(\.locale, Locale(identifier: "ja_JP"))
-                .overlay(
-                    EnvironmentContextAccessor { context in
-                        Task {
-                            // TODO: 最後に取得した日付を保存しておいてそれからの経過期間で取得するかを決める
-                            
-                            let email = "harumi.hobby@gmail.com"
-                            let password = "A7kL9mQ2R8sT"
-                            
-                            do {
-                                let authClient = AuthClient(client: apiClient)
-                                let stockClient = StockClient(client: apiClient)
-                                
-                                let refreshToken = try await authClient.fetchRefreshToken(mail: email, password: password)
-                                let idToken = try await authClient.fetchIdToken(refreshToken: refreshToken)
-                                
-                                let stockList = try await stockClient.fetchListedInfo(idToken: idToken)
-                                print(stockList.count)
-                                
-                                // 既存の TSEStockInfo を全削除してから新規保存
-                                try? context.fetch(FetchDescriptor<TSEStockInfo>()).forEach { context.delete($0) }
-                                
-                                // 新規データを一括挿入
-                                for info in stockList {
-                                    let model = TSEStockInfo(name: info.companyName, code: info.code)
-                                    context.insert(model)
-                                }
-                                
-                                // まとめて保存
-                                do {
-                                    try context.save()
-                                } catch {
-                                    print("TSEStockInfo save failed: \(error)")
-                                }
-                                
-                            } catch {
-                                // NOP
-                            }
-                        }
-                        return Color.clear
-                    }
-                )
+            BootstrapperView(apiClient: apiClient) {
+                PossessionScreen()
+            }
+            .modelContainer(for: [StockRecord.self, TSEStockInfo.self])
+            .environment(\.locale, Locale(identifier: "ja_JP"))
         }
     }
 }
 
-/// A lightweight helper to expose ModelContext within view modifiers/overlays.
-private struct EnvironmentContextAccessor<Content: View>: View {
+/// ルートにぶら下げて、modelContext にアクセスしつつ .task で初期同期を行う薄いラッパー。
+private struct BootstrapperView<Content: View>: View {
     @Environment(\.modelContext) private var context
-    let content: (ModelContext) -> Content
+    let apiClient: APIClient
+    @ViewBuilder var content: () -> Content
     
-    init(_ content: @escaping (ModelContext) -> Content) {
-        self.content = content
-    }
+    // 一度だけ実行するためのフラグ（再描画時の多重実行を防止）
+    @State private var bootstrapped = false
     
     var body: some View {
-        content(context)
+        content()
+            .task {
+                guard !bootstrapped else { return }
+                bootstrapped = true
+                
+                // TODO: 最後に取得した日付を保存しておいてそれからの経過期間で取得するかを決める
+                let email = "harumi.hobby@gmail.com"
+                let password = "A7kL9mQ2R8sT"
+                
+                do {
+                    let authClient = AuthClient(client: apiClient)
+                    let stockClient = StockClient(client: apiClient)
+                    
+                    let refreshToken = try await authClient.fetchRefreshToken(mail: email, password: password)
+                    let idToken = try await authClient.fetchIdToken(refreshToken: refreshToken)
+                    
+                    let stockList = try await stockClient.fetchListedInfo(idToken: idToken)
+                    
+                    // 既存の TSEStockInfo を全削除してから新規保存
+                    do {
+                        let existing: [TSEStockInfo] = try context.fetch(FetchDescriptor<TSEStockInfo>())
+                        existing.forEach { context.delete($0) }
+                        try context.save()
+                    } catch {
+                        print("purge failed:", error.localizedDescription)
+                    }
+                    
+                    // 新規データを一括挿入
+                    for info in stockList {
+                        // code を先頭4文字に丸める（4文字未満ならそのまま）
+                        let trimmedCode = String(info.code.prefix(4))
+                        let model = TSEStockInfo(name: info.companyName, code: trimmedCode)
+                        context.insert(model)
+                    }
+                    
+                    // まとめて保存
+                    do {
+                        try context.save()
+                        print("insert save success")
+                    } catch {
+                        print("TSEStockInfo save failed: \(error)")
+                    }
+                    
+                } catch {
+                    // NOP（必要ならリトライやエラーハンドリングを実装）
+                }
+            }
     }
 }
