@@ -77,8 +77,6 @@ private struct BootstrapperView<Content: View>: View {
                     return
                 }
                 
-                
-                
                 let email = "harumi.hobby@gmail.com"
                 let password = "A7kL9mQ2R8sT"
                 
