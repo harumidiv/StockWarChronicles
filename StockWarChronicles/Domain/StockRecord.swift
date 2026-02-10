@@ -96,10 +96,6 @@ final class StockRecord {
     
     /// 損益の%
     var profitAndLossParcent: Double? {
-        if !isTradeFinish {
-            return nil
-        }
-        
         let totalPurchaseAmount = Double(purchase.shares) * purchase.amount
         let totalSalesAmount = sales.map { Double($0.shares) * $0.amount }.reduce(0, +)
         
