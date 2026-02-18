@@ -135,13 +135,18 @@ struct PossessionMapScreen: View {
         var result: [PossesionChartData] = []
         
         for (code, records) in groupedRecords {
-            // value の合計: purchase.amount × shares / 10000
-            let totalValue = records.reduce(0.0) { partialResult, record in
-                partialResult + (record.purchase.amount * Double(record.purchase.shares) / 10000)
+            // 残株数で集計（売却分を差し引く）
+            let totalSharesValue: Int = records.reduce(0) { partialResult, record in
+                let soldShares = record.sales.map { $0.shares }.reduce(0, +)
+                let remaining = max(0, record.purchase.shares - soldShares)
+                return partialResult + remaining
             }
             
-            let totalSharesValue = records.reduce(0) { partialResult, record in
-                partialResult + record.purchase.shares
+            // value は購入単価 × 残株数 を万円単位に
+            let totalValue: Double = records.reduce(0.0) { partialResult, record in
+                let soldShares = record.sales.map { $0.shares }.reduce(0, +)
+                let remaining = max(0, record.purchase.shares - soldShares)
+                return partialResult + (record.purchase.amount * Double(remaining) / 10000)
             }
             
             // 名前は最初のレコードから取る（code は同じなので名前も同じ前提）
@@ -179,7 +184,9 @@ private extension Array where Element == StockRecord {
     /// 保有ポジションの建値合計
     func totalPurchaseValue() -> Double {
         self.reduce(0.0) { partialResult, record in
-            partialResult + (record.purchase.amount * Double(record.purchase.shares))
+            let soldShares = record.sales.map { $0.shares }.reduce(0, +)
+            let remaining = Swift.max(0, record.purchase.shares - soldShares)
+            return partialResult + (record.purchase.amount * Double(remaining))
         }
     }
 }
@@ -189,3 +196,4 @@ private extension Array where Element == StockRecord {
     PossessionMapScreen(record: StockRecord.mockRecords, showPossessionMapScreen: .constant(true))
 }
 #endif
+

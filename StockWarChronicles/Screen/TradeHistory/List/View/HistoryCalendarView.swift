@@ -113,12 +113,10 @@ struct HistoryCalendarView: View {
             .padding(.bottom, 4)
             
             List {
-                ForEach(monthAmountList(for: selectedDate)) { item in
-                    ExpenseRowView(item: item)
+                ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
+                    DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
                 }
             }
-            .listStyle(.plain)
-            
         }
     }
     
@@ -214,6 +212,29 @@ struct HistoryCalendarView: View {
         
         // 4. 合計損益を Int として返します。
         return Int(totalProfitAndLoss)
+    }
+    
+    /// 指定日の売却ごとの損益を返す
+    private func dailySales(for date: Date?) -> [(record: StockRecord, sale: StockTradeInfo, profit: Int)] {
+        guard let date = date else { return [] }
+        let calendar = Calendar.current
+        // 抽出: 指定日に売却がある (record, sale)
+        let pairs: [(StockRecord, StockTradeInfo)] = records.flatMap { record in
+            record.sales.filter { calendar.isDate($0.date, inSameDayAs: date) }.map { (record, $0) }
+        }
+        // 損益計算: その売却分だけの金額
+        let results: [(StockRecord, StockTradeInfo, Int)] = pairs.map { (record, sale) in
+            let profitPerShare: Double
+            switch record.position {
+            case .buy:
+                profitPerShare = sale.amount - record.purchase.amount
+            case .sell:
+                profitPerShare = record.purchase.amount - sale.amount
+            }
+            let profit = Int(profitPerShare * Double(sale.shares))
+            return (record, sale, profit)
+        }
+        return results
     }
 }
 
@@ -364,6 +385,35 @@ struct DayCell: View {
             return .black
         }
         return .primary
+    }
+}
+
+struct DailyExpenseRowView: View {
+    let record: StockRecord
+    let sale: StockTradeInfo
+    let profit: Int
+
+    var body: some View {
+        Group {
+            if record.isTradeFinish {
+                NavigationLink(destination: TradeHistoryDetailScreen(record: record)) {
+                    content
+                }
+            } else {
+                content
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var content: some View {
+        HStack {
+            Text(record.name)
+                .lineLimit(1)
+            Spacer()
+            Text("¥\(profit)")
+                .foregroundColor(profit < 0 ? .blue : .red)
+        }
     }
 }
 
