@@ -62,8 +62,15 @@ struct HistoryListView: View {
     @State private var searchText: String = ""
     
     private var sortedRecords: [StockRecord] {
-        var filteredRecords: [StockRecord] = records.filter {
-            Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        var filteredRecords: [StockRecord] = records.filter { record in
+            // Determine display year: last sell date's year if exists, else purchase year
+            let displayDate: Date
+            if let lastSaleDate = record.sales.map({ $0.date }).max() {
+                displayDate = lastSaleDate
+            } else {
+                displayDate = record.purchase.date
+            }
+            return Calendar.current.component(.year, from: displayDate) == selectedYear
         }
         
         if !searchText.isEmpty {
@@ -88,7 +95,11 @@ struct HistoryListView: View {
         
         switch currentSortType {
         case .date:
-            return filteredRecords.sorted { $0.purchase.date > $1.purchase.date }
+            return filteredRecords.sorted { lhs, rhs in
+                let lhsDate = lhs.sales.map({ $0.date }).max() ?? lhs.purchase.date
+                let rhsDate = rhs.sales.map({ $0.date }).max() ?? rhs.purchase.date
+                return lhsDate > rhsDate
+            }
             
         case .holdingPeriod:
             return filteredRecords.sorted { $0.holdingPeriod > $1.holdingPeriod }
@@ -102,16 +113,17 @@ struct HistoryListView: View {
     }
     
     private var availableYears: [Int] {
-        let allDates = records.map { $0.purchase.date }
-        let allYears = Set(allDates.map {
-            Calendar.current.component(.year, from: $0)
-        }).sorted(by: >)
+        let allDisplayDates: [Date] = records.map { record in
+            record.sales.map({ $0.date }).max() ?? record.purchase.date
+        }
+        let allYears = Set(allDisplayDates.map { Calendar.current.component(.year, from: $0) }).sorted(by: >)
         return allYears
     }
     
     private var allTags: [Tag] {
-        let filteredRecords: [StockRecord] = records.filter {
-            Calendar.current.component(.year, from: $0.purchase.date) == selectedYear
+        let filteredRecords: [StockRecord] = records.filter { record in
+            let displayDate = record.sales.map({ $0.date }).max() ?? record.purchase.date
+            return Calendar.current.component(.year, from: displayDate) == selectedYear
         }.filter { $0.isTradeFinish }
         
         var seenNames = Set<String>()
@@ -329,3 +341,4 @@ struct HistoryListView: View {
     }
 }
 #endif
+
