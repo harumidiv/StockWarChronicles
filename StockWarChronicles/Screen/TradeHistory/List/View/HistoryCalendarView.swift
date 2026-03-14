@@ -17,12 +17,17 @@ struct ExpenseItem: Identifiable {
 
 struct HistoryCalendarView: View {
     @Query private var records: [StockRecord]
+    @Query(sort: \DayMemo.normalizedDate, order: .forward) private var memos: [DayMemo]
+    
     @Environment(\.modelContext) private var context
     
     @Binding var selectedYear: Int
     
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date?
+    
+    @State private var isMemoSheetPresented: Bool = false
+    @State private var memoText: String = ""
     
     private var days: [Date?] {
         generateDays(for: displayDate)
@@ -76,6 +81,39 @@ struct HistoryCalendarView: View {
         return Int(totalProfitAndLoss)
     }
     
+    private func memo(for date: Date?) -> DayMemo? {
+        guard let date = date else { return nil }
+        let key = DayMemo.normalize(date)
+        return memos.first(where: { $0.normalizedDate == key })
+    }
+
+    private func openMemoEditor(for date: Date) {
+        selectedDate = date
+        memoText = memo(for: date)?.text ?? ""
+        isMemoSheetPresented = true
+    }
+
+    private func saveMemo() {
+        guard let selectedDate else { return }
+        let keyDate = DayMemo.normalize(selectedDate)
+        if let existing = memo(for: selectedDate) {
+            existing.text = memoText
+        } else {
+            let new = DayMemo(date: keyDate, text: memoText)
+            context.insert(new)
+        }
+        try? context.save()
+        isMemoSheetPresented = false
+    }
+
+    private func deleteMemo() {
+        guard let selectedDate, let existing = memo(for: selectedDate) else { return }
+        context.delete(existing)
+        try? context.save()
+        memoText = ""
+        isMemoSheetPresented = false
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             MonthHeaderView(selectedYear: $selectedYear, selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
@@ -113,8 +151,63 @@ struct HistoryCalendarView: View {
             .padding(.bottom, 4)
             
             List {
-                ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
-                    DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
+                // Memo header section for the selected date
+                Section(header:
+                    HStack {
+                        let effectiveDate = selectedDate ?? displayDate
+                        Text("メモ")
+                        Spacer()
+                        Button(action: {
+                            openMemoEditor(for: effectiveDate)
+                        }) {
+                            Image(systemName: memo(for: effectiveDate) == nil ? "plus.circle" : "pencil.circle")
+                        }
+                        .buttonStyle(.plain)
+                    }
+                ) {
+                    let effectiveDate = selectedDate ?? displayDate
+                    if let dayMemo = memo(for: effectiveDate), !dayMemo.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Text(dayMemo.text)
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                    }
+                }
+
+                // Sales list section
+                Section(header: Text("売却履歴")) {
+                    ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
+                        DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isMemoSheetPresented) {
+            NavigationStack {
+                VStack(alignment: .leading) {
+                    Text(selectedDate.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "")
+                        .font(.headline)
+                        .padding(.bottom, 8)
+                    TextEditor(text: $memoText)
+                        .frame(minHeight: 200)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(.quaternary))
+                        .padding(.bottom, 8)
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("メモ")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") { isMemoSheetPresented = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("保存") { saveMemo() }
+                            .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    if memo(for: selectedDate) != nil {
+                        ToolbarItem(placement: .bottomBar) {
+                            Button(role: .destructive, action: deleteMemo) { Text("メモを削除") }
+                        }
+                    }
                 }
             }
         }
