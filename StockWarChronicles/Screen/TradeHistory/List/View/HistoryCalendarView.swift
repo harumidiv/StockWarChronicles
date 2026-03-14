@@ -17,12 +17,17 @@ struct ExpenseItem: Identifiable {
 
 struct HistoryCalendarView: View {
     @Query private var records: [StockRecord]
+    @Query(sort: \DayMemo.normalizedDate, order: .forward) private var memos: [DayMemo]
+    
     @Environment(\.modelContext) private var context
     
     @Binding var selectedYear: Int
     
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date?
+    
+    @State private var isMemoSheetPresented: Bool = false
+    @State private var memoText: String = ""
     
     private var days: [Date?] {
         generateDays(for: displayDate)
@@ -33,47 +38,63 @@ struct HistoryCalendarView: View {
     
     private var totalExpense: Int {
         let calendar = Calendar.current
-        
-        // 1. 表示月に行われたすべての「売却」を、
-        //    元のStockRecord（購入情報）と一緒にタプルとして抽出します。
         let salesInMonth = records.flatMap { record -> [(record: StockRecord, saleInfo: StockTradeInfo)] in
-            
-            // record.sales の中から表示月と一致するものをフィルタリング
             let matchedSales = record.sales.filter { saleInfo in
                 calendar.isDate(saleInfo.date, equalTo: displayDate, toGranularity: .month)
             }
-            
-            // (record, saleInfo) のタプルの配列にして返す
             return matchedSales.map { (record: record, saleInfo: $0) }
         }
-        
-        // 2. その月に売却が一件もなければ 0 を返します。
         guard !salesInMonth.isEmpty else { return 0 }
-        
-        // 3. 抽出した売却情報タプルをループし、損益を計算して合計します（Double型で）。
         let totalProfitAndLoss = salesInMonth.reduce(0.0) { (currentTotal, tuple) in
-            
             let record = tuple.record
             let saleInfo = tuple.saleInfo
-            
             let profitPerShare: Double
-            
-            // ポジションに応じて1株あたりの損益を計算
             switch record.position {
             case .buy:
-                // 買いポジション: (売却単価 - 購入単価)
                 profitPerShare = saleInfo.amount - record.purchase.amount
             case .sell:
-                // 売りポジション: (購入単価 - 売却単価)
                 profitPerShare = record.purchase.amount - saleInfo.amount
             }
-            
-            // (1株あたり損益 * 売却株数) を現在の合計に加算します。
             return currentTotal + (profitPerShare * Double(saleInfo.shares))
         }
-        
-        // 4. 合計損益を Int として返します。
         return Int(totalProfitAndLoss)
+    }
+    
+    private func memo(for date: Date?) -> DayMemo? {
+        guard let date = date else { return nil }
+        let key = DayMemo.key(for: date)
+        return memos.first(where: { $0.dateKey == key })
+    }
+    
+    private func openMemoEditor(for date: Date) {
+        // selectedDate は変更しない。メモテキストだけ取得してシートを開く
+        memoText = memo(for: date)?.text ?? ""
+        isMemoSheetPresented = true
+    }
+    
+    private func saveMemo() {
+        let targetDate = selectedDate ?? displayDate
+        let trimmed = memoText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmed.isEmpty {
+            // 空文字なら既存メモを削除
+            if let existing = memo(for: targetDate) {
+                context.delete(existing)
+            }
+        } else if let existing = memo(for: targetDate) {
+            existing.text = trimmed
+        } else {
+            let new = DayMemo(date: targetDate, text: trimmed)
+            context.insert(new)
+        }
+        
+        do {
+            try context.save()
+            memoText = ""
+            isMemoSheetPresented = false
+        } catch {
+            print("Failed to save memo: \(error)")
+        }
     }
     
     var body: some View {
@@ -95,9 +116,7 @@ struct HistoryCalendarView: View {
             LazyVGrid(columns: columns, spacing: 15) {
                 ForEach(0..<days.count, id: \.self) { index in
                     let date = days[index]
-                    
                     let isSelected = selectedDate != nil && date != nil && Calendar.current.isDate(selectedDate!, inSameDayAs: date!)
-                    
                     DayCell(
                         date: date,
                         amount: dayTotalAmount(for: date),
@@ -113,8 +132,54 @@ struct HistoryCalendarView: View {
             .padding(.bottom, 4)
             
             List {
-                ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
-                    DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
+                Section(header:
+                            HStack {
+                    let effectiveDate = selectedDate ?? displayDate
+                    Text("メモ")
+                    Spacer()
+                    Button(action: {
+                        openMemoEditor(for: effectiveDate)
+                    }) {
+                        Image(systemName: memo(for: effectiveDate) == nil ? "plus.circle" : "pencil.circle")
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                ) {
+                    let effectiveDate = selectedDate ?? displayDate
+                    if let dayMemo = memo(for: effectiveDate), !dayMemo.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Text(dayMemo.text)
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                    }
+                }
+                
+                Section(header: Text("売却履歴")) {
+                    ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
+                        DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isMemoSheetPresented) {
+            NavigationStack {
+                VStack(alignment: .leading) {
+                    TextEditor(text: $memoText)
+                        .frame(minHeight: 200)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(.quaternary))
+                        .padding(.bottom, 8)
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("メモ")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") { isMemoSheetPresented = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("保存") { saveMemo() }
+                    }
                 }
             }
         }
@@ -122,107 +187,59 @@ struct HistoryCalendarView: View {
     
     private func generateDays(for date: Date) -> [Date?] {
         let calendar = Calendar.current
-        
-        // 1. 月の初日と日数を取得
         guard let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date)),
               let range = calendar.range(of: .day, in: .month, for: firstDayOfMonth) else {
             return []
         }
-        
-        // 2. 初日の曜日を取得 (1 = 日曜, 2 = 月曜, ...)
         let weekdayOfFirst = calendar.component(.weekday, from: firstDayOfMonth)
-        
-        // 3. 前月分の空白（nil）の数を計算
-        let paddingDays = weekdayOfFirst - 1 // 日曜 (1) なら 0個
-        
+        let paddingDays = weekdayOfFirst - 1
         var allDays: [Date?] = []
-        
-        // 4. 空白（nil）を配列に追加
         allDays.append(contentsOf: Array(repeating: nil, count: paddingDays))
-        
-        // 5. 当月の日付を配列に追加
         for day in 0..<range.count {
             if let date = calendar.date(byAdding: .day, value: day, to: firstDayOfMonth) {
                 allDays.append(date)
             }
         }
-        
         return allDays
     }
     
     private func monthAmountList(for date: Date?) -> [StockRecord] {
         guard let date = date else { return [] }
-        
-        // records が [StockRecord] の配列であると仮定します。
         return records.filter { record in
-            
-            // 売却日のいずれかが指定日と一致するかチェック
-            // .contains(where:) を使い、sales配列内に一致する日付が1つでもあればtrueを返す
-            return record.sales.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
+            record.sales.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
         }
     }
     
-    /**
-     * 指定された日付に発生したすべての売却（sales）による損益の合計金額を計算します。
-     *
-     * @param date 計算対象の日付。
-     * @return その日の合計損益（Int）。取引がなかった場合は nil。
-     */
     private func dayTotalAmount(for date: Date?) -> Int? {
         guard let date = date else { return nil }
-        
-        // 1. 指定された日付に行われたすべての売却（sales）を、
-        //    元のStockRecord（購入情報など）と一緒にタプルとして抽出します。
         let salesOnDate = records.flatMap { record -> [(record: StockRecord, saleInfo: StockTradeInfo)] in
-            
-            // record.sales の中から指定日と一致するものをフィルタリング
             let matchedSales = record.sales.filter { saleInfo in
                 Calendar.current.isDate(saleInfo.date, inSameDayAs: date)
             }
-            
-            // (record, saleInfo) のタプルの配列にして返します。
-            // これにより、どの売却がどの購入に対応するかがわかります。
             return matchedSales.map { (record: record, saleInfo: $0) }
         }
-        
-        // 2. その日に売却が一件もなければ nil を返します。
         guard !salesOnDate.isEmpty else { return nil }
-        
-        // 3. 抽出した売却情報タプルをループし、損益を計算して合計します（Double型で）。
         let totalProfitAndLoss = salesOnDate.reduce(0.0) { (currentTotal, tuple) in
-            
             let record = tuple.record
             let saleInfo = tuple.saleInfo
-            
             let profitPerShare: Double
-            
-            // ポジションに応じて1株あたりの損益を計算
             switch record.position {
             case .buy:
-                // 買いポジション: (売却単価 - 購入単価)
                 profitPerShare = saleInfo.amount - record.purchase.amount
             case .sell:
-                // 売りポジション: (購入単価 - 売却単価)
                 profitPerShare = record.purchase.amount - saleInfo.amount
             }
-            
-            // (1株あたり損益 * 売却株数) を現在の合計に加算します。
             return currentTotal + (profitPerShare * Double(saleInfo.shares))
         }
-        
-        // 4. 合計損益を Int として返します。
         return Int(totalProfitAndLoss)
     }
     
-    /// 指定日の売却ごとの損益を返す
     private func dailySales(for date: Date?) -> [(record: StockRecord, sale: StockTradeInfo, profit: Int)] {
         guard let date = date else { return [] }
         let calendar = Calendar.current
-        // 抽出: 指定日に売却がある (record, sale)
         let pairs: [(StockRecord, StockTradeInfo)] = records.flatMap { record in
             record.sales.filter { calendar.isDate($0.date, inSameDayAs: date) }.map { (record, $0) }
         }
-        // 損益計算: その売却分だけの金額
         let results: [(StockRecord, StockTradeInfo, Int)] = pairs.map { (record, sale) in
             let profitPerShare: Double
             switch record.position {
@@ -253,7 +270,6 @@ struct MonthHeaderView: View {
     
     var body: some View {
         VStack {
-            
             HStack(alignment: .bottom) {
                 Text("合計損益:")
                     .font(.title)
@@ -264,7 +280,6 @@ struct MonthHeaderView: View {
                     .foregroundColor(total >= 0 ? .red : .blue)
                 Text("円")
                     .font(.title)
-                
             }
             HStack {
                 Button(action: {
@@ -297,8 +312,6 @@ struct MonthHeaderView: View {
                 .contentShape(Rectangle())
                 
                 Spacer()
-                
-                
             }
         }
     }
@@ -314,7 +327,6 @@ struct MonthHeaderView: View {
 struct DayCell: View {
     let date: Date?
     let amount: Int?
-    
     let isSelected: Bool
     let onTap: () -> Void
     
@@ -330,9 +342,7 @@ struct DayCell: View {
     
     var body: some View {
         Button(action: {
-            if date != nil {
-                onTap()
-            }
+            if date != nil { onTap() }
         }) {
             VStack(spacing: 4) {
                 if date != nil {
@@ -349,15 +359,13 @@ struct DayCell: View {
                             .font(.caption2)
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
-                            .foregroundColor(amount > 0 ? .red: .blue)
+                            .foregroundColor(amount > 0 ? .red : .blue)
                     } else {
                         Text(" ")
                             .font(.caption2)
                     }
-                    
                 } else {
-                    Spacer()
-                        .frame(height: 50)
+                    Spacer().frame(height: 50)
                 }
             }
             .frame(height: 50)
@@ -367,24 +375,16 @@ struct DayCell: View {
     
     @ViewBuilder
     private var backgroundCircle: some View {
-        if isToday {
-            Circle().fill(Color.yellow.opacity(0.8))
-        }
+        if isToday { Circle().fill(Color.yellow.opacity(0.8)) }
     }
     
     @ViewBuilder
     private var selectionOverlay: some View {
-        if isSelected {
-            Circle()
-                .stroke(Color.green, lineWidth: 2)
-        }
+        if isSelected { Circle().stroke(Color.green, lineWidth: 2) }
     }
     
     private var textColor: Color {
-        if isToday {
-            return .black
-        }
-        return .primary
+        isToday ? .black : .primary
     }
 }
 
@@ -392,7 +392,7 @@ struct DailyExpenseRowView: View {
     let record: StockRecord
     let sale: StockTradeInfo
     let profit: Int
-
+    
     var body: some View {
         Group {
             if record.isTradeFinish {
@@ -405,14 +405,12 @@ struct DailyExpenseRowView: View {
         }
         .padding(.horizontal)
     }
-
+    
     private var content: some View {
         HStack {
-            Text(record.name)
-                .lineLimit(1)
+            Text(record.name).lineLimit(1)
             Spacer()
-            Text("¥\(profit)")
-                .foregroundColor(profit < 0 ? .blue : .red)
+            Text("¥\(profit)").foregroundColor(profit < 0 ? .blue : .red)
         }
     }
 }
@@ -423,7 +421,7 @@ struct ExpenseRowView: View {
     var body: some View {
         Group {
             if item.isTradeFinish {
-                NavigationLink(destination: TradeHistoryDetailScreen(record: item)){
+                NavigationLink(destination: TradeHistoryDetailScreen(record: item)) {
                     content
                 }
             } else {
@@ -435,12 +433,9 @@ struct ExpenseRowView: View {
     
     var content: some View {
         HStack {
-            Text(item.name)
-                .lineLimit(1)
+            Text(item.name).lineLimit(1)
             Spacer()
-            Text("¥\(item.profitAndLoss)")
-                .foregroundColor(item.profitAndLoss < 0 ? .blue : .red)
+            Text("¥\(item.profitAndLoss)").foregroundColor(item.profitAndLoss < 0 ? .blue : .red)
         }
     }
 }
-
