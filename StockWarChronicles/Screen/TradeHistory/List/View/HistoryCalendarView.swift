@@ -65,21 +65,29 @@ struct HistoryCalendarView: View {
         let key = DayMemo.key(for: date)
         return memos.first(where: { $0.dateKey == key })
     }
-
+    
     private func openMemoEditor(for date: Date) {
         // selectedDate は変更しない。メモテキストだけ取得してシートを開く
         memoText = memo(for: date)?.text ?? ""
         isMemoSheetPresented = true
     }
-
+    
     private func saveMemo() {
         let targetDate = selectedDate ?? displayDate
-        if let existing = memo(for: targetDate) {
-            existing.text = memoText
+        let trimmed = memoText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmed.isEmpty {
+            // 空文字なら既存メモを削除
+            if let existing = memo(for: targetDate) {
+                context.delete(existing)
+            }
+        } else if let existing = memo(for: targetDate) {
+            existing.text = trimmed
         } else {
-            let new = DayMemo(date: targetDate, text: memoText)
+            let new = DayMemo(date: targetDate, text: trimmed)
             context.insert(new)
         }
+        
         do {
             try context.save()
             memoText = ""
@@ -87,20 +95,6 @@ struct HistoryCalendarView: View {
         } catch {
             print("Failed to save memo: \(error)")
         }
-    }
-
-    private func deleteMemo() {
-        let targetDate = selectedDate ?? displayDate
-        if let existing = memo(for: targetDate) {
-            context.delete(existing)
-            do {
-                try context.save()
-            } catch {
-                print("Failed to delete memo: \(error)")
-            }
-        }
-        memoText = ""
-        isMemoSheetPresented = false
     }
     
     var body: some View {
@@ -139,17 +133,19 @@ struct HistoryCalendarView: View {
             
             List {
                 Section(header:
-                    HStack {
-                        let effectiveDate = selectedDate ?? displayDate
-                        Text("メモ")
-                        Spacer()
-                        Button(action: {
-                            openMemoEditor(for: effectiveDate)
-                        }) {
-                            Image(systemName: memo(for: effectiveDate) == nil ? "plus.circle" : "pencil.circle")
-                        }
-                        .buttonStyle(.plain)
+                            HStack {
+                    let effectiveDate = selectedDate ?? displayDate
+                    Text("メモ")
+                    Spacer()
+                    Button(action: {
+                        openMemoEditor(for: effectiveDate)
+                    }) {
+                        Image(systemName: memo(for: effectiveDate) == nil ? "plus.circle" : "pencil.circle")
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                }
                 ) {
                     let effectiveDate = selectedDate ?? displayDate
                     if let dayMemo = memo(for: effectiveDate), !dayMemo.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -158,7 +154,7 @@ struct HistoryCalendarView: View {
                             .foregroundStyle(.primary)
                     }
                 }
-
+                
                 Section(header: Text("売却履歴")) {
                     ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
                         DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
@@ -187,12 +183,6 @@ struct HistoryCalendarView: View {
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("保存") { saveMemo() }
-                            .disabled(memoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-                    if memo(for: selectedDate ?? displayDate) != nil {
-                        ToolbarItem(placement: .bottomBar) {
-                            Button(role: .destructive, action: deleteMemo) { Text("メモを削除") }
-                        }
                     }
                 }
             }
@@ -406,7 +396,7 @@ struct DailyExpenseRowView: View {
     let record: StockRecord
     let sale: StockTradeInfo
     let profit: Int
-
+    
     var body: some View {
         Group {
             if record.isTradeFinish {
@@ -419,7 +409,7 @@ struct DailyExpenseRowView: View {
         }
         .padding(.horizontal)
     }
-
+    
     private var content: some View {
         HStack {
             Text(record.name).lineLimit(1)
