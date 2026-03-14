@@ -165,10 +165,6 @@ struct HistoryCalendarView: View {
         .sheet(isPresented: $isMemoSheetPresented) {
             NavigationStack {
                 VStack(alignment: .leading) {
-                    let effectiveDate = selectedDate ?? displayDate
-                    Text(effectiveDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.headline)
-                        .padding(.bottom, 8)
                     TextEditor(text: $memoText)
                         .frame(minHeight: 200)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(.quaternary))
