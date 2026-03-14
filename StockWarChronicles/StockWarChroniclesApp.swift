@@ -28,7 +28,7 @@ struct StockWarChroniclesApp: App {
             BootstrapperView(apiClient: apiClient) {
                 PossessionScreen()
             }
-            .modelContainer(for: [StockRecord.self, TSEStockInfo.self])
+            .modelContainer(for: [StockRecord.self, TSEStockInfo.self, DayMemo.self])
             .environment(\.locale, Locale(identifier: "ja_JP"))
         }
     }
