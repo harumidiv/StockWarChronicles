@@ -24,7 +24,7 @@ struct HistoryCalendarView: View {
     @Binding var selectedYear: Int
     
     @State private var displayDate: Date = Date()
-    @State private var selectedDate: Date?
+    @State private var selectedDate: Date? = Calendar.current.startOfDay(for: Date())
     
     @State private var isMemoSheetPresented: Bool = false
     @State private var memoText: String = ""
