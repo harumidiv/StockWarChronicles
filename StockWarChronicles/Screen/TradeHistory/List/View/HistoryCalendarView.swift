@@ -98,42 +98,41 @@ struct HistoryCalendarView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            MonthHeaderView(selectedYear: $selectedYear, selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
-                .padding()
-            
-            HStack(spacing: 0) {
-                ForEach(weekdays, id: \.self) { day in
-                    Text(day)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 8)
-            
-            LazyVGrid(columns: columns, spacing: 15) {
-                ForEach(0..<days.count, id: \.self) { index in
-                    let date = days[index]
-                    let isSelected = selectedDate != nil && date != nil && Calendar.current.isDate(selectedDate!, inSameDayAs: date!)
-                    DayCell(
-                        date: date,
-                        amount: dayTotalAmount(for: date),
-                        isSelected: isSelected,
-                        onTap: {
-                            selectedDate = date
+        List {
+            Section {
+                MonthHeaderView(selectedYear: $selectedYear, selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
+
+                VStack(spacing: 8) {
+                    HStack(spacing: 0) {
+                        ForEach(weekdays, id: \.self) { day in
+                            Text(day)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .frame(maxWidth: .infinity)
+                                .foregroundStyle(.secondary)
                         }
-                    )
+                    }
+
+                    LazyVGrid(columns: columns, spacing: 15) {
+                        ForEach(0..<days.count, id: \.self) { index in
+                            let date = days[index]
+                            let isSelected = selectedDate != nil && date != nil && Calendar.current.isDate(selectedDate!, inSameDayAs: date!)
+                            DayCell(
+                                date: date,
+                                amount: dayTotalAmount(for: date),
+                                isSelected: isSelected,
+                                onTap: { selectedDate = date }
+                            )
+                        }
+                    }
+                    .padding(.bottom, 4)
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, 10)
-            .padding(.bottom, 4)
-            
-            List {
-                Section(header:
-                            HStack {
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            .listRowSeparator(.hidden)
+
+            Section(header:
+                HStack {
                     let effectiveDate = selectedDate ?? displayDate
                     Text("メモ")
                     Spacer()
@@ -146,17 +145,19 @@ struct HistoryCalendarView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                ) {
-                    let effectiveDate = selectedDate ?? displayDate
-                    if let dayMemo = memo(for: effectiveDate), !dayMemo.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text(dayMemo.text)
-                            .font(.body)
-                            .foregroundStyle(.primary)
-                    }
+            ) {
+                let effectiveDate = selectedDate ?? displayDate
+                if let dayMemo = memo(for: effectiveDate), !dayMemo.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text(dayMemo.text)
+                        .font(.body)
+                        .foregroundStyle(.primary)
                 }
-                
+            }
+
+            let sales = dailySales(for: selectedDate)
+            if !sales.isEmpty {
                 Section(header: Text("売却履歴")) {
-                    ForEach(dailySales(for: selectedDate), id: \.sale.id) { tuple in
+                    ForEach(sales, id: \.sale.id) { tuple in
                         DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
                     }
                 }
@@ -290,15 +291,16 @@ struct MonthHeaderView: View {
                         .font(.title3)
                         .padding()
                 }
+                .buttonStyle(.borderless)
                 .tint(.primary)
                 .frame(width: 50)
                 .contentShape(Rectangle())
-                
+
                 Text(dateFormatter.string(from: displayDate))
                     .font(.title3)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
-                
+
                 Button(action: {
                     changeMonth(by: 1)
                     selectedDate = nil
@@ -307,6 +309,7 @@ struct MonthHeaderView: View {
                         .font(.title3)
                         .padding()
                 }
+                .buttonStyle(.borderless)
                 .tint(.primary)
                 .frame(width: 50)
                 .contentShape(Rectangle())
