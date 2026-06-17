@@ -32,6 +32,7 @@ struct TradeHistoryScreen: View {
     
     // レビューダイアログ
     @AppStorage("reviewCount") var reviewCount: Int = 0
+    @AppStorage("lastReviewVersion") var lastReviewVersion: String = ""
     @Environment(\.requestReview) private var requestReview
     
     var body: some View {
@@ -46,8 +47,11 @@ struct TradeHistoryScreen: View {
             }
             .onAppear {
                 reviewCount += 1
-                if reviewCount % 10 == 0 {
+                let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+                if reviewCount >= 100, lastReviewVersion != currentVersion {
                     requestReview()
+                    lastReviewVersion = currentVersion
+                    reviewCount = 0
                 }
             }
             .toolbarTitleMenu {
