@@ -25,7 +25,6 @@ struct AddScreen: View {
     
     @State private var keyboardIsPresented: Bool = false
     @FocusState private var focusedField: StockFormFocusFields?
-    @State private var isNeedNextBotton: Bool = false
     
     var amount: Double {
         Double(amountText) ?? 0
@@ -37,24 +36,27 @@ struct AddScreen: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                ScrollViewReader { proxy in
-                    Form {
-                        StockFormView(
-                            code: $code, market: $market, name: $name,
-                            date: $date, position: $position, amountText: $amountText,
-                            sharesText: $sharesText, emotion: $emotion,
-                            reason: $reason, selectedTags: $selectedTags, focusedField: $focusedField
-                        )
-                    }
-                    .onChange(of: focusedField) {
-                        if let focusedField = focusedField {
-                            withAnimation {
-                                proxy.scrollTo(focusedField, anchor: .top)
-                            }
+            ScrollViewReader { proxy in
+                Form {
+                    StockFormView(
+                        code: $code, market: $market, name: $name,
+                        date: $date, position: $position, amountText: $amountText,
+                        sharesText: $sharesText, emotion: $emotion,
+                        reason: $reason, selectedTags: $selectedTags, focusedField: $focusedField
+                    )
+                }
+                .onChange(of: focusedField) {
+                    if let focusedField = focusedField {
+                        withAnimation {
+                            proxy.scrollTo(focusedField.scrollAnchor, anchor: .top)
                         }
                     }
                 }
+                .withKeyboardToolbar(
+                    keyboardIsPresented: $keyboardIsPresented,
+                    focusedField: $focusedField,
+                    scrollProxy: proxy
+                )
             }
             .navigationTitle("追加")
             .toolbar {
@@ -80,20 +82,6 @@ struct AddScreen: View {
                         })
                     .disabled(isDisable)
                 }
-            }
-        }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented, isNeedNextBotton: $isNeedNextBotton) {
-            focusedField = focusedField?.next()
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        }
-        .onChange(of: focusedField) {
-            switch focusedField {
-            case .code, .amount, .shares:
-                isNeedNextBotton = true
-            case .name, .memo, .tag:
-                isNeedNextBotton = false
-            case nil:
-                isNeedNextBotton = false
             }
         }
     }

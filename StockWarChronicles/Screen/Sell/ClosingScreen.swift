@@ -139,8 +139,7 @@ struct ClosingScreen: View {
                 }
             }
         }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented) { // NOP
-        }
+        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
         .onAppear {
             shares = record.remainingShares
             sellUnit = (shares % 100 == 0) ? .hundreds : .ones

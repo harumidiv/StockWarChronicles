@@ -34,7 +34,7 @@ struct EditScreen: View {
     
     var body: some View {
         NavigationView {
-            VStack {
+            ScrollViewReader { proxy in
                 Form {
                     StockFormView(
                         code: $code,
@@ -47,108 +47,117 @@ struct EditScreen: View {
                         emotion: $emotion,
                         reason: $reason,
                         selectedTags: $selectedTags,
-                        focusedField: $focusedField
+                            focusedField: $focusedField
                     )
                     
                     if !sales.isEmpty {
                         StockSellEditView(sales: $sales)
                     }
                 }
+                .onChange(of: focusedField) {
+                    if let focusedField = focusedField {
+                        withAnimation {
+                            proxy.scrollTo(focusedField.scrollAnchor, anchor: .top)
+                        }
+                    }
+                }
+                .withKeyboardToolbar(
+                    keyboardIsPresented: $keyboardIsPresented,
+                    focusedField: $focusedField,
+                    scrollProxy: proxy
+                )
             }
             .navigationTitle("編集")
-            .toolbar {
+                .toolbar {
                 
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        if code != record.code ||
-                            market != record.market ||
-                            name != record.name ||
-                            date != record.purchase.date ||
-                            position != record.position ||
-                            amountText != String(record.purchase.amount) ||
-                            sharesText != String(record.purchase.shares) ||
-                            emotion != record.purchase.emotion ||
-                            reason != record.purchase.reason ||
-                            Set(selectedTags.map { $0.name }) != Set(record.tags.map { $0.name }) ||
-                            sales.count != record.sales.count {
-                            showSaveConfirmAlert.toggle()
-                        } else {
-                            dismiss()
-                        }
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button (
-                        action: {
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            /// 売り枚数の方が方が大きくなっていないか
-                            let totalSold = sales.map(\.shares).reduce(0, +)
-                            let isOversold =  totalSold > Int(sharesText) ?? 0
-                            
-                            let totalSoldDate = sales.map(\.date)
-                            let calendar = Calendar.current
-                            let startOfDate = calendar.startOfDay(for: date)
-                            
-                            let isInvalidDate = totalSoldDate.first(where: {
-                                let startOfSoldDate = calendar.startOfDay(for: $0)
-                                return startOfSoldDate < startOfDate
-                            }) != nil
-                            
-                            if isOversold || isInvalidDate {
-                                showOversoldAlert.toggle()
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            if code != record.code ||
+                                market != record.market ||
+                                name != record.name ||
+                                date != record.purchase.date ||
+                                position != record.position ||
+                                amountText != String(record.purchase.amount) ||
+                                sharesText != String(record.purchase.shares) ||
+                                emotion != record.purchase.emotion ||
+                                reason != record.purchase.reason ||
+                                Set(selectedTags.map { $0.name }) != Set(record.tags.map { $0.name }) ||
+                                sales.count != record.sales.count {
+                                showSaveConfirmAlert.toggle()
                             } else {
-                                saveChanges()
+                                dismiss()
                             }
-                            
-                        },
-                        label: {
-                            HStack {
-                                Image(systemName: "externaldrive")
-                                Text("保存")
-                            }
-                            .padding(.horizontal)
-                            
-                        })
-                    
-                }
-                
-                if !keyboardIsPresented {
-                    ToolbarSpacer(.flexible, placement: .bottomBar)
-                    ToolbarItem(placement: .bottomBar) {
-                        Button("delete", systemImage: "trash") {
-                            showDeleteAlert = true
+                        } label: {
+                            Image(systemName: "xmark")
                         }
-                        .tint(.red)
+                    }
+                
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button (
+                            action: {
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                /// 売り枚数の方が方が大きくなっていないか
+                                let totalSold = sales.map(\.shares).reduce(0, +)
+                                let isOversold =  totalSold > Int(sharesText) ?? 0
+                            
+                                let totalSoldDate = sales.map(\.date)
+                                let calendar = Calendar.current
+                                let startOfDate = calendar.startOfDay(for: date)
+                            
+                                let isInvalidDate = totalSoldDate.first(where: {
+                                    let startOfSoldDate = calendar.startOfDay(for: $0)
+                                    return startOfSoldDate < startOfDate
+                                }) != nil
+                            
+                                if isOversold || isInvalidDate {
+                                    showOversoldAlert.toggle()
+                                } else {
+                                    saveChanges()
+                                }
+                            
+                            },
+                            label: {
+                                HStack {
+                                    Image(systemName: "externaldrive")
+                                    Text("保存")
+                                }
+                                .padding(.horizontal)
+                            
+                            })
+                    
+                    }
+                
+                    if !keyboardIsPresented {
+                        ToolbarSpacer(.flexible, placement: .bottomBar)
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("delete", systemImage: "trash") {
+                                showDeleteAlert = true
+                            }
+                            .tint(.red)
+                        }
                     }
                 }
-            }
-            .alert("株数か日付に不備があります", isPresented: $showOversoldAlert) {
-                Button("閉じる", role: .cancel) { }
-            } message: {
-                Text("内容を修正してください。")
-            }
-            .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
-                Button("削除", role: .destructive) {
-                    deleteHistory()
+                .alert("株数か日付に不備があります", isPresented: $showOversoldAlert) {
+                    Button("閉じる", role: .cancel) { }
+                } message: {
+                    Text("内容を修正してください。")
                 }
-                Button("キャンセル", role: .cancel) { }
-            } message: {
-                Text("この株取引データは完全に削除されます。")
-            }
-            .alert("変更が保存されていません", isPresented: $showSaveConfirmAlert) {
-                Button("破棄", role: .destructive) {
-                    dismiss()
+                .alert("本当に削除しますか？", isPresented: $showDeleteAlert) {
+                    Button("削除", role: .destructive) {
+                        deleteHistory()
+                    }
+                    Button("キャンセル", role: .cancel) { }
+                } message: {
+                    Text("この株取引データは完全に削除されます。")
                 }
-                Button("キャンセル", role: .cancel) { }
-            } message: {
-                Text("保存せずに閉じますか？")
-            }
-        }
-        .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented) {
-            focusedField = focusedField?.next()
+                .alert("変更が保存されていません", isPresented: $showSaveConfirmAlert) {
+                    Button("破棄", role: .destructive) {
+                        dismiss()
+                    }
+                    Button("キャンセル", role: .cancel) { }
+                } message: {
+                    Text("保存せずに閉じますか？")
+                }
         }
         .onAppear {
             code = record.code
