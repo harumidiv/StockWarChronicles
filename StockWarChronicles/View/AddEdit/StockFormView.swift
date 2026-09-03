@@ -16,14 +16,34 @@ enum StockFormFocusFields: Hashable {
     case memo
     case tag
     
+    /// キーボードツールバーの上下ボタンで移動する順序
+    /// 感情はPickerでキーボードを使わないため、tagとあわせて対象外
+    private static let navigationOrder: [StockFormFocusFields] = [.code, .name, .amount, .shares, .memo]
+    
     func next() -> StockFormFocusFields? {
+        guard let index = Self.navigationOrder.firstIndex(of: self),
+              Self.navigationOrder.indices.contains(index + 1) else {
+            return nil
+        }
+        return Self.navigationOrder[index + 1]
+    }
+    
+    func previous() -> StockFormFocusFields? {
+        guard let index = Self.navigationOrder.firstIndex(of: self),
+              Self.navigationOrder.indices.contains(index - 1) else {
+            return nil
+        }
+        return Self.navigationOrder[index - 1]
+    }
+    
+    /// スクロール先のID
+    /// scrollToはFormの行単位でしか効かないため、同じ行に並ぶフィールドは代表のIDに寄せる
+    var scrollAnchor: StockFormFocusFields {
         switch self {
-        case .code: return .name
-        case .name: return nil
-        case .amount: return .shares
-        case .shares: return .memo
-        case .memo: return nil
-        case .tag: return nil
+        case .code, .name: return .name
+        case .amount, .shares: return .amount
+        case .memo: return .memo
+        case .tag: return .tag
         }
     }
 }
@@ -52,8 +72,6 @@ struct StockFormView: View {
         .id(StockFormFocusFields.name)
     
         tradeInfoSection
-            .id(StockFormFocusFields.amount)
-            .id(StockFormFocusFields.shares)
         
         TagSelectionView(selectedTags: $selectedTags)
             .focused($focusedField, equals: .tag)
@@ -110,6 +128,7 @@ struct StockFormView: View {
                 }
                 .padding(.leading)
             }
+            .id(StockFormFocusFields.amount)
             
             HStack {
                 VStack {
@@ -137,6 +156,7 @@ struct StockFormView: View {
                 VariableHeightTextEditor(text: $reason)
                     .focused($focusedField, equals: .memo)
             }
+            .id(StockFormFocusFields.memo)
         }
         .listRowSeparator(.hidden)
     }
