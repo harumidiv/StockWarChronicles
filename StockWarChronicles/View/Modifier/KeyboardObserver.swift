@@ -56,21 +56,20 @@ struct KeyboardObserver: ViewModifier {
     @Binding var keyboardIsPresented: Bool
 
     func body(content: Content) -> some View {
-        VStack(spacing: 0) {
-            content
-
-            if keyboardIsPresented {
-                KeyboardToolbar(
-                    isFieldNavigationEnabled: false,
-                    canGoPrevious: false,
-                    canGoNext: false,
-                    onPrevious: {},
-                    onNext: {},
-                    onDone: { UIApplication.shared.closeKeyboard() }
-                )
+        content
+            .overlay(alignment: .bottom) {
+                if keyboardIsPresented {
+                    KeyboardToolbar(
+                        isFieldNavigationEnabled: false,
+                        canGoPrevious: false,
+                        canGoNext: false,
+                        onPrevious: {},
+                        onNext: {},
+                        onDone: { UIApplication.shared.closeKeyboard() }
+                    )
+                }
             }
-        }
-        .observeKeyboardPresence($keyboardIsPresented)
+            .observeKeyboardPresence($keyboardIsPresented)
     }
 }
 
@@ -81,24 +80,23 @@ struct StockFormKeyboardObserver: ViewModifier {
     let scrollProxy: ScrollViewProxy
 
     func body(content: Content) -> some View {
-        VStack(spacing: 0) {
-            content
-
-            if keyboardIsPresented {
-                KeyboardToolbar(
-                    isFieldNavigationEnabled: true,
-                    canGoPrevious: focusedField?.previous() != nil,
-                    canGoNext: focusedField?.next() != nil,
-                    onPrevious: { move(to: focusedField?.previous()) },
-                    onNext: { move(to: focusedField?.next()) },
-                    onDone: {
-                        focusedField = nil
-                        UIApplication.shared.closeKeyboard()
-                    }
-                )
+        content
+            .overlay(alignment: .bottom) {
+                if keyboardIsPresented {
+                    KeyboardToolbar(
+                        isFieldNavigationEnabled: true,
+                        canGoPrevious: focusedField?.previous() != nil,
+                        canGoNext: focusedField?.next() != nil,
+                        onPrevious: { move(to: focusedField?.previous()) },
+                        onNext: { move(to: focusedField?.next()) },
+                        onDone: {
+                            focusedField = nil
+                            UIApplication.shared.closeKeyboard()
+                        }
+                    )
+                }
             }
-        }
-        .observeKeyboardPresence($keyboardIsPresented)
+            .observeKeyboardPresence($keyboardIsPresented)
     }
 
     /// Formの行は画面外だと生成されず`focused`も登録されないため、
