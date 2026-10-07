@@ -45,6 +45,9 @@ struct TradeHistoryScreen: View {
                     HistoryListView(showTradeHistoryListScreen: $showTradeHistoryListScreen, selectedYear: $selectedYear)
                 }
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                AdMobBannerView()
+            }
             .onAppear {
                 reviewCount += 1
                 let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import GoogleMobileAds
 
 @Model
 final class TSEStockInfo {
@@ -22,6 +23,10 @@ final class TSEStockInfo {
 @main
 struct StockWarChroniclesApp: App {
     private let apiClient = APIClient()
+
+    init() {
+        MobileAds.shared.start()
+    }
     
     var body: some Scene {
         WindowGroup {
