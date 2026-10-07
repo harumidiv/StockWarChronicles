@@ -23,6 +23,7 @@ final class TSEStockInfo {
 @main
 struct StockWarChroniclesApp: App {
     private let apiClient = APIClient()
+    @StateObject private var rewardedAdManager = RewardedAdManager()
 
     init() {
         MobileAds.shared.start()
@@ -35,6 +36,10 @@ struct StockWarChroniclesApp: App {
             }
             .modelContainer(for: [StockRecord.self, TSEStockInfo.self, DayMemo.self])
             .environment(\.locale, Locale(identifier: "ja_JP"))
+            .environmentObject(rewardedAdManager)
+            .task {
+                await rewardedAdManager.loadAd()
+            }
         }
     }
 }

@@ -36,17 +36,6 @@ struct AdMobBannerView: View {
     }
 }
 
-private enum AdMobConfiguration {
-    static var bannerAdUnitID: String {
-#if DEBUG
-        // Google-provided iOS banner test ad unit ID.
-        return "ca-app-pub-3940256099942544/2435281174"
-#else
-        return "ca-app-pub-8522231452310619/6089502791"
-#endif
-    }
-}
-
 private struct BannerViewContainer: UIViewRepresentable {
     let adSize: AdSize
     let adUnitID: String

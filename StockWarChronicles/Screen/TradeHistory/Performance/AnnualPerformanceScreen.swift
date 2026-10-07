@@ -106,5 +106,6 @@ struct AnnualPerformanceScreen: View {
     
     return AnnualPerformanceScreen(selectedYear: .constant(2024))
         .modelContainer(container)
+        .environmentObject(RewardedAdManager())
 }
 #endif

@@ -9,9 +9,52 @@ import SwiftUI
 import FoundationModels
 
 struct OverallPerformanceView: View {
+    private enum AdviceKind: String, Hashable, Identifiable {
+        case winning
+        case losing
+
+        var id: Self { self }
+
+        var navigationTitle: String {
+            switch self {
+            case .winning:
+                return "勝ちトレードAI分析"
+            case .losing:
+                return "負けトレードAI分析"
+            }
+        }
+
+        var instructions: String {
+            switch self {
+            case .winning:
+                return """
+                あなたはプロのトレードコーチです。
+                ユーザーのトレード記録と感情メモを分析し、勝った原因と今後の改善策を明確に示してください。
+                [感情:メモ]の形でデータを渡されます
+                感情的にならず、客観的かつ実践的に回答してください。
+                出力は次の形式にしてください：
+                1. どんな成功が多かったか
+                2. 改善案
+                """
+            case .losing:
+                return """
+                あなたはプロのトレードコーチです。
+                ユーザーのトレード記録と感情メモを分析し、負けた原因と今後の改善策を明確に示してください。
+                [感情:メモ]の形でデータを渡されます
+                感情的にならず、客観的かつ実践的に回答してください。
+                出力は次の形式にしてください：
+                1. どんな失敗が多かったか
+                2. 改善案
+                """
+            }
+        }
+    }
+
     let records: [StockRecord]
     @Binding var selectedYear: Int
     @State private var monthlyPerformance: [MonthlyPerformance] = []
+
+    @State private var selectedAdvice: AdviceKind?
     
     @State private var winTradeExpanded: Bool = false
     @State private var loseTradeExpand: Bool = false
@@ -66,6 +109,13 @@ struct OverallPerformanceView: View {
             .padding()
         }
         .navigationTitle("全体パフォーマンス")
+        .navigationDestination(item: $selectedAdvice) { kind in
+            AdviceView(
+                navigationTitle: kind.navigationTitle,
+                instructions: kind.instructions,
+                prompt: prompt(for: kind)
+            )
+        }
         .onAppear {
             monthlyPerformance = calculator.calculateMonthlyProfit()
         }
@@ -102,45 +152,19 @@ struct OverallPerformanceView: View {
     }
     
     var aiWinAdviceView: some View {
-        let instructions = """
-        あなたはプロのトレードコーチです。
-        ユーザーのトレード記録と感情メモを分析し、勝った原因と今後の改善策を明確に示してください。
-        [感情:メモ]の形でデータを渡されます
-        感情的にならず、客観的かつ実践的に回答してください。
-        出力は次の形式にしてください：
-        1. どんな成功が多かったか
-        2. 改善案
-        """
-        
-        return NavigationLink(destination: AdviceView(navigationTitle: "勝ちトレードAI分析", instructions: instructions, prompt: filteredWinRecordsMemo.joined(separator: ","))) {
-            HStack(spacing: 4) {
-                Text("勝ちトレードAI分析")
-                    .font(.title2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Image(systemName: "chevron.right.dotted.chevron.right")
-                    .renderingMode(.template)
-                    .resizable()
-                    .frame(width: 12, height: 12)
-            }
-            .padding(8)
-        }
+        aiAdviceButton(for: .winning)
     }
-    
+
     var aiLoseAdviceView: some View {
-        let instructions = """
-        あなたはプロのトレードコーチです。
-        ユーザーのトレード記録と感情メモを分析し、負けた原因と今後の改善策を明確に示してください。
-        [感情:メモ]の形でデータを渡されます
-        感情的にならず、客観的かつ実践的に回答してください。
-        出力は次の形式にしてください：
-        1. どんな失敗が多かったか
-        2. 改善案
-        """
-        
-        return NavigationLink(destination: AdviceView(navigationTitle: "負けトレードAI分析", instructions: instructions, prompt: filteredLoseRecordsMemo.joined(separator: ","))) {
-            HStack(spacing: 4) {
-                Text("負けトレードAI分析")
+        aiAdviceButton(for: .losing)
+    }
+
+    private func aiAdviceButton(for kind: AdviceKind) -> some View {
+        Button {
+            selectedAdvice = kind
+        } label: {
+            HStack(spacing: 8) {
+                Text(kind.navigationTitle)
                     .font(.title2)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -152,10 +176,19 @@ struct OverallPerformanceView: View {
             .padding(8)
         }
     }
-        
+
+    private func prompt(for kind: AdviceKind) -> String {
+        switch kind {
+        case .winning:
+            return filteredWinRecordsMemo.joined(separator: ",")
+        case .losing:
+            return filteredLoseRecordsMemo.joined(separator: ",")
+        }
+    }
 }
 #if DEBUG
 #Preview {
     OverallPerformanceView(records: StockRecord.mockRecords, selectedYear: .constant(2024))
+        .environmentObject(RewardedAdManager())
 }
 #endif
