@@ -1,6 +1,24 @@
 {
-  "originHash" : "14786cace78ae0800c86cc450d97ac0862b010cd7cb830ae34b53b29b126d915",
+  "originHash" : "f3cec5957c3743fdd5506eb8b4de04e0a7547059fe1f451a400eb3d45732b6e0",
   "pins" : [
+    {
+      "identity" : "swift-package-manager-google-mobile-ads",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+      "state" : {
+        "revision" : "d1fa1f5c1dfe3b43d56c73f4de388ad3316618bc",
+        "version" : "13.11.0"
+      }
+    },
+    {
+      "identity" : "swift-package-manager-google-user-messaging-platform",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
+      "state" : {
+        "revision" : "13b248eaa73b7826f0efb1bcf455e251d65ecb1b",
+        "version" : "3.1.0"
+      }
+    },
     {
       "identity" : "swiftyfinance",
       "kind" : "remoteSourceControl",
