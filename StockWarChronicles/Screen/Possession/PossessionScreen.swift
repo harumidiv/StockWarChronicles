@@ -20,6 +20,16 @@ enum PossessionSortType: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
+private struct PositionRecordGroup: Identifiable {
+    let id: String
+    let records: [StockRecord]
+}
+
+private struct SellTarget: Identifiable {
+    let id = UUID()
+    let records: [StockRecord]
+}
+
 struct PossessionScreen: View {
     @Environment(\.modelContext) private var context
     @Query private var records: [StockRecord]
@@ -29,8 +39,9 @@ struct PossessionScreen: View {
     @State private var showTreeMapView: Bool = false
     
     @State private var editingRecord: StockRecord?
-    @State private var sellRecord: StockRecord?
+    @State private var sellTarget: SellTarget?
     @State private var deleteRecord: StockRecord?
+    @AppStorage("combinesSameStockPositions") private var combinesSameStockPositions = true
     
     // Sort & Filter & Search
     @State private var selectedTag: Tag = .init(name: "すべてのタグ", color: .clear)
@@ -94,6 +105,38 @@ struct PossessionScreen: View {
         uniqueTags.insert(.init(name: "すべてのタグ", color: .clear), at: 0)
         return uniqueTags
     }
+
+    /// ソート済みの並び順を保ったまま、同一市場・銘柄コード・ポジションの建玉を束ねます。
+    private var groupedRecords: [PositionRecordGroup] {
+        var groups: [PositionRecordGroup] = []
+        var groupIndexes: [String: Int] = [:]
+
+        for record in sortedRecords {
+            let key = groupKey(for: record)
+            if let index = groupIndexes[key] {
+                let current = groups[index]
+                groups[index] = PositionRecordGroup(id: current.id, records: current.records + [record])
+            } else {
+                groupIndexes[key] = groups.count
+                groups.append(PositionRecordGroup(id: key, records: [record]))
+            }
+        }
+
+        return groups
+    }
+
+    /// 保有リスト全体に、実際にまとめられる建玉があるかを判定します。
+    private var hasCombinableRecords: Bool {
+        var seenKeys = Set<String>()
+
+        for record in records where !record.isTradeFinish {
+            if !seenKeys.insert(groupKey(for: record)).inserted {
+                return true
+            }
+        }
+
+        return false
+    }
     
     var body: some View {
         NavigationView {
@@ -102,34 +145,39 @@ struct PossessionScreen: View {
                     sortAndFilterView()
                 }
                 List {
-                    ForEach(sortedRecords) { record in
-                        if !record.isTradeFinish {
+                    if combinesSameStockPositions {
+                        ForEach(groupedRecords) { group in
+                            if group.records.count > 1 {
+                                groupedStockCell(records: group.records)
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                            } else if let record = group.records.first {
+                                stockCell(record: record)
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                        recordActions(for: record)
+                                    }
+                            }
+                        }
+                    } else {
+                        ForEach(sortedRecords) { record in
                             stockCell(record: record)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        deleteRecord = record
-                                    } label: {
-                                        Label("削除", systemImage: "trash")
-                                    }
-                                    .tint(.red)
-                                    
-                                    Button {
-                                        editingRecord = record
-                                    } label: {
-                                        Label("編集", systemImage: "pencil")
-                                    }
-                                    .tint(.blue)
+                                    recordActions(for: record)
                                 }
                         }
                     }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                 }
                 .sensoryFeedback(.selection, trigger: showStockRecordView)
                 .sensoryFeedback(.selection, trigger: showTreeMapView)
                 .sensoryFeedback(.selection, trigger: showAddStockView)
-                .sensoryFeedback(.selection, trigger: sellRecord)
+                .sensoryFeedback(.selection, trigger: sellTarget != nil)
                 .sensoryFeedback(.selection, trigger: editingRecord)
                 .listStyle(.plain)
                 .navigationTitle("保有リスト")
@@ -175,8 +223,8 @@ struct PossessionScreen: View {
                 .sheet(item: $editingRecord) { record in
                     EditScreen(record: record)
                 }
-                .fullScreenCover(item: $sellRecord) { record in
-                    ClosingScreen(record: record)
+                .fullScreenCover(item: $sellTarget) { target in
+                    ClosingScreen(records: target.records)
                 }
                 .fullScreenCover(isPresented: $showStockRecordView) {
                     TradeHistoryScreen(showTradeHistoryListScreen: $showStockRecordView)
@@ -206,7 +254,7 @@ struct PossessionScreen: View {
     
     func stockCell(record: StockRecord) -> some View {
         Button {
-            sellRecord = record
+            sellTarget = SellTarget(records: [record])
         } label: {
             HStack(spacing: 0) {
                 Rectangle()
@@ -254,7 +302,7 @@ struct PossessionScreen: View {
                         
                         Menu {
                             Button {
-                                sellRecord = record
+                                sellTarget = SellTarget(records: [record])
                             } label: {
                                 Label("売却", systemImage: "cart")
                             }
@@ -287,52 +335,199 @@ struct PossessionScreen: View {
         }
         .buttonStyle(.plain)
     }
-    
-    private func sortAndFilterView() -> some View {
-        HStack {
-            Spacer()
-            Menu {
-                ForEach(allTags, id: \.self) { tag in
-                    Button(action: {
-                        withAnimation {
-                            self.selectedTag = tag
-                        }
-                    }) {
-                        Label(tag.name, systemImage: "circle.fill")
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(tag.color)
+
+    private func groupedStockCell(records: [StockRecord]) -> some View {
+        let firstRecord = records[0]
+        let totalRemainingShares = records.reduce(0) { $0 + $1.remainingShares }
+        let totalPurchasedShares = records.reduce(0) { $0 + $1.purchase.shares }
+        let weightedPurchaseAmount = totalRemainingShares == 0 ? 0 : records.reduce(0.0) {
+            $0 + ($1.purchase.amount * Double($1.remainingShares))
+        } / Double(totalRemainingShares)
+        let oldestPurchaseDate = records.map(\.purchase.date).min() ?? firstRecord.purchase.date
+        let allTags = uniqueTags(in: records)
+
+        return Button {
+            sellTarget = SellTarget(records: records)
+        } label: {
+            ZStack(alignment: .bottom) {
+                Rectangle()
+                    .fill(Color(.tertiarySystemGroupedBackground).opacity(0.45))
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(firstRecord.position == .sell ? .blue : .red)
+                            .frame(width: 5)
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .offset(x: 6, y: 8)
+                    .padding(.horizontal, 6)
+
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .fill(firstRecord.position == .sell ? .blue : .red)
+                        .frame(width: 5)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(firstRecord.name)
+                                .font(.headline)
+                                .lineLimit(1)
+
+                            Text("\(records.count)件")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color.secondary.opacity(0.15), in: Capsule())
+
+                            Spacer()
+
+                            Text("平均 \(Int(weightedPurchaseAmount).withComma())円")
+                                .font(.headline)
+                        }
+
+                        HStack {
+                            Text(firstRecord.code)
+                                .font(.subheadline)
+
+                            Text(firstRecord.position.rawValue)
+                                .font(.caption)
+                                .foregroundStyle(firstRecord.position == .sell ? .blue : .red)
+
+                            Spacer()
+
+                            Text("合計 \(totalRemainingShares.withComma()) / \(totalPurchasedShares.withComma())株")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                        }
+
+                        if !allTags.isEmpty {
+                            ChipsView(tags: allTags) { tag in
+                                TagView(name: tag.name, color: tag.color)
+                            }
+                        }
+
+                        Divider()
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "square.stack.3d.up.fill")
+                            Text("\(oldestPurchaseDate.formatted(as: .yyyyMMdd))からの建玉をまとめて表示")
+                                .lineLimit(1)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
+                    .padding()
                 }
-            } label: {
-                HStack {
-                    Text(selectedTag.name)
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                }
-                .foregroundColor(.primary)
-                .sensoryFeedback(.selection, trigger: selectedTag)
+                .background(Color(.tertiarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.bottom, 8)
             }
-            
-            Menu {
-                ForEach(PossessionSortType.allCases) { type in
-                    Button(action: {
-                        withAnimation {
-                            currentSortType = type
-                        }
-                    }) {
-                        Text(type.rawValue)
-                    }
-                }
-            } label: {
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(firstRecord.name)、\(firstRecord.position.rawValue)、\(records.count)件、合計\(totalRemainingShares)株")
+        .accessibilityHint("まとめて手仕舞いする画面を開きます")
+    }
+
+    @ViewBuilder
+    private func recordActions(for record: StockRecord) -> some View {
+        Button(role: .destructive) {
+            deleteRecord = record
+        } label: {
+            Label("削除", systemImage: "trash")
+        }
+        .tint(.red)
+
+        Button {
+            editingRecord = record
+        } label: {
+            Label("編集", systemImage: "pencil")
+        }
+        .tint(.blue)
+    }
+
+    private func groupKey(for record: StockRecord) -> String {
+        let normalizedCode = record.code.halfwidth
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+        return "\(record.market.rawValue)|\(normalizedCode)|\(record.position.rawValue)"
+    }
+
+    private func uniqueTags(in records: [StockRecord]) -> [Tag] {
+        var seenNames = Set<String>()
+        return records.flatMap(\.tags).filter { seenNames.insert($0.name).inserted }
+    }
+
+    private func sortAndFilterView() -> some View {
+        VStack(spacing: 8) {
+            if hasCombinableRecords {
                 HStack {
-                    Text(currentSortType.rawValue)
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .fontWeight(.bold)
+                    Button {
+                        withAnimation {
+                            combinesSameStockPositions.toggle()
+                        }
+                    } label: {
+                        Label(
+                            "まとめて表示",
+                            systemImage: combinesSameStockPositions ? "checkmark.square.fill" : "square"
+                        )
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    }
+                    .sensoryFeedback(.selection, trigger: combinesSameStockPositions)
+
+                    Spacer()
                 }
-                .foregroundColor(.primary)
-                .sensoryFeedback(.selection, trigger: currentSortType)
+            }
+
+            HStack {
+                Spacer()
+                Menu {
+                    ForEach(allTags, id: \.self) { tag in
+                        Button(action: {
+                            withAnimation {
+                                self.selectedTag = tag
+                            }
+                        }) {
+                            Label(tag.name, systemImage: "circle.fill")
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(tag.color)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(selectedTag.name)
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                    .foregroundColor(.primary)
+                    .sensoryFeedback(.selection, trigger: selectedTag)
+                }
+
+                Menu {
+                    ForEach(PossessionSortType.allCases) { type in
+                        Button(action: {
+                            withAnimation {
+                                currentSortType = type
+                            }
+                        }) {
+                            Text(type.rawValue)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(currentSortType.rawValue)
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                    .foregroundColor(.primary)
+                    .sensoryFeedback(.selection, trigger: currentSortType)
+                }
             }
         }
         .padding(.horizontal, 16)
