@@ -204,18 +204,18 @@ struct PossessionScreen: View {
                             }
                         }
                     }
-                    
-                    ToolbarItem(placement: .bottomBar) {
-                        Button {
-                            showAddStockView.toggle()
-                        } label: {
-                            Image(systemName: "plus")
-                                .foregroundColor(.primary)
-                                .padding()
-                                .clipShape(Circle())
-                        }
-                        .frame(width: 60, height: 60)
+                }
+                // ツールバー内だと iOS 27 で高さが制限され楕円になるため、リストの下に浮かせて配置
+                .safeAreaInset(edge: .bottom) {
+                    Button {
+                        showAddStockView.toggle()
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.title2)
+                            .foregroundColor(.primary)
+                            .frame(width: 72, height: 72)
                     }
+                    .glassEffect(.regular.interactive(), in: .circle)
                 }
                 .fullScreenCover(isPresented: $showAddStockView) {
                     AddScreen(showAddStockView: $showAddStockView)
@@ -248,7 +248,7 @@ struct PossessionScreen: View {
                     )
                 }
             }
-            .searchable(text: $searchText, prompt: "銘柄を検索")
+            .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "銘柄を検索")
         }
     }
     
