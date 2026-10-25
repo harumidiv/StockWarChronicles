@@ -62,6 +62,7 @@ struct StockInfoSectionView: View {
             VStack {
                 HStack {
                     Text("市場")
+                    Spacer()
                     Picker("", selection: $market) {
                         ForEach(Market.allCases) { market in
                             Text(market.rawValue).tag(market)
