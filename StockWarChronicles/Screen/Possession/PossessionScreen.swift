@@ -250,6 +250,8 @@ struct PossessionScreen: View {
             }
             .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "銘柄を検索")
         }
+        // iPhone Duo を開いたときなど横幅が広い画面でも2カラムにしない
+        .navigationViewStyle(.stack)
     }
     
     func stockCell(record: StockRecord) -> some View {

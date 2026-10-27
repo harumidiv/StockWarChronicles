@@ -71,6 +71,8 @@ struct PossessionMapScreen: View {
                 }
             }
         }
+        // iPhone Duo を開いたときなど横幅が広い画面でも2カラムにしない
+        .navigationViewStyle(.stack)
         .padding()
     }
     

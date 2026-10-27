@@ -137,6 +137,8 @@ struct TagEditView: View {
                 Text("全ての履歴からこのタグを削除します")
             }
         }
+        // iPhone Duo を開いたときなど横幅が広い画面でも2カラムにしない
+        .navigationViewStyle(.stack)
     }
     
     func delete() {

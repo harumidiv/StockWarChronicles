@@ -159,6 +159,8 @@ struct EditScreen: View {
                     Text("保存せずに閉じますか？")
                 }
         }
+        // iPhone Duo を開いたときなど横幅が広い画面でも2カラムにしない
+        .navigationViewStyle(.stack)
         .onAppear {
             code = record.code
             market = record.market

@@ -186,6 +186,8 @@ struct ClosingScreen: View {
                 }
             }
         }
+        // iPhone Duo を開いたときなど横幅が広い画面でも2カラムにしない
+        .navigationViewStyle(.stack)
         .withKeyboardToolbar(keyboardIsPresented: $keyboardIsPresented)
         .alert("売却日が購入日以前に設定されています", isPresented: $showDateAlert) {
             Button("閉じる", role: .cancel) { }
