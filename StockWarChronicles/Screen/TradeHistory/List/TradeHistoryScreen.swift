@@ -51,7 +51,7 @@ struct TradeHistoryScreen: View {
             .onAppear {
                 reviewCount += 1
                 let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-                if reviewCount >= 100, lastReviewVersion != currentVersion {
+                if reviewCount >= 10, lastReviewVersion != currentVersion {
                     requestReview()
                     lastReviewVersion = currentVersion
                     reviewCount = 0
