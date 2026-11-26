@@ -25,6 +25,8 @@ struct HistoryCalendarView: View {
 
     @AppStorage("historyCalendarShowsMoonPhases") private var showsMoonPhases = true
     @AppStorage("historyCalendarShowsMercuryRetrograde") private var showsMercuryRetrograde = true
+    @AppStorage("historyCalendarShowsSQ") private var showsSQ = true
+    @AppStorage("historyCalendarShowsMonthEndDividends") private var showsMonthEndDividends = true
     
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date? = Calendar.current.startOfDay(for: Date())
@@ -48,11 +50,16 @@ struct HistoryCalendarView: View {
         )
     }
 
+    private func sqKind(for date: Date?) -> NikkeiSettlementCalendar.Kind? {
+        guard showsSQ, let date else { return nil }
+        return NikkeiSettlementCalendar.kind(on: date, in: Calendar.current.timeZone)
+    }
+
     private var astronomyTimeFormat: Date.FormatStyle {
         .dateTime.hour().minute().locale(Locale(identifier: "ja_JP"))
     }
 
-    private var astronomyDateFormat: Date.FormatStyle {
+    private var monthDayFormat: Date.FormatStyle {
         .dateTime.month().day().locale(Locale(identifier: "ja_JP"))
     }
     
@@ -120,7 +127,11 @@ struct HistoryCalendarView: View {
     var body: some View {
         let monthDays = days
         let astronomyDays = monthDays.map { astronomyDay(for: $0) }
-        let showsAstronomyMarkers = astronomyDays.contains { $0?.hasEvents == true }
+        let sqDays = monthDays.map { sqKind(for: $0) }
+        let dividendCalendar = showsMonthEndDividends
+            ? MonthEndDividendCalendar(monthContaining: displayDate, in: Calendar.current.timeZone)
+            : nil
+        let showsEventMarkers = dividendCalendar != nil || astronomyDays.contains { $0?.hasEvents == true } || sqDays.contains { $0 != nil }
 
         List {
             Section {
@@ -146,7 +157,9 @@ struct HistoryCalendarView: View {
                                 amount: dayTotalAmount(for: date),
                                 isSelected: isSelected,
                                 astronomy: astronomyDays[index],
-                                showsAstronomyMarkers: showsAstronomyMarkers,
+                                sq: sqDays[index],
+                                dividend: dividendCalendar?.kind(on: date),
+                                showsEventMarkers: showsEventMarkers,
                                 onTap: { selectedDate = date }
                             )
                         }
@@ -156,6 +169,19 @@ struct HistoryCalendarView: View {
             }
             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
             .listRowSeparator(.hidden)
+
+            if let sq = sqKind(for: selectedDate) {
+                Section("市場イベント") {
+                    LabeledContent(sq.title, value: "日経225")
+                }
+            }
+
+            if let dividendCalendar, dividendCalendar.kind(on: selectedDate) != nil {
+                Section("月末基準の配当の目安") {
+                    LabeledContent(MonthEndDividendCalendar.Kind.lastCumDividendDate.title, value: dividendCalendar.lastCumDividendDate.formatted(monthDayFormat))
+                    LabeledContent(MonthEndDividendCalendar.Kind.exDividendDate.title, value: dividendCalendar.exDividendDate.formatted(monthDayFormat))
+                }
+            }
 
             if let astronomy = astronomyDay(for: selectedDate), astronomy.hasEvents {
                 Section("天文イベント") {
@@ -178,7 +204,7 @@ struct HistoryCalendarView: View {
                             } else if retrograde.end < astronomy.interval.end {
                                 Text(retrograde.end, format: astronomyTimeFormat)
                             } else {
-                                Text("\(retrograde.start.formatted(astronomyDateFormat))〜\(retrograde.end.formatted(astronomyDateFormat))")
+                                Text("\(retrograde.start.formatted(monthDayFormat))〜\(retrograde.end.formatted(monthDayFormat))")
                                     .singleLineScaled()
                             }
                         } label: {
@@ -223,6 +249,8 @@ struct HistoryCalendarView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu("カレンダーの表示設定", systemImage: "slider.horizontal.3") {
+                    Toggle("SQ・メジャーSQ", isOn: $showsSQ)
+                    Toggle("配当の日程（月末基準）", isOn: $showsMonthEndDividends)
                     Toggle("新月・満月", isOn: $showsMoonPhases)
                     Toggle("水星逆行", isOn: $showsMercuryRetrograde)
                 }
@@ -402,7 +430,9 @@ struct DayCell: View {
     let amount: Int?
     let isSelected: Bool
     let astronomy: AstronomyCalendar.Day?
-    let showsAstronomyMarkers: Bool
+    let sq: NikkeiSettlementCalendar.Kind?
+    let dividend: MonthEndDividendCalendar.Kind?
+    let showsEventMarkers: Bool
     let onTap: () -> Void
     
     private var isToday: Bool {
@@ -440,13 +470,26 @@ struct DayCell: View {
                             .font(.caption2)
                     }
 
-                    if showsAstronomyMarkers {
+                    if showsEventMarkers {
                         VStack(spacing: 2) {
-                            ZStack {
+                            HStack(spacing: 2) {
                                 if let phase = astronomy?.moonPhase {
                                     Text(phase.kind.emoji)
                                         .font(.system(size: 13))
                                         .accessibilityLabel(phase.kind.title)
+                                }
+                                if let sq {
+                                    Text(sq.badge)
+                                        .font(.system(size: 10, weight: .bold))
+                                        .singleLineScaled()
+                                        .padding(.horizontal, 3)
+                                        .background(.orange.opacity(sq == .major ? 0.45 : 0.2), in: Capsule())
+                                        .accessibilityLabel(sq.title)
+                                }
+                                if let dividend {
+                                    Text(dividend.emoji)
+                                        .font(.system(size: 13))
+                                        .accessibilityLabel(dividend.title)
                                 }
                             }
                             .frame(height: 15)
@@ -458,7 +501,7 @@ struct DayCell: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: showsAstronomyMarkers ? 74 : 50)
+            .frame(height: showsEventMarkers ? 74 : 50)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
