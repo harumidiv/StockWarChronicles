@@ -50,14 +50,17 @@ struct AstronomyCalendar: Decodable {
     func day(
         for date: Date?,
         in calendar: Calendar,
-        showsMoonPhases: Bool,
+        showsNewMoon: Bool,
+        showsFullMoon: Bool,
         showsMercuryRetrograde: Bool
     ) -> Day? {
-        guard showsMoonPhases || showsMercuryRetrograde,
+        guard showsNewMoon || showsFullMoon || showsMercuryRetrograde,
               let date, let interval = calendar.dateInterval(of: .day, for: date) else { return nil }
 
-        let moonPhase = showsMoonPhases ? moonPhases.first {
+        let moonPhase = (showsNewMoon || showsFullMoon) ? moonPhases.first {
             $0.date >= interval.start && $0.date < interval.end
+        }.flatMap { phase in
+            (phase.kind == .newMoon ? showsNewMoon : showsFullMoon) ? phase : nil
         } : nil
         let retrograde = showsMercuryRetrograde ? mercuryRetrogrades.first {
             $0.start < interval.end && $0.end >= interval.start

@@ -7,10 +7,13 @@ struct HistoryCalendarSettingsView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
 
-    @AppStorage(CalendarEventCategory.sq.visibilityKey) private var showsSQ = true
-    @AppStorage(CalendarEventCategory.dividends.visibilityKey) private var showsDividends = true
-    @AppStorage(CalendarEventCategory.moonPhases.visibilityKey) private var showsMoonPhases = true
-    @AppStorage(CalendarEventCategory.mercuryRetrograde.visibilityKey) private var showsMercuryRetrograde = true
+    @AppStorage(CalendarEventCategory.sq.visibilityKey) private var showsSQ = false
+    @AppStorage(CalendarEventCategory.majorSQ.visibilityKey) private var showsMajorSQ = false
+    @AppStorage(CalendarEventCategory.lastCumDividend.visibilityKey) private var showsLastCumDividend = false
+    @AppStorage(CalendarEventCategory.exDividend.visibilityKey) private var showsExDividend = false
+    @AppStorage(CalendarEventCategory.newMoon.visibilityKey) private var showsNewMoon = false
+    @AppStorage(CalendarEventCategory.fullMoon.visibilityKey) private var showsFullMoon = false
+    @AppStorage(CalendarEventCategory.mercuryRetrograde.visibilityKey) private var showsMercuryRetrograde = false
     @AppStorage(CalendarNotificationPreferences.storageKey) private var notificationRules = Data()
 
     @ObservedObject private var scheduler = CalendarNotificationScheduler.shared
@@ -81,7 +84,10 @@ struct HistoryCalendarSettingsView: View {
                     Button("完了") { dismiss() }
                 }
             }
-            .task { await updateAuthorizationStatus() }
+            .task {
+                migrateVisibilityPreferences()
+                await updateAuthorizationStatus()
+            }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active {
                     Task { await updateAuthorizationStatus() }
@@ -93,9 +99,29 @@ struct HistoryCalendarSettingsView: View {
     private func visibility(for category: CalendarEventCategory) -> Binding<Bool> {
         switch category {
         case .sq: $showsSQ
-        case .dividends: $showsDividends
-        case .moonPhases: $showsMoonPhases
+        case .majorSQ: $showsMajorSQ
+        case .lastCumDividend: $showsLastCumDividend
+        case .exDividend: $showsExDividend
+        case .newMoon: $showsNewMoon
+        case .fullMoon: $showsFullMoon
         case .mercuryRetrograde: $showsMercuryRetrograde
+        }
+    }
+
+    private func migrateVisibilityPreferences() {
+        let defaults = UserDefaults.standard
+        let hadLegacySQSetting = defaults.object(forKey: CalendarEventCategory.sq.visibilityKey) != nil
+        let hadLegacyMoonSetting = defaults.object(forKey: CalendarEventCategory.newMoon.visibilityKey) != nil
+        let hadLegacyDividendSetting = defaults.object(forKey: CalendarEventCategory.lastCumDividend.visibilityKey) != nil
+
+        if hadLegacySQSetting, defaults.object(forKey: CalendarEventCategory.majorSQ.visibilityKey) == nil {
+            defaults.set(defaults.bool(forKey: CalendarEventCategory.sq.visibilityKey), forKey: CalendarEventCategory.majorSQ.visibilityKey)
+        }
+        if hadLegacyMoonSetting, defaults.object(forKey: CalendarEventCategory.fullMoon.visibilityKey) == nil {
+            defaults.set(defaults.bool(forKey: CalendarEventCategory.newMoon.visibilityKey), forKey: CalendarEventCategory.fullMoon.visibilityKey)
+        }
+        if hadLegacyDividendSetting, defaults.object(forKey: CalendarEventCategory.exDividend.visibilityKey) == nil {
+            defaults.set(defaults.bool(forKey: CalendarEventCategory.lastCumDividend.visibilityKey), forKey: CalendarEventCategory.exDividend.visibilityKey)
         }
     }
 

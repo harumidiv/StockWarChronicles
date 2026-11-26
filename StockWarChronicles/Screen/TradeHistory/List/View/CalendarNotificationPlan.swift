@@ -2,8 +2,11 @@ import Foundation
 
 enum CalendarEventCategory: Int, CaseIterable, Identifiable {
     case sq = 0
-    case dividends = 1
-    case moonPhases = 2
+    case majorSQ = 4
+    case lastCumDividend = 1
+    case exDividend = 6
+    case newMoon = 2
+    case fullMoon = 5
     case mercuryRetrograde = 3
 
     var id: Self { self }
@@ -12,17 +15,23 @@ enum CalendarEventCategory: Int, CaseIterable, Identifiable {
     var visibilityKey: String {
         switch self {
         case .sq: "historyCalendarShowsSQ"
-        case .dividends: "historyCalendarShowsMonthEndDividends"
-        case .moonPhases: "historyCalendarShowsMoonPhases"
+        case .majorSQ: "historyCalendarShowsMajorSQ"
+        case .lastCumDividend: "historyCalendarShowsMonthEndDividends"
+        case .exDividend: "historyCalendarShowsExDividend"
+        case .newMoon: "historyCalendarShowsMoonPhases"
+        case .fullMoon: "historyCalendarShowsFullMoon"
         case .mercuryRetrograde: "historyCalendarShowsMercuryRetrograde"
         }
     }
 
     var title: String {
         switch self {
-        case .sq: "SQ・メジャーSQ"
-        case .dividends: "配当の日程（月末基準）"
-        case .moonPhases: "新月・満月"
+        case .sq: "SQ"
+        case .majorSQ: "メジャーSQ"
+        case .lastCumDividend: MonthEndDividendCalendar.Kind.lastCumDividendDate.title
+        case .exDividend: MonthEndDividendCalendar.Kind.exDividendDate.title
+        case .newMoon: "新月"
+        case .fullMoon: "満月"
         case .mercuryRetrograde: "水星逆行"
         }
     }
@@ -35,9 +44,12 @@ enum CalendarNotificationEvent: String, CaseIterable, Identifiable {
 
     var category: CalendarEventCategory {
         switch self {
-        case .sq, .majorSQ: .sq
-        case .lastCumDividend, .exDividend: .dividends
-        case .newMoon, .fullMoon: .moonPhases
+        case .sq: .sq
+        case .majorSQ: .majorSQ
+        case .lastCumDividend: .lastCumDividend
+        case .exDividend: .exDividend
+        case .newMoon: .newMoon
+        case .fullMoon: .fullMoon
         case .mercuryStart, .mercuryEnd: .mercuryRetrograde
         }
     }
@@ -167,7 +179,14 @@ struct CalendarNotificationPreferences: Codable, Equatable {
         timing.daysBefore = defaults.integer(forKey: "historyCalendarNotificationDayOffset")
         var migrated = Self()
         for event in CalendarNotificationEvent.allCases {
-            migrated[event] = CalendarNotificationRule(isEnabled: enabled & event.category.bit != 0, timings: [timing])
+            let legacyBit: Int
+            switch event {
+            case .sq, .majorSQ: legacyBit = 1 << CalendarEventCategory.sq.rawValue
+            case .lastCumDividend, .exDividend: legacyBit = 1 << CalendarEventCategory.lastCumDividend.rawValue
+            case .newMoon, .fullMoon: legacyBit = 1 << 2
+            case .mercuryStart, .mercuryEnd: legacyBit = 1 << CalendarEventCategory.mercuryRetrograde.rawValue
+            }
+            migrated[event] = CalendarNotificationRule(isEnabled: enabled & legacyBit != 0, timings: [timing])
         }
         return migrated
     }
@@ -218,7 +237,7 @@ enum CalendarNotificationPlan {
         }
 
         let enabledCategories = Set(enabledEvents.map(\.category))
-        if enabledCategories.contains(.moonPhases) {
+        if enabledCategories.contains(.newMoon) || enabledCategories.contains(.fullMoon) {
             for phase in astronomy.moonPhases {
                 add(phase.kind == .newMoon ? .newMoon : .fullMoon, on: phase.date)
             }
@@ -230,17 +249,17 @@ enum CalendarNotificationPlan {
             }
         }
 
-        if (enabledCategories.contains(.sq) || enabledCategories.contains(.dividends)),
+        if (enabledCategories.contains(.sq) || enabledCategories.contains(.majorSQ) || enabledCategories.contains(.lastCumDividend) || enabledCategories.contains(.exDividend)),
            var month = calendar.dateInterval(of: .month, for: firstEventDay)?.start {
             while month < eventEnd {
-                if enabledCategories.contains(.sq) {
+                if enabledCategories.contains(.sq) || enabledCategories.contains(.majorSQ) {
                     for dayOffset in 7...13 {
                         guard let date = calendar.date(byAdding: .day, value: dayOffset, to: month),
                               let kind = NikkeiSettlementCalendar.kind(on: date, in: timeZone) else { continue }
                         add(kind == .major ? .majorSQ : .sq, on: date)
                     }
                 }
-                if enabledCategories.contains(.dividends),
+                if enabledCategories.contains(.lastCumDividend) || enabledCategories.contains(.exDividend),
                    let dates = MonthEndDividendCalendar(monthContaining: month, in: timeZone) {
                     add(.lastCumDividend, on: dates.lastCumDividendDate)
                     add(.exDividend, on: dates.exDividendDate)

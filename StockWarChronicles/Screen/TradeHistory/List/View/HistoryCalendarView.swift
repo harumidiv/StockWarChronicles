@@ -23,16 +23,18 @@ struct HistoryCalendarView: View {
     
     @Binding var selectedYear: Int
 
-    @AppStorage(CalendarEventCategory.moonPhases.visibilityKey) private var showsMoonPhases = true
-    @AppStorage(CalendarEventCategory.mercuryRetrograde.visibilityKey) private var showsMercuryRetrograde = true
-    @AppStorage(CalendarEventCategory.sq.visibilityKey) private var showsSQ = true
-    @AppStorage(CalendarEventCategory.dividends.visibilityKey) private var showsMonthEndDividends = true
+    @AppStorage(CalendarEventCategory.newMoon.visibilityKey) private var showsNewMoon = false
+    @AppStorage(CalendarEventCategory.fullMoon.visibilityKey) private var showsFullMoon = false
+    @AppStorage(CalendarEventCategory.mercuryRetrograde.visibilityKey) private var showsMercuryRetrograde = false
+    @AppStorage(CalendarEventCategory.sq.visibilityKey) private var showsSQ = false
+    @AppStorage(CalendarEventCategory.majorSQ.visibilityKey) private var showsMajorSQ = false
+    @AppStorage(CalendarEventCategory.lastCumDividend.visibilityKey) private var showsLastCumDividend = false
+    @AppStorage(CalendarEventCategory.exDividend.visibilityKey) private var showsExDividend = false
     
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date? = Calendar.current.startOfDay(for: Date())
     
     @State private var isMemoSheetPresented: Bool = false
-    @State private var showsCalendarSettings = false
     @State private var memoText: String = ""
     
     private var days: [Date?] {
@@ -46,14 +48,27 @@ struct HistoryCalendarView: View {
         AstronomyCalendar.bundled.day(
             for: date,
             in: .current,
-            showsMoonPhases: showsMoonPhases,
+            showsNewMoon: showsNewMoon,
+            showsFullMoon: showsFullMoon,
             showsMercuryRetrograde: showsMercuryRetrograde
         )
     }
 
     private func sqKind(for date: Date?) -> NikkeiSettlementCalendar.Kind? {
-        guard showsSQ, let date else { return nil }
-        return NikkeiSettlementCalendar.kind(on: date, in: Calendar.current.timeZone)
+        guard let date,
+              let kind = NikkeiSettlementCalendar.kind(on: date, in: Calendar.current.timeZone) else { return nil }
+        switch kind {
+        case .monthly: return showsSQ ? kind : nil
+        case .major: return showsMajorSQ ? kind : nil
+        }
+    }
+
+    private func dividendKind(for date: Date?, in dividendCalendar: MonthEndDividendCalendar?) -> MonthEndDividendCalendar.Kind? {
+        guard let kind = dividendCalendar?.kind(on: date) else { return nil }
+        switch kind {
+        case .lastCumDividendDate: return showsLastCumDividend ? kind : nil
+        case .exDividendDate: return showsExDividend ? kind : nil
+        }
     }
 
     private var astronomyTimeFormat: Date.FormatStyle {
@@ -129,7 +144,7 @@ struct HistoryCalendarView: View {
         let monthDays = days
         let astronomyDays = monthDays.map { astronomyDay(for: $0) }
         let sqDays = monthDays.map { sqKind(for: $0) }
-        let dividendCalendar = showsMonthEndDividends
+        let dividendCalendar = (showsLastCumDividend || showsExDividend)
             ? MonthEndDividendCalendar(monthContaining: displayDate, in: Calendar.current.timeZone)
             : nil
         let showsEventMarkers = dividendCalendar != nil || astronomyDays.contains { $0?.hasEvents == true } || sqDays.contains { $0 != nil }
@@ -159,7 +174,7 @@ struct HistoryCalendarView: View {
                                 isSelected: isSelected,
                                 astronomy: astronomyDays[index],
                                 sq: sqDays[index],
-                                dividend: dividendCalendar?.kind(on: date),
+                                dividend: dividendKind(for: date, in: dividendCalendar),
                                 showsEventMarkers: showsEventMarkers,
                                 onTap: { selectedDate = date }
                             )
@@ -177,10 +192,14 @@ struct HistoryCalendarView: View {
                 }
             }
 
-            if let dividendCalendar, dividendCalendar.kind(on: selectedDate) != nil {
+            if let dividendKind = dividendKind(for: selectedDate, in: dividendCalendar), let dividendCalendar {
                 Section("月末基準の配当の目安") {
-                    LabeledContent(MonthEndDividendCalendar.Kind.lastCumDividendDate.title, value: dividendCalendar.lastCumDividendDate.formatted(monthDayFormat))
-                    LabeledContent(MonthEndDividendCalendar.Kind.exDividendDate.title, value: dividendCalendar.exDividendDate.formatted(monthDayFormat))
+                    switch dividendKind {
+                    case .lastCumDividendDate:
+                        LabeledContent(MonthEndDividendCalendar.Kind.lastCumDividendDate.title, value: dividendCalendar.lastCumDividendDate.formatted(monthDayFormat))
+                    case .exDividendDate:
+                        LabeledContent(MonthEndDividendCalendar.Kind.exDividendDate.title, value: dividendCalendar.exDividendDate.formatted(monthDayFormat))
+                    }
                 }
             }
 
@@ -247,17 +266,7 @@ struct HistoryCalendarView: View {
                 }
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("カレンダー設定", systemImage: "slider.horizontal.3") {
-                    showsCalendarSettings = true
-                }
-                .labelStyle(.iconOnly)
-            }
-        }
-        .sheet(isPresented: $showsCalendarSettings) {
-            HistoryCalendarSettingsView()
-        }
+        .onAppear(perform: migrateVisibilityPreferences)
         .sheet(isPresented: $isMemoSheetPresented) {
             NavigationStack {
                 VStack(alignment: .leading) {
@@ -297,6 +306,23 @@ struct HistoryCalendarView: View {
             }
         }
         return allDays
+    }
+
+    private func migrateVisibilityPreferences() {
+        let defaults = UserDefaults.standard
+        let hadLegacySQSetting = defaults.object(forKey: CalendarEventCategory.sq.visibilityKey) != nil
+        let hadLegacyMoonSetting = defaults.object(forKey: CalendarEventCategory.newMoon.visibilityKey) != nil
+        let hadLegacyDividendSetting = defaults.object(forKey: CalendarEventCategory.lastCumDividend.visibilityKey) != nil
+
+        if hadLegacySQSetting, defaults.object(forKey: CalendarEventCategory.majorSQ.visibilityKey) == nil {
+            defaults.set(defaults.bool(forKey: CalendarEventCategory.sq.visibilityKey), forKey: CalendarEventCategory.majorSQ.visibilityKey)
+        }
+        if hadLegacyMoonSetting, defaults.object(forKey: CalendarEventCategory.fullMoon.visibilityKey) == nil {
+            defaults.set(defaults.bool(forKey: CalendarEventCategory.newMoon.visibilityKey), forKey: CalendarEventCategory.fullMoon.visibilityKey)
+        }
+        if hadLegacyDividendSetting, defaults.object(forKey: CalendarEventCategory.exDividend.visibilityKey) == nil {
+            defaults.set(defaults.bool(forKey: CalendarEventCategory.lastCumDividend.visibilityKey), forKey: CalendarEventCategory.exDividend.visibilityKey)
+        }
     }
     
     private func monthAmountList(for date: Date?) -> [StockRecord] {

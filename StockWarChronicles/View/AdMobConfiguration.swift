@@ -21,4 +21,13 @@ enum AdMobConfiguration {
         return "ca-app-pub-8522231452310619/1197277925"
 #endif
     }
+
+    static var nativeAdvancedAdUnitID: String {
+#if DEBUG
+        // Google-provided iOS native advanced test ad unit ID.
+        return "ca-app-pub-3940256099942544/3986624511"
+#else
+        return "ca-app-pub-8522231452310619/3864312017"
+#endif
+    }
 }

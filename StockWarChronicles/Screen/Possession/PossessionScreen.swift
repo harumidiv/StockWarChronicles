@@ -146,7 +146,7 @@ struct PossessionScreen: View {
                 }
                 List {
                     if combinesSameStockPositions {
-                        ForEach(groupedRecords) { group in
+                        ForEach(Array(groupedRecords.enumerated()), id: \.element.id) { index, group in
                             if group.records.count > 1 {
                                 groupedStockCell(records: group.records)
                                     .listRowBackground(Color.clear)
@@ -161,9 +161,17 @@ struct PossessionScreen: View {
                                         recordActions(for: record)
                                     }
                             }
+                            let visibleRecordCount = groupedRecords.prefix(index + 1).reduce(0) { $0 + $1.records.count }
+                            let precedingRecordCount = visibleRecordCount - group.records.count
+                            if sortedRecords.count >= 5 && precedingRecordCount < 5 && visibleRecordCount >= 5 {
+                                AdMobNativeAdvancedView()
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                            }
                         }
                     } else {
-                        ForEach(sortedRecords) { record in
+                        ForEach(Array(sortedRecords.enumerated()), id: \.element.id) { index, record in
                             stockCell(record: record)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
@@ -171,6 +179,12 @@ struct PossessionScreen: View {
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     recordActions(for: record)
                                 }
+                            if sortedRecords.count >= 5 && index == 4 {
+                                AdMobNativeAdvancedView()
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                            }
                         }
                     }
                 }
@@ -193,15 +207,12 @@ struct PossessionScreen: View {
                         }
                     }
                     
-                    // 取引の完了しているデータがある場合履歴を表示
-                    if records.contains(where: { $0.isTradeFinish }) {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                showStockRecordView.toggle()
-                            } label: {
-                                Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                    .foregroundColor(.blue)
-                            }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showStockRecordView.toggle()
+                        } label: {
+                            Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                .foregroundColor(.blue)
                         }
                     }
                 }

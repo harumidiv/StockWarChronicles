@@ -27,6 +27,7 @@ struct TradeHistoryScreen: View {
     @Binding var showTradeHistoryListScreen: Bool
     @State private var historyType: HistoryType = .calender
     @State private var showAnnualPerformance = false
+    @State private var showsCalendarSettings = false
     
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
     
@@ -57,34 +58,47 @@ struct TradeHistoryScreen: View {
                     reviewCount = 0
                 }
             }
-            .toolbarTitleMenu {
-                ForEach(HistoryType.allCases, id: \.self) { type in
-                    switch type {
-                    case .calender:
-                        Button(action: {
-                            historyType = .calender
-                        }) {
-                            Label(type.rawValue, systemImage: type.imageName)
-                        }
-
-                    case .list:
-                        Button(action: {
-                            historyType = .list
-                        }) {
-                            Label(type.rawValue, systemImage: type.imageName)
-                        }
-                    }
-                }
-            }
             .navigationTitle("取引記録")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Menu {
+                        ForEach(HistoryType.allCases, id: \.self) { type in
+                            Button {
+                                historyType = type
+                            } label: {
+                                Label(type.rawValue, systemImage: type.imageName)
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Text("取引記録")
+                            Image(systemName: "chevron.down")
+                                .font(.caption2.weight(.semibold))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 ToolbarItem(placement: .topBarLeading) {
                     Button("dismiss", systemImage: "xmark") {
                         showTradeHistoryListScreen.toggle()
                     }
                 }
                 
+                if historyType == .calender {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("カレンダー設定", systemImage: "slider.horizontal.3") {
+                            showsCalendarSettings = true
+                        }
+                        .labelStyle(.iconOnly)
+                    }
+                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showAnnualPerformance.toggle()
@@ -97,6 +111,9 @@ struct TradeHistoryScreen: View {
                 }
             }
             .sensoryFeedback(.selection, trigger: showAnnualPerformance)
+            .sheet(isPresented: $showsCalendarSettings) {
+                HistoryCalendarSettingsView()
+            }
             .navigationDestination(isPresented: $showAnnualPerformance) {
                 AnnualPerformanceScreen(selectedYear: $selectedYear)
             }
