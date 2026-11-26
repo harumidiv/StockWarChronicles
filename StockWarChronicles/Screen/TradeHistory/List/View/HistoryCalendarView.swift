@@ -23,15 +23,16 @@ struct HistoryCalendarView: View {
     
     @Binding var selectedYear: Int
 
-    @AppStorage("historyCalendarShowsMoonPhases") private var showsMoonPhases = true
-    @AppStorage("historyCalendarShowsMercuryRetrograde") private var showsMercuryRetrograde = true
-    @AppStorage("historyCalendarShowsSQ") private var showsSQ = true
-    @AppStorage("historyCalendarShowsMonthEndDividends") private var showsMonthEndDividends = true
+    @AppStorage(CalendarEventCategory.moonPhases.visibilityKey) private var showsMoonPhases = true
+    @AppStorage(CalendarEventCategory.mercuryRetrograde.visibilityKey) private var showsMercuryRetrograde = true
+    @AppStorage(CalendarEventCategory.sq.visibilityKey) private var showsSQ = true
+    @AppStorage(CalendarEventCategory.dividends.visibilityKey) private var showsMonthEndDividends = true
     
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date? = Calendar.current.startOfDay(for: Date())
     
     @State private var isMemoSheetPresented: Bool = false
+    @State private var showsCalendarSettings = false
     @State private var memoText: String = ""
     
     private var days: [Date?] {
@@ -248,14 +249,14 @@ struct HistoryCalendarView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Menu("カレンダーの表示設定", systemImage: "slider.horizontal.3") {
-                    Toggle("SQ・メジャーSQ", isOn: $showsSQ)
-                    Toggle("配当の日程（月末基準）", isOn: $showsMonthEndDividends)
-                    Toggle("新月・満月", isOn: $showsMoonPhases)
-                    Toggle("水星逆行", isOn: $showsMercuryRetrograde)
+                Button("カレンダー設定", systemImage: "slider.horizontal.3") {
+                    showsCalendarSettings = true
                 }
                 .labelStyle(.iconOnly)
             }
+        }
+        .sheet(isPresented: $showsCalendarSettings) {
+            HistoryCalendarSettingsView()
         }
         .sheet(isPresented: $isMemoSheetPresented) {
             NavigationStack {
