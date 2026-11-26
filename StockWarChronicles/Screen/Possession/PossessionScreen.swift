@@ -125,6 +125,26 @@ struct PossessionScreen: View {
         return groups
     }
 
+    /// 各5銘柄ブロックの中から、ネイティブ広告を挿入する位置を選びます。
+    /// Hasher のプロセス内シードにより位置は起動ごとに変わり、同じ起動中は安定します。
+    private var nativeAdInsertionCounts: Set<Int> {
+        let stockIDs = combinesSameStockPositions
+            ? groupedRecords.map(\.id)
+            : sortedRecords.map { String(describing: $0.persistentModelID) }
+        let adCount = stockIDs.count / 5
+        return Set((0..<adCount).map { blockIndex in
+            let start = blockIndex * 5
+            let end = start + 5
+            var hasher = Hasher()
+            hasher.combine(blockIndex)
+            for id in stockIDs[start..<end] {
+                hasher.combine(id)
+            }
+            let offset = Int(UInt(bitPattern: hasher.finalize()) % 5)
+            return start + offset + 1
+        })
+    }
+
     /// 保有リスト全体に、実際にまとめられる建玉があるかを判定します。
     private var hasCombinableRecords: Bool {
         var seenKeys = Set<String>()
@@ -145,6 +165,7 @@ struct PossessionScreen: View {
                     sortAndFilterView()
                 }
                 List {
+                    let adInsertionCounts = nativeAdInsertionCounts
                     if combinesSameStockPositions {
                         ForEach(Array(groupedRecords.enumerated()), id: \.element.id) { index, group in
                             if group.records.count > 1 {
@@ -161,9 +182,7 @@ struct PossessionScreen: View {
                                         recordActions(for: record)
                                     }
                             }
-                            let visibleRecordCount = groupedRecords.prefix(index + 1).reduce(0) { $0 + $1.records.count }
-                            let precedingRecordCount = visibleRecordCount - group.records.count
-                            if sortedRecords.count >= 5 && precedingRecordCount < 5 && visibleRecordCount >= 5 {
+                            if adInsertionCounts.contains(index + 1) {
                                 AdMobNativeAdvancedView()
                                     .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                                     .listRowSeparator(.hidden)
@@ -179,7 +198,7 @@ struct PossessionScreen: View {
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     recordActions(for: record)
                                 }
-                            if sortedRecords.count >= 5 && index == 4 {
+                            if adInsertionCounts.contains(index + 1) {
                                 AdMobNativeAdvancedView()
                                     .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                                     .listRowSeparator(.hidden)
