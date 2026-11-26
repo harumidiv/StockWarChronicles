@@ -125,6 +125,26 @@ struct PossessionScreen: View {
         return groups
     }
 
+    /// 各5銘柄ブロックの中から、ネイティブ広告を挿入する位置を選びます。
+    /// Hasher のプロセス内シードにより位置は起動ごとに変わり、同じ起動中は安定します。
+    private var nativeAdInsertionCounts: Set<Int> {
+        let stockIDs = combinesSameStockPositions
+            ? groupedRecords.map(\.id)
+            : sortedRecords.map { String(describing: $0.persistentModelID) }
+        let adCount = stockIDs.count / 5
+        return Set((0..<adCount).map { blockIndex in
+            let start = blockIndex * 5
+            let end = start + 5
+            var hasher = Hasher()
+            hasher.combine(blockIndex)
+            for id in stockIDs[start..<end] {
+                hasher.combine(id)
+            }
+            let offset = Int(UInt(bitPattern: hasher.finalize()) % 5)
+            return start + offset + 1
+        })
+    }
+
     /// 保有リスト全体に、実際にまとめられる建玉があるかを判定します。
     private var hasCombinableRecords: Bool {
         var seenKeys = Set<String>()
@@ -145,8 +165,9 @@ struct PossessionScreen: View {
                     sortAndFilterView()
                 }
                 List {
+                    let adInsertionCounts = nativeAdInsertionCounts
                     if combinesSameStockPositions {
-                        ForEach(groupedRecords) { group in
+                        ForEach(Array(groupedRecords.enumerated()), id: \.element.id) { index, group in
                             if group.records.count > 1 {
                                 groupedStockCell(records: group.records)
                                     .listRowBackground(Color.clear)
@@ -161,9 +182,15 @@ struct PossessionScreen: View {
                                         recordActions(for: record)
                                     }
                             }
+                            if adInsertionCounts.contains(index + 1) {
+                                AdMobNativeAdvancedView()
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                            }
                         }
                     } else {
-                        ForEach(sortedRecords) { record in
+                        ForEach(Array(sortedRecords.enumerated()), id: \.element.id) { index, record in
                             stockCell(record: record)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
@@ -171,6 +198,12 @@ struct PossessionScreen: View {
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     recordActions(for: record)
                                 }
+                            if adInsertionCounts.contains(index + 1) {
+                                AdMobNativeAdvancedView()
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                            }
                         }
                     }
                 }
@@ -193,15 +226,12 @@ struct PossessionScreen: View {
                         }
                     }
                     
-                    // 取引の完了しているデータがある場合履歴を表示
-                    if records.contains(where: { $0.isTradeFinish }) {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                showStockRecordView.toggle()
-                            } label: {
-                                Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                    .foregroundColor(.blue)
-                            }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showStockRecordView.toggle()
+                        } label: {
+                            Label("履歴", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                .foregroundColor(.blue)
                         }
                     }
                 }
@@ -270,6 +300,7 @@ struct PossessionScreen: View {
                         Spacer()
                         Text("\(Int(record.purchase.amount))円")
                             .font(.headline)
+                            .singleLineScaled()
                     }
                     
                     HStack {
@@ -280,6 +311,7 @@ struct PossessionScreen: View {
                         
                         Text("\(record.remainingShares) / \(record.purchase.shares)株")
                             .font(.subheadline)
+                            .singleLineScaled()
                             .foregroundColor(.secondary)
                     }
                     
@@ -298,6 +330,7 @@ struct PossessionScreen: View {
                         
                         Text(record.numberOfDaysHeld.description + "日")
                             .font(.subheadline)
+                            .singleLineScaled()
                             .foregroundColor(.secondary)
                         
                         Spacer()
@@ -377,6 +410,7 @@ struct PossessionScreen: View {
                             Text("\(records.count)件")
                                 .font(.caption)
                                 .fontWeight(.semibold)
+                                .singleLineScaled()
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
                                 .background(Color.secondary.opacity(0.15), in: Capsule())
@@ -385,6 +419,7 @@ struct PossessionScreen: View {
 
                             Text("平均 \(Int(weightedPurchaseAmount).withComma())円")
                                 .font(.headline)
+                                .singleLineScaled()
                         }
 
                         HStack {
@@ -400,6 +435,7 @@ struct PossessionScreen: View {
                             Text("合計 \(totalRemainingShares.withComma()) / \(totalPurchasedShares.withComma())株")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
+                                .singleLineScaled()
                         }
 
                         if !allTags.isEmpty {

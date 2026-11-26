@@ -128,6 +128,7 @@ struct PossessionMapScreen: View {
             let text = showAmount ? record.totalPurchaseValue().withComma() : "--------"
             Text(text + "円")
                 .font(.largeTitle)
+                .singleLineScaled()
         }
     }
     

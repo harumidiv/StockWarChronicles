@@ -75,6 +75,7 @@ struct MonthlyPerformanceBarChart: View {
                             Text("万円")
                                 .font(.caption)
                         }
+                        .singleLineScaled()
                     }
                 }
             }
@@ -120,6 +121,7 @@ struct MonthlyPerformanceLineChart: View {
                             Text("万円")
                                 .font(.caption)
                         }
+                        .singleLineScaled()
                     }
                 }
             }

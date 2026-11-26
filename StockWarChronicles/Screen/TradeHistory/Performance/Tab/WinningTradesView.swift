@@ -104,6 +104,7 @@ struct WinningTradesView: View {
                                             : String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0)
                                         )
                                         .fontWeight(.semibold)
+                                        .singleLineScaled()
                                     }
                                     .padding(.bottom, 4)
                                     
@@ -118,6 +119,7 @@ struct WinningTradesView: View {
                                                 .fontWeight(.semibold)
                                         }
                                     }
+                                    .singleLineScaled()
                                 }
                                 Image(systemName: "chevron.right")
                                     .foregroundColor(.gray)

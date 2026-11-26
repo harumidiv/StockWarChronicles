@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 import GoogleMobileAds
 
 @Model
@@ -22,6 +23,9 @@ final class TSEStockInfo {
 
 @main
 struct StockWarChroniclesApp: App {
+    @UIApplicationDelegateAdaptor(CalendarNotificationAppDelegate.self) private var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
+
     private let apiClient = APIClient()
     @StateObject private var rewardedAdManager = RewardedAdManager()
 
@@ -39,6 +43,14 @@ struct StockWarChroniclesApp: App {
             .environmentObject(rewardedAdManager)
             .task {
                 await rewardedAdManager.loadAd()
+            }
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                if phase == .active {
+                    Task { await CalendarNotificationScheduler.shared.refresh() }
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                Task { await CalendarNotificationScheduler.shared.refresh() }
             }
         }
     }

@@ -109,7 +109,8 @@ struct TradeHistoryDetailScreen: View {
             summarySection()
             
             Section(header: Text("騰落率 \(String(format: "%.1f", record.profitAndLossParcent ?? 0))％")
-                .font(.headline)) {
+                .font(.headline)
+                .singleLineScaled()) {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(record.sales.sorted(by: { $0.date > $1.date })) { sale in
                         HStack {
@@ -135,6 +136,7 @@ struct TradeHistoryDetailScreen: View {
                                 .font(.subheadline)
                                 .foregroundColor(profitAndLossPercentage >= 0 ? .red : .blue)
                         }
+                        .singleLineScaled()
                         .padding(.vertical, 2)
                     }
                 }
@@ -171,6 +173,7 @@ struct TradeHistoryDetailScreen: View {
                     Text(record.profitAndLoss.withComma() + "円")
                         .font(.title3)
                         .fontWeight(.bold)
+                        .singleLineScaled()
                         .foregroundColor(record.profitAndLoss >= 0 ? .red : .blue)
                 }
                 
@@ -181,6 +184,7 @@ struct TradeHistoryDetailScreen: View {
                     Text(record.holdingPeriod.description + "日")
                         .font(.body)
                         .fontWeight(.semibold)
+                        .singleLineScaled()
                 }
                 
                 HStack {
@@ -190,6 +194,7 @@ struct TradeHistoryDetailScreen: View {
                     Text(record.purchase.shares.description + "株")
                         .font(.body)
                         .fontWeight(.semibold)
+                        .singleLineScaled()
                 }
                 
                 ChipsView(tags: record.tags) { tag in

@@ -113,6 +113,7 @@ struct ClosingScreen: View {
                                 .frame(minWidth: 60)
 
                             Text("/ \(totalAvailableShares.withComma())株")
+                                .singleLineScaled()
                                 .foregroundStyle(.secondary)
 
                             Button("全株") {
@@ -221,6 +222,7 @@ struct ClosingScreen: View {
                                 .fontWeight(.semibold)
                             Text("取得 \(Int(allocation.record.purchase.amount).withComma())円・残り\(allocation.record.remainingShares.withComma())株")
                                 .font(.caption)
+                                .singleLineScaled()
                                 .foregroundStyle(.secondary)
                         }
 
@@ -249,6 +251,7 @@ struct ClosingScreen: View {
                 Spacer()
                 Text("\(totalAllocatedShares.withComma())株")
                     .fontWeight(.semibold)
+                    .singleLineScaled()
                     .foregroundStyle(isAllocationValid ? Color.primary : Color.red)
             }
         } header: {
