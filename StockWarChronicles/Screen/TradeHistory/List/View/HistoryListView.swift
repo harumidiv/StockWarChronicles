@@ -298,6 +298,7 @@ struct HistoryListView: View {
                         
                         Text("保有日数: \(record.holdingPeriod )日")
                             .font(.subheadline)
+                            .singleLineScaled()
                             .foregroundColor(.secondary)
                     }
                     Spacer()
@@ -312,6 +313,7 @@ struct HistoryListView: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(percentage >= 0 ? .red : .blue)
                         }
+                        .singleLineScaled()
                     }
                 }
                 if !record.tags.isEmpty {

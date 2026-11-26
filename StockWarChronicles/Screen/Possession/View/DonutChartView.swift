@@ -76,6 +76,7 @@ struct DonutChartView: View {
                     
                     Text(String(Int(displayUnit.convert(data, total: totalValue))) + displayUnit.label)
                         .font(.caption)
+                        .singleLineScaled()
                         .foregroundStyle(.primary)
                         .bold()
                 }

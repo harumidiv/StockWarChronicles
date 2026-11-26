@@ -270,6 +270,7 @@ struct PossessionScreen: View {
                         Spacer()
                         Text("\(Int(record.purchase.amount))円")
                             .font(.headline)
+                            .singleLineScaled()
                     }
                     
                     HStack {
@@ -280,6 +281,7 @@ struct PossessionScreen: View {
                         
                         Text("\(record.remainingShares) / \(record.purchase.shares)株")
                             .font(.subheadline)
+                            .singleLineScaled()
                             .foregroundColor(.secondary)
                     }
                     
@@ -298,6 +300,7 @@ struct PossessionScreen: View {
                         
                         Text(record.numberOfDaysHeld.description + "日")
                             .font(.subheadline)
+                            .singleLineScaled()
                             .foregroundColor(.secondary)
                         
                         Spacer()
@@ -377,6 +380,7 @@ struct PossessionScreen: View {
                             Text("\(records.count)件")
                                 .font(.caption)
                                 .fontWeight(.semibold)
+                                .singleLineScaled()
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
                                 .background(Color.secondary.opacity(0.15), in: Capsule())
@@ -385,6 +389,7 @@ struct PossessionScreen: View {
 
                             Text("平均 \(Int(weightedPurchaseAmount).withComma())円")
                                 .font(.headline)
+                                .singleLineScaled()
                         }
 
                         HStack {
@@ -400,6 +405,7 @@ struct PossessionScreen: View {
                             Text("合計 \(totalRemainingShares.withComma()) / \(totalPurchasedShares.withComma())株")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
+                                .singleLineScaled()
                         }
 
                         if !allTags.isEmpty {

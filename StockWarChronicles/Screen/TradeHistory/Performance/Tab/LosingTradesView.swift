@@ -109,6 +109,7 @@ struct LosingTradesView: View {
                                         Spacer()
                                         Text("\(Double(record.profitAndLoss).withComma())円")
                                             .fontWeight(.semibold)
+                                            .singleLineScaled()
                                     }
                                     .padding(.bottom, 4)
                                     
@@ -118,6 +119,7 @@ struct LosingTradesView: View {
                                         Text(String(format: "%.2f%%", record.profitAndLossParcent ?? 0.0))
                                             .fontWeight(.semibold)
                                     }
+                                    .singleLineScaled()
                                 }
                                 Image(systemName: "chevron.right")
                                     .foregroundColor(.gray)

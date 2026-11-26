@@ -27,13 +27,14 @@ struct MetricView: View {
                 HStack(spacing: 0) {
                     Text(value)
                         .font(.headline)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                        .singleLineScaled()
                         .fontWeight(.semibold)
                         .foregroundStyle(color)
                     Text(unit)
                         .font(.headline)
                         .fontWeight(.semibold)
+                        .lineLimit(1)
+                        .layoutPriority(1)
                 }
             }
         }

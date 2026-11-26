@@ -22,6 +22,9 @@ struct HistoryCalendarView: View {
     @Environment(\.modelContext) private var context
     
     @Binding var selectedYear: Int
+
+    @AppStorage("historyCalendarShowsMoonPhases") private var showsMoonPhases = true
+    @AppStorage("historyCalendarShowsMercuryRetrograde") private var showsMercuryRetrograde = true
     
     @State private var displayDate: Date = Date()
     @State private var selectedDate: Date? = Calendar.current.startOfDay(for: Date())
@@ -34,7 +37,24 @@ struct HistoryCalendarView: View {
     }
     
     private let weekdays = ["日", "月", "火", "水", "木", "金", "土"]
-    private let columns = Array(repeating: GridItem(.flexible()), count: 7)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+
+    private func astronomyDay(for date: Date?) -> AstronomyCalendar.Day? {
+        AstronomyCalendar.bundled.day(
+            for: date,
+            in: .current,
+            showsMoonPhases: showsMoonPhases,
+            showsMercuryRetrograde: showsMercuryRetrograde
+        )
+    }
+
+    private var astronomyTimeFormat: Date.FormatStyle {
+        .dateTime.hour().minute().locale(Locale(identifier: "ja_JP"))
+    }
+
+    private var astronomyDateFormat: Date.FormatStyle {
+        .dateTime.month().day().locale(Locale(identifier: "ja_JP"))
+    }
     
     private var totalExpense: Int {
         let calendar = Calendar.current
@@ -98,6 +118,10 @@ struct HistoryCalendarView: View {
     }
     
     var body: some View {
+        let monthDays = days
+        let astronomyDays = monthDays.map { astronomyDay(for: $0) }
+        let showsAstronomyMarkers = astronomyDays.contains { $0?.hasEvents == true }
+
         List {
             Section {
                 MonthHeaderView(selectedYear: $selectedYear, selectedDate: $selectedDate, displayDate: $displayDate, total: totalExpense)
@@ -114,13 +138,15 @@ struct HistoryCalendarView: View {
                     }
 
                     LazyVGrid(columns: columns, spacing: 15) {
-                        ForEach(0..<days.count, id: \.self) { index in
-                            let date = days[index]
+                        ForEach(monthDays.indices, id: \.self) { index in
+                            let date = monthDays[index]
                             let isSelected = selectedDate != nil && date != nil && Calendar.current.isDate(selectedDate!, inSameDayAs: date!)
                             DayCell(
                                 date: date,
                                 amount: dayTotalAmount(for: date),
                                 isSelected: isSelected,
+                                astronomy: astronomyDays[index],
+                                showsAstronomyMarkers: showsAstronomyMarkers,
                                 onTap: { selectedDate = date }
                             )
                         }
@@ -130,6 +156,37 @@ struct HistoryCalendarView: View {
             }
             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
             .listRowSeparator(.hidden)
+
+            if let astronomy = astronomyDay(for: selectedDate), astronomy.hasEvents {
+                Section("天文イベント") {
+                    if let phase = astronomy.moonPhase {
+                        LabeledContent {
+                            Text(phase.date, format: astronomyTimeFormat)
+                        } label: {
+                            Label {
+                                Text(phase.kind.title)
+                            } icon: {
+                                Text(phase.kind.emoji)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                    }
+                    if let retrograde = astronomy.retrograde {
+                        LabeledContent {
+                            if retrograde.start >= astronomy.interval.start {
+                                Text(retrograde.start, format: astronomyTimeFormat)
+                            } else if retrograde.end < astronomy.interval.end {
+                                Text(retrograde.end, format: astronomyTimeFormat)
+                            } else {
+                                Text("\(retrograde.start.formatted(astronomyDateFormat))〜\(retrograde.end.formatted(astronomyDateFormat))")
+                                    .singleLineScaled()
+                            }
+                        } label: {
+                            Label(retrograde.title(on: astronomy.interval), systemImage: "arrow.uturn.backward")
+                        }
+                    }
+                }
+            }
 
             Section(header:
                 HStack {
@@ -161,6 +218,15 @@ struct HistoryCalendarView: View {
                         DailyExpenseRowView(record: tuple.record, sale: tuple.sale, profit: tuple.profit)
                     }
                 }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu("カレンダーの表示設定", systemImage: "slider.horizontal.3") {
+                    Toggle("新月・満月", isOn: $showsMoonPhases)
+                    Toggle("水星逆行", isOn: $showsMercuryRetrograde)
+                }
+                .labelStyle(.iconOnly)
             }
         }
         .sheet(isPresented: $isMemoSheetPresented) {
@@ -274,14 +340,18 @@ struct MonthHeaderView: View {
             HStack(alignment: .bottom) {
                 Text("合計損益:")
                     .font(.title)
+                    .layoutPriority(1)
                 Spacer()
                 Text("\(total)")
                     .font(.largeTitle)
                     .fontWeight(.bold)
+                    .singleLineScaled()
                     .foregroundColor(total >= 0 ? .red : .blue)
                 Text("円")
                     .font(.title)
+                    .layoutPriority(1)
             }
+            .lineLimit(1)
             HStack {
                 Button(action: {
                     changeMonth(by: -1)
@@ -331,6 +401,8 @@ struct DayCell: View {
     let date: Date?
     let amount: Int?
     let isSelected: Bool
+    let astronomy: AstronomyCalendar.Day?
+    let showsAstronomyMarkers: Bool
     let onTap: () -> Void
     
     private var isToday: Bool {
@@ -360,20 +432,57 @@ struct DayCell: View {
                     if let amount = amount {
                         Text("\(amount)")
                             .font(.caption2)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
+                            .singleLineScaled()
+                            .padding(.horizontal, 4)
                             .foregroundColor(amount > 0 ? .red : .blue)
                     } else {
                         Text(" ")
                             .font(.caption2)
                     }
-                } else {
-                    Spacer().frame(height: 50)
+
+                    if showsAstronomyMarkers {
+                        VStack(spacing: 2) {
+                            ZStack {
+                                if let phase = astronomy?.moonPhase {
+                                    Text(phase.kind.emoji)
+                                        .font(.system(size: 13))
+                                        .accessibilityLabel(phase.kind.title)
+                                }
+                            }
+                            .frame(height: 15)
+
+                            retrogradeBand
+                                .frame(height: 4)
+                        }
+                    }
                 }
             }
-            .frame(height: 50)
+            .frame(maxWidth: .infinity)
+            .frame(height: showsAstronomyMarkers ? 74 : 50)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var retrogradeBand: some View {
+        if let astronomy, let retrograde = astronomy.retrograde {
+            let startsToday = retrograde.start >= astronomy.interval.start
+            let endsToday = retrograde.end < astronomy.interval.end
+            UnevenRoundedRectangle(
+                topLeadingRadius: startsToday ? 2 : 0,
+                bottomLeadingRadius: startsToday ? 2 : 0,
+                bottomTrailingRadius: endsToday ? 2 : 0,
+                topTrailingRadius: endsToday ? 2 : 0
+            )
+            .fill(Color.cyan)
+            .padding(.leading, startsToday ? 4 : 0)
+            .padding(.trailing, endsToday ? 4 : 0)
+            .accessibilityLabel(retrograde.title(on: astronomy.interval))
+        } else {
+            Color.clear
+                .accessibilityHidden(true)
+        }
     }
     
     @ViewBuilder
@@ -413,7 +522,9 @@ struct DailyExpenseRowView: View {
         HStack {
             Text(record.name).lineLimit(1)
             Spacer()
-            Text("¥\(profit)").foregroundColor(profit < 0 ? .blue : .red)
+            Text("¥\(profit)")
+                .singleLineScaled()
+                .foregroundColor(profit < 0 ? .blue : .red)
         }
     }
 }
@@ -438,7 +549,9 @@ struct ExpenseRowView: View {
         HStack {
             Text(item.name).lineLimit(1)
             Spacer()
-            Text("¥\(item.profitAndLoss)").foregroundColor(item.profitAndLoss < 0 ? .blue : .red)
+            Text("¥\(item.profitAndLoss)")
+                .singleLineScaled()
+                .foregroundColor(item.profitAndLoss < 0 ? .blue : .red)
         }
     }
 }
